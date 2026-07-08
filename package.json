@@ -1,0 +1,21 @@
+{
+  "name": "resumematch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "HR candidate screening tool: JD-to-resume semantic matching with explainable skill-gap analysis",
+  "scripts": {
+    "test:pipeline": "node server/test/pipeline.test.js",
+    "dev": "node server/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.1",
+    "@xenova/transformers": "^2.17.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mammoth": "^1.8.0",
+    "multer": "^2.2.0",
+    "pdf-parse": "^1.1.1"
+  }
+}

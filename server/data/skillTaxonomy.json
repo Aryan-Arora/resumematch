@@ -1,0 +1,33 @@
+{
+  "languages": [
+    "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Go", "Rust",
+    "Ruby", "PHP", "Swift", "Kotlin", "Scala", "R", "SQL", "Bash", "C",
+    "Objective-C", "Dart", "Perl", "MATLAB", "Elixir", "Haskell"
+  ],
+  "frameworks": [
+    "React", "Angular", "Vue.js", "Next.js", "Node.js", "Express",
+    "Django", "Flask", "FastAPI", "Spring Boot", "Ruby on Rails",
+    ".NET", "ASP.NET", "Laravel", "Svelte", "NestJS", "GraphQL",
+    "Redux", "jQuery", "Tailwind CSS", "Bootstrap", "Vite", "Electron",
+    "React Native", "Flutter"
+  ],
+  "cloud": [
+    "AWS", "Azure", "Google Cloud Platform", "Docker", "Kubernetes",
+    "Terraform", "CloudFormation", "Serverless", "Lambda", "EC2", "S3",
+    "Heroku", "Vercel", "Netlify", "Railway", "DigitalOcean", "Ansible",
+    "Nginx", "CI/CD", "Jenkins", "GitHub Actions", "CircleCI"
+  ],
+  "databases": [
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "Supabase",
+    "Firebase", "DynamoDB", "Elasticsearch", "Cassandra", "MariaDB",
+    "Oracle", "Microsoft SQL Server", "Neo4j", "pgvector"
+  ],
+  "tools": [
+    "Git", "GitHub", "GitLab", "Jira", "Docker Compose", "Postman",
+    "Webpack", "Babel", "ESLint", "Jest", "Cypress", "Selenium",
+    "Figma", "VS Code", "Linux", "npm", "Yarn", "pnpm", "REST APIs",
+    "Microservices", "Agile", "Scrum", "TDD", "Machine Learning",
+    "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy",
+    "Kafka", "RabbitMQ", "gRPC", "OAuth", "JWT", "WebSockets"
+  ]
+}
