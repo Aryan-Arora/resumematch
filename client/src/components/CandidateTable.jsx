@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
-import { getCandidates, deleteCandidate, exportUrl, getSkillTaxonomy } from "../api";
+import { getCandidates, deleteCandidate, downloadExport, getSkillTaxonomy } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
 
@@ -53,7 +53,9 @@ export default function CandidateTable({ job, onAddMore }) {
     load();
   }, [load]);
 
-  async function handleDelete(id) {
+  async function handleDelete(id, fileName) {
+    const confirmed = window.confirm(`Remove "${fileName}" from this shortlist?`);
+    if (!confirmed) return;
     await deleteCandidate(id);
     setCandidates((prev) => prev.filter((c) => c.id !== id));
   }
@@ -102,12 +104,12 @@ export default function CandidateTable({ job, onAddMore }) {
           >
             Add More Resumes
           </button>
-          <a
-            href={exportUrl(job.id)}
+          <button
+            onClick={() => downloadExport(job.id, job.title)}
             className="bg-black hover:bg-[#1a1a1a] text-white font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
           >
             Export CSV
-          </a>
+          </button>
         </div>
       </div>
 
@@ -173,7 +175,7 @@ export default function CandidateTable({ job, onAddMore }) {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelete(c.id);
+                              handleDelete(c.id, c.file_name);
                             }}
                             className="text-[#8a8b93] hover:text-[#ba1a1a] text-xs font-medium transition"
                           >

@@ -36,11 +36,16 @@ export default function BulkUpload({ job, onUploaded }) {
     setError(null);
     setLoading(true);
     try {
-      await uploadCandidates(job.id, files);
+      const result = await uploadCandidates(job.id, files);
+      if (result.failures && result.failures.length > 0) {
+        const summary = result.failures.map((f) => `${f.file_name}: ${f.error}`).join("; ");
+        setError(`${result.failures.length} file(s) failed to process — ${summary}`);
+        setLoading(false);
+        return;
+      }
       onUploaded();
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   }
@@ -81,7 +86,9 @@ export default function BulkUpload({ job, onUploaded }) {
             </svg>
           </div>
           <p className="font-heading text-sm font-semibold text-[#0b1c30]">Drop candidate resumes here</p>
-          <p className="text-xs text-[#45464d]">PDF or DOCX, or click to browse</p>
+          <p className="text-xs text-[#45464d]">
+            PDF or DOCX, or click to browse — up to 100 files, 10MB each
+          </p>
           <span className="mt-1 px-5 py-2 border border-[#4648d4] text-[#4648d4] font-heading text-sm font-medium rounded-lg">
             Browse Files
           </span>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getJobs } from "../api";
+import { getJobs, deleteJob } from "../api";
 
 export default function Projects({ onOpenJob, onNavigate }) {
   const [jobs, setJobs] = useState([]);
@@ -12,6 +12,16 @@ export default function Projects({ onOpenJob, onNavigate }) {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleDelete(e, job) {
+    e.stopPropagation();
+    const confirmed = window.confirm(
+      `Delete "${job.title}"? This will permanently remove the project and all ${job.candidate_count} candidate(s) in it.`
+    );
+    if (!confirmed) return;
+    await deleteJob(job.id);
+    setJobs((prev) => prev.filter((j) => j.id !== job.id));
+  }
 
   if (loading) return <p className="p-10 text-[#45464d]">Loading projects...</p>;
   if (error) return <p className="p-10 text-[#ba1a1a]">{error}</p>;
@@ -39,12 +49,22 @@ export default function Projects({ onOpenJob, onNavigate }) {
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {jobs.map((job) => (
-            <button
+            <div
               key={job.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onOpenJob(job)}
-              className="text-left bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm p-5 hover:border-[#4648d4]/50 hover:shadow-md transition"
+              onKeyDown={(e) => e.key === "Enter" && onOpenJob(job)}
+              className="relative text-left bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm p-5 hover:border-[#4648d4]/50 hover:shadow-md transition cursor-pointer"
             >
-              <h3 className="font-heading text-base font-semibold text-[#0b1c30] mb-1">
+              <button
+                onClick={(e) => handleDelete(e, job)}
+                className="absolute top-4 right-4 text-[#8a8b93] hover:text-[#ba1a1a] transition"
+                title="Delete project"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+              <h3 className="font-heading text-base font-semibold text-[#0b1c30] mb-1 pr-8">
                 {job.title}
               </h3>
               <p className="text-xs text-[#8a8b93] mb-3">
@@ -68,7 +88,7 @@ export default function Projects({ onOpenJob, onNavigate }) {
                   </p>
                 </div>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}

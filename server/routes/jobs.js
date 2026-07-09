@@ -14,7 +14,16 @@ const taxonomy = JSON.parse(
   readFileSync(join(__dirname, "../data/skillTaxonomy.json"), "utf-8")
 );
 
-const upload = multer({ storage: multer.memoryStorage() });
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB per file
+const MAX_FILES_PER_UPLOAD = 100;
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE_BYTES,
+    files: MAX_FILES_PER_UPLOAD,
+  },
+});
 const router = Router();
 
 router.get("/jobs", async (req, res) => {
@@ -91,67 +100,79 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
   if (jobError || !job) return res.status(404).json({ error: "job not found" });
 
   const results = [];
+  const failures = [];
 
   for (const file of files) {
-    const ext = extname(file.originalname).toLowerCase();
-    let parsed;
-    if (ext === ".pdf") {
-      parsed = await parsePdf(file.buffer);
-    } else if (ext === ".docx") {
-      parsed = await parseDocx(file.buffer);
-    } else {
-      parsed = { text: "", unparseable: true };
-    }
+    try {
+      const ext = extname(file.originalname).toLowerCase();
+      let parsed;
+      if (ext === ".pdf") {
+        parsed = await parsePdf(file.buffer);
+      } else if (ext === ".docx") {
+        parsed = await parseDocx(file.buffer);
+      } else {
+        parsed = { text: "", unparseable: true };
+      }
 
-    if (parsed.unparseable) {
+      if (parsed.unparseable) {
+        const { data, error } = await supabase
+          .from("candidates")
+          .insert({
+            job_id: jobId,
+            file_name: file.originalname,
+            unparseable: true,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        results.push(data);
+        continue;
+      }
+
+      const storagePath = `${jobId}/${Date.now()}-${file.originalname}`;
+      const { error: uploadError } = await supabase.storage
+        .from("resumes")
+        .upload(storagePath, file.buffer, { contentType: file.mimetype });
+      if (uploadError) throw uploadError;
+
+      const resumeEmbedding = await getEmbedding(parsed.text);
+      const semanticScore = cosineSimilarity(job.jd_embedding, resumeEmbedding);
+
+      const resumeSkills = extractSkills(parsed.text, taxonomy);
+      const { matched, missing } = compareSkills(job.jd_skills, resumeSkills);
+      const skillScore = job.jd_skills.length > 0 ? matched.length / job.jd_skills.length : 0;
+      const finalScore = computeFinalScore(semanticScore, skillScore);
+
       const { data, error } = await supabase
         .from("candidates")
         .insert({
           job_id: jobId,
           file_name: file.originalname,
-          unparseable: true,
+          file_path: storagePath,
+          resume_text: parsed.text,
+          resume_embedding: resumeEmbedding,
+          matched_skills: matched,
+          missing_skills: missing,
+          semantic_score: semanticScore,
+          skill_score: skillScore,
+          final_score: finalScore,
+          unparseable: false,
         })
         .select()
         .single();
-      if (!error) results.push(data);
-      continue;
+
+      if (error) {
+        // Insert failed after the file was already uploaded to storage — clean up the orphaned file.
+        await supabase.storage.from("resumes").remove([storagePath]);
+        throw error;
+      }
+      results.push(data);
+    } catch (err) {
+      failures.push({ file_name: file.originalname, error: err.message || String(err) });
     }
-
-    const storagePath = `${jobId}/${Date.now()}-${file.originalname}`;
-    await supabase.storage.from("resumes").upload(storagePath, file.buffer, {
-      contentType: file.mimetype,
-    });
-
-    const resumeEmbedding = await getEmbedding(parsed.text);
-    const semanticScore = cosineSimilarity(job.jd_embedding, resumeEmbedding);
-
-    const resumeSkills = extractSkills(parsed.text, taxonomy);
-    const { matched, missing } = compareSkills(job.jd_skills, resumeSkills);
-    const skillScore = job.jd_skills.length > 0 ? matched.length / job.jd_skills.length : 0;
-    const finalScore = computeFinalScore(semanticScore, skillScore);
-
-    const { data, error } = await supabase
-      .from("candidates")
-      .insert({
-        job_id: jobId,
-        file_name: file.originalname,
-        file_path: storagePath,
-        resume_text: parsed.text,
-        resume_embedding: resumeEmbedding,
-        matched_skills: matched,
-        missing_skills: missing,
-        semantic_score: semanticScore,
-        skill_score: skillScore,
-        final_score: finalScore,
-        unparseable: false,
-      })
-      .select()
-      .single();
-
-    if (!error) results.push(data);
   }
 
-  res.status(201).json(results);
+  res.status(201).json({ candidates: results, failures });
 });
 
 router.get("/jobs/:id/candidates", async (req, res) => {
@@ -202,6 +223,24 @@ router.get("/jobs/:id/export", async (req, res) => {
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", `attachment; filename="candidates-${req.params.id}.csv"`);
   res.send(csv);
+});
+
+router.delete("/jobs/:id", async (req, res) => {
+  const jobId = req.params.id;
+
+  const { data: files } = await supabase.storage.from("resumes").list(jobId);
+  if (files && files.length > 0) {
+    await supabase.storage.from("resumes").remove(files.map((f) => `${jobId}/${f.name}`));
+  }
+
+  const { error, count } = await supabase
+    .from("jobs")
+    .delete({ count: "exact" })
+    .eq("id", jobId);
+  if (error) return res.status(500).json({ error: error.message });
+  if (count === 0) return res.status(404).json({ error: "job not found" });
+
+  res.status(204).send();
 });
 
 export default router;
