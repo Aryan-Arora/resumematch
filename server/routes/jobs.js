@@ -7,6 +7,7 @@ import { supabase } from "../supabaseClient.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, compareSkills } from "../services/skillMatch.js";
+import { findImpliedSkills } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -101,6 +102,7 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
 
   const results = [];
   const failures = [];
+  const skillEmbeddingCache = new Map();
 
   for (const file of files) {
     try {
@@ -140,7 +142,18 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
 
       const resumeSkills = extractSkills(parsed.text, taxonomy);
       const { matched, missing } = compareSkills(job.jd_skills, resumeSkills);
-      const skillScore = job.jd_skills.length > 0 ? matched.length / job.jd_skills.length : 0;
+
+      const { impliedSkills, evidence } = await findImpliedSkills(
+        missing,
+        parsed.text,
+        skillEmbeddingCache
+      );
+      const stillMissing = missing.filter((s) => !impliedSkills.includes(s));
+
+      const skillScore =
+        job.jd_skills.length > 0
+          ? (matched.length + impliedSkills.length) / job.jd_skills.length
+          : 0;
       const finalScore = computeFinalScore(semanticScore, skillScore);
 
       const { data, error } = await supabase
@@ -152,7 +165,9 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
           resume_text: parsed.text,
           resume_embedding: resumeEmbedding,
           matched_skills: matched,
-          missing_skills: missing,
+          missing_skills: stillMissing,
+          implied_skills: impliedSkills,
+          implied_skill_evidence: evidence,
           semantic_score: semanticScore,
           skill_score: skillScore,
           final_score: finalScore,
@@ -201,6 +216,7 @@ router.get("/jobs/:id/export", async (req, res) => {
     "semantic_score",
     "skill_score",
     "matched_skills",
+    "implied_skills",
     "missing_skills",
     "unparseable",
   ];
@@ -212,6 +228,7 @@ router.get("/jobs/:id/export", async (req, res) => {
       c.semantic_score,
       c.skill_score,
       (c.matched_skills || []).join("; "),
+      (c.implied_skills || []).join("; "),
       (c.missing_skills || []).join("; "),
       c.unparseable,
     ]

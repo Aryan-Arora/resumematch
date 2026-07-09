@@ -1,5 +1,7 @@
 import { pipeline } from "@xenova/transformers";
 
+// Used for the primary JD-vs-resume document embedding — persisted in Postgres
+// as a vector(384) column, so this model must never change without a migration.
 let extractorPromise = null;
 
 function getExtractor() {
@@ -11,6 +13,24 @@ function getExtractor() {
 
 export async function getEmbedding(text) {
   const extractor = await getExtractor();
+  const output = await extractor(text, { pooling: "mean", normalize: true });
+  return Array.from(output.data);
+}
+
+// Larger, more discriminative model used only for the transient per-skill
+// semantic comparisons in semanticSkillMatch.js — nothing from this model is
+// ever persisted, so it's free to differ in dimensionality from the model above.
+let preciseExtractorPromise = null;
+
+function getPreciseExtractor() {
+  if (!preciseExtractorPromise) {
+    preciseExtractorPromise = pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+  }
+  return preciseExtractorPromise;
+}
+
+export async function getPreciseEmbedding(text) {
+  const extractor = await getPreciseExtractor();
   const output = await extractor(text, { pooling: "mean", normalize: true });
   return Array.from(output.data);
 }

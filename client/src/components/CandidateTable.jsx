@@ -78,7 +78,12 @@ export default function CandidateTable({ job, onAddMore }) {
       .filter((c) => {
         if (c.unparseable) return minScore === 0;
         if ((c.weighted_score ?? 0) < minScore) return false;
-        if (mustHaveSkill && !(c.matched_skills || []).includes(mustHaveSkill)) return false;
+        if (
+          mustHaveSkill &&
+          !(c.matched_skills || []).includes(mustHaveSkill) &&
+          !(c.implied_skills || []).includes(mustHaveSkill)
+        )
+          return false;
         return true;
       })
       .sort((a, b) => (b.weighted_score ?? -1) - (a.weighted_score ?? -1));
@@ -121,7 +126,7 @@ export default function CandidateTable({ job, onAddMore }) {
             </p>
           ) : (
             <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm overflow-x-auto">
-              <table className="w-full min-w-[640px] border-collapse text-left text-sm table-fixed">
+              <table className="w-full min-w-[760px] border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[#c6c6cd]/60 bg-[#eff4ff] text-[#45464d]">
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[32%]">
@@ -192,7 +197,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 It was not scored.
                               </p>
                             ) : (
-                              <div className="grid grid-cols-3 gap-6">
+                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#4648d4] mb-2.5">
                                     Matched Skills ({c.matched_skills?.length || 0})
@@ -202,6 +207,29 @@ export default function CandidateTable({ job, onAddMore }) {
                                       <span
                                         key={s}
                                         className="bg-[#e5eeff] text-[#4648d4] border border-[#4648d4]/20 text-xs font-medium px-2.5 py-1 rounded-full"
+                                      >
+                                        {s}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#7c3aed] mb-2.5">
+                                    Implied Skills ({c.implied_skills?.length || 0})
+                                  </h3>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {(c.implied_skills || []).length === 0 && (
+                                      <span className="text-xs text-[#8a8b93]">None detected</span>
+                                    )}
+                                    {(c.implied_skills || []).map((s) => (
+                                      <span
+                                        key={s}
+                                        title={
+                                          c.implied_skill_evidence?.[s]
+                                            ? `Inferred from: "${c.implied_skill_evidence[s]}"`
+                                            : "Inferred from resume content"
+                                        }
+                                        className="bg-[#7c3aed]/10 text-[#7c3aed] border border-dashed border-[#7c3aed]/40 text-xs font-medium px-2.5 py-1 rounded-full cursor-help"
                                       >
                                         {s}
                                       </span>
@@ -230,7 +258,10 @@ export default function CandidateTable({ job, onAddMore }) {
                                   <SkillRadar
                                     taxonomy={taxonomy}
                                     jdSkills={job.jd_skills || []}
-                                    matchedSkills={c.matched_skills || []}
+                                    matchedSkills={[
+                                      ...(c.matched_skills || []),
+                                      ...(c.implied_skills || []),
+                                    ]}
                                   />
                                 </div>
                               </div>
