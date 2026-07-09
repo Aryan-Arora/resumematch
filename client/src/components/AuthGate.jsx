@@ -36,20 +36,22 @@ export default function AuthGate({ children }) {
   }
 
   if (status === "checking") {
-    return <div className="min-h-screen bg-[#f8f9ff]" />;
+    return <div className="min-h-screen bg-[var(--color-bg)]" />;
   }
 
   if (status === "locked") {
     return (
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center px-8">
-        <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm p-8 w-full max-w-sm">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center px-8">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-8 w-full max-w-sm">
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded bg-[#4648d4] flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded bg-[var(--color-accent)] flex items-center justify-center text-[var(--color-accent-contrast)] font-bold text-sm">
               R
             </div>
-            <span className="font-heading font-bold text-[#0b1c30]">ResumeMatch</span>
+            <span className="font-heading font-bold text-[var(--color-text)]">ResumeMatch</span>
           </div>
-          <p className="text-[#45464d] text-sm mb-6">Enter the access password to continue.</p>
+          <p className="text-[var(--color-text-muted)] text-sm mb-6">
+            Enter the access password to continue.
+          </p>
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="password"
@@ -57,12 +59,12 @@ export default function AuthGate({ children }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full bg-[#eff4ff] border border-[#c6c6cd]/70 rounded-lg px-3.5 py-2.5 text-sm text-[#0b1c30] focus:outline-none focus:ring-2 focus:ring-[#4648d4] focus:border-transparent transition"
+              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
             />
-            {error && <p className="text-[#ba1a1a] text-sm">{error}</p>}
+            {error && <p className="text-[var(--color-danger)] text-sm">{error}</p>}
             <button
               type="submit"
-              className="w-full bg-black hover:bg-[#1a1a1a] text-white font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
+              className="w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
             >
               Unlock
             </button>

@@ -9,14 +9,14 @@ function formatScore(score) {
 
 function ScoreRing({ score }) {
   if (score === null || score === undefined) {
-    return <span className="text-[#8a8b93] text-sm">—</span>;
+    return <span className="text-[var(--color-text-faint)] text-sm">—</span>;
   }
   const pct = Math.round(Number(score) * 100);
   return (
     <div className="relative w-12 h-12 flex items-center justify-center">
       <div className="circular-progress absolute inset-0 rounded-full" style={{ "--percentage": pct }} />
-      <div className="absolute inset-1 bg-white rounded-full flex items-center justify-center">
-        <span className="font-heading text-xs font-bold text-[#0b1c30]">{pct}%</span>
+      <div className="absolute inset-1 bg-[var(--color-surface)] rounded-full flex items-center justify-center">
+        <span className="font-heading text-xs font-bold text-[var(--color-text)]">{pct}%</span>
       </div>
     </div>
   );
@@ -90,28 +90,33 @@ export default function CandidateTable({ job, onAddMore }) {
   }, [weightedCandidates, minScore, mustHaveSkill]);
 
   if (loading)
-    return <p className="max-w-6xl mx-auto px-8 py-10 text-[#45464d]">Loading candidates...</p>;
-  if (error) return <p className="max-w-6xl mx-auto px-8 py-10 text-[#ba1a1a]">{error}</p>;
+    return (
+      <p className="max-w-6xl mx-auto px-8 py-10 text-[var(--color-text-muted)]">
+        Loading candidates...
+      </p>
+    );
+  if (error)
+    return <p className="max-w-6xl mx-auto px-8 py-10 text-[var(--color-danger)]">{error}</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-[#0b1c30]">{job.title}</h1>
-          <p className="text-[#45464d] text-sm mt-0.5">
+          <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)]">{job.title}</h1>
+          <p className="text-[var(--color-text-muted)] text-sm mt-0.5">
             {filteredCandidates.length} of {candidates.length} candidate(s)
           </p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={onAddMore}
-            className="border border-[#c6c6cd] text-[#0b1c30] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[#eff4ff] transition"
+            className="border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
           >
             Add More Resumes
           </button>
           <button
             onClick={() => downloadExport(job.id, job.title)}
-            className="bg-black hover:bg-[#1a1a1a] text-white font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
+            className="bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
           >
             Export CSV
           </button>
@@ -121,14 +126,14 @@ export default function CandidateTable({ job, onAddMore }) {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
           {filteredCandidates.length === 0 ? (
-            <p className="text-[#45464d] bg-white border border-[#c6c6cd]/60 rounded-xl px-5 py-8 text-center text-sm">
+            <p className="text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl px-5 py-8 text-center text-sm">
               No candidates match the current filters.
             </p>
           ) : (
-            <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm overflow-x-auto">
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm overflow-x-auto transition-colors">
               <table className="w-full min-w-[760px] border-collapse text-left text-sm table-fixed">
                 <thead>
-                  <tr className="border-b border-[#c6c6cd]/60 bg-[#eff4ff] text-[#45464d]">
+                  <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[32%]">
                       Candidate
                     </th>
@@ -147,13 +152,15 @@ export default function CandidateTable({ job, onAddMore }) {
                   {filteredCandidates.map((c) => (
                     <Fragment key={c.id}>
                       <tr
-                        className="border-b border-[#c6c6cd]/40 last:border-b-0 cursor-pointer hover:bg-[#eff4ff]/60 transition"
+                        className="border-b border-[var(--color-border)]/40 last:border-b-0 cursor-pointer hover:bg-[var(--color-surface-hover)] transition"
                         onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
                       >
                         <td className="py-3 px-5 min-w-0">
                           <div className="flex items-center gap-3 min-w-0">
                             <Avatar name={c.file_name} size={36} />
-                            <span className="text-[#0b1c30] font-medium truncate">{c.file_name}</span>
+                            <span className="text-[var(--color-text)] font-medium truncate">
+                              {c.file_name}
+                            </span>
                           </div>
                         </td>
                         <td className="py-3 px-5">
@@ -161,17 +168,21 @@ export default function CandidateTable({ job, onAddMore }) {
                             <ScoreRing score={c.weighted_score} />
                           </div>
                         </td>
-                        <td className="py-3 px-5 text-[#45464d]">{formatScore(c.semantic_score)}</td>
-                        <td className="py-3 px-5 text-[#45464d]">{formatScore(c.skill_score)}</td>
+                        <td className="py-3 px-5 text-[var(--color-text-muted)]">
+                          {formatScore(c.semantic_score)}
+                        </td>
+                        <td className="py-3 px-5 text-[var(--color-text-muted)]">
+                          {formatScore(c.skill_score)}
+                        </td>
                         <td className="py-3 px-5">
                           {c.unparseable ? (
-                            <span className="inline-flex items-center gap-1.5 text-[#ba1a1a] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#ba1a1a]" />
+                            <span className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" />
                               Unparseable
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-[#0c9488] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#0c9488]" />
+                            <span className="inline-flex items-center gap-1.5 text-[var(--color-success)] text-xs font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
                               Scored
                             </span>
                           )}
@@ -182,31 +193,31 @@ export default function CandidateTable({ job, onAddMore }) {
                               e.stopPropagation();
                               handleDelete(c.id, c.file_name);
                             }}
-                            className="text-[#8a8b93] hover:text-[#ba1a1a] text-xs font-medium transition"
+                            className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] text-xs font-medium transition"
                           >
                             Remove
                           </button>
                         </td>
                       </tr>
                       {expandedId === c.id && (
-                        <tr className="border-b border-[#c6c6cd]/40 bg-[#eff4ff]/40">
+                        <tr className="border-b border-[var(--color-border)]/40 bg-[var(--color-surface-alt)]/40">
                           <td colSpan={6} className="py-5 px-5">
                             {c.unparseable ? (
-                              <p className="text-[#ba1a1a] text-sm">
+                              <p className="text-[var(--color-danger)] text-sm">
                                 This resume could not be parsed (scanned image or corrupted file).
                                 It was not scored.
                               </p>
                             ) : (
                               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div>
-                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#4648d4] mb-2.5">
+                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">
                                     Matched Skills ({c.matched_skills?.length || 0})
                                   </h3>
                                   <div className="flex flex-wrap gap-1.5">
                                     {(c.matched_skills || []).map((s) => (
                                       <span
                                         key={s}
-                                        className="bg-[#e5eeff] text-[#4648d4] border border-[#4648d4]/20 text-xs font-medium px-2.5 py-1 rounded-full"
+                                        className="bg-[var(--color-accent-soft)] text-[var(--color-accent)] border border-[var(--color-accent)]/20 text-xs font-medium px-2.5 py-1 rounded-full"
                                       >
                                         {s}
                                       </span>
@@ -214,12 +225,14 @@ export default function CandidateTable({ job, onAddMore }) {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#7c3aed] mb-2.5">
+                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-implied)] mb-2.5">
                                     Implied Skills ({c.implied_skills?.length || 0})
                                   </h3>
                                   <div className="flex flex-wrap gap-1.5">
                                     {(c.implied_skills || []).length === 0 && (
-                                      <span className="text-xs text-[#8a8b93]">None detected</span>
+                                      <span className="text-xs text-[var(--color-text-faint)]">
+                                        None detected
+                                      </span>
                                     )}
                                     {(c.implied_skills || []).map((s) => (
                                       <span
@@ -229,7 +242,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                             ? `Inferred from: "${c.implied_skill_evidence[s]}"`
                                             : "Inferred from resume content"
                                         }
-                                        className="bg-[#7c3aed]/10 text-[#7c3aed] border border-dashed border-[#7c3aed]/40 text-xs font-medium px-2.5 py-1 rounded-full cursor-help"
+                                        className="bg-[var(--color-implied)]/10 text-[var(--color-implied)] border border-dashed border-[var(--color-implied)]/40 text-xs font-medium px-2.5 py-1 rounded-full cursor-help"
                                       >
                                         {s}
                                       </span>
@@ -237,14 +250,14 @@ export default function CandidateTable({ job, onAddMore }) {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#ba1a1a] mb-2.5">
+                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-danger)] mb-2.5">
                                     Missing Skills ({c.missing_skills?.length || 0})
                                   </h3>
                                   <div className="flex flex-wrap gap-1.5">
                                     {(c.missing_skills || []).map((s) => (
                                       <span
                                         key={s}
-                                        className="bg-[#ffdad6]/40 text-[#ba1a1a] text-xs font-medium px-2.5 py-1 rounded-full"
+                                        className="bg-[var(--color-danger-soft)]/40 text-[var(--color-danger)] text-xs font-medium px-2.5 py-1 rounded-full"
                                       >
                                         {s}
                                       </span>
@@ -252,7 +265,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[#45464d] mb-2.5">
+                                  <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2.5">
                                     Skill Coverage
                                   </h3>
                                   <SkillRadar
@@ -278,7 +291,7 @@ export default function CandidateTable({ job, onAddMore }) {
         </div>
 
         <aside className="w-full lg:w-[300px] flex-shrink-0 space-y-4">
-          <div className="bg-[#131b2e] text-white rounded-xl p-5">
+          <div className="bg-[var(--color-panel-dark)] text-white rounded-xl p-5">
             <h3 className="font-heading text-sm font-semibold mb-1">AI Weighting</h3>
             <p className="text-xs text-white/70 mb-4">
               Adjust how semantic similarity vs. skill match combine into the score.
@@ -296,7 +309,7 @@ export default function CandidateTable({ job, onAddMore }) {
                   step="5"
                   value={semanticWeight}
                   onChange={(e) => setSemanticWeight(Number(e.target.value))}
-                  className="w-full accent-[#4648d4] h-1.5"
+                  className="w-full accent-[var(--color-accent)] h-1.5"
                 />
               </div>
               <div>
@@ -311,18 +324,18 @@ export default function CandidateTable({ job, onAddMore }) {
                   step="5"
                   value={skillWeight}
                   onChange={(e) => setSemanticWeight(100 - Number(e.target.value))}
-                  className="w-full accent-[#4648d4] h-1.5"
+                  className="w-full accent-[var(--color-accent)] h-1.5"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm p-5">
-            <h4 className="font-heading text-sm font-semibold text-[#0b1c30] mb-4">Filters</h4>
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+            <h4 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">Filters</h4>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-[#45464d] uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
                 Min Score:{" "}
-                <span className="text-[#0b1c30] font-heading font-semibold normal-case">
+                <span className="text-[var(--color-text)] font-heading font-semibold normal-case">
                   {minScore.toFixed(2)}
                 </span>
               </label>
@@ -333,17 +346,17 @@ export default function CandidateTable({ job, onAddMore }) {
                 step="0.05"
                 value={minScore}
                 onChange={(e) => setMinScore(Number(e.target.value))}
-                className="w-full accent-[#4648d4]"
+                className="w-full accent-[var(--color-accent)]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#45464d] uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
                 Must-Have Skill
               </label>
               <select
                 value={mustHaveSkill}
                 onChange={(e) => setMustHaveSkill(e.target.value)}
-                className="w-full bg-[#eff4ff] border border-[#c6c6cd]/70 rounded-lg px-2.5 py-1.5 text-sm text-[#0b1c30] focus:outline-none focus:ring-2 focus:ring-[#4648d4]"
+                className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-2.5 py-1.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
               >
                 <option value="">Any</option>
                 {(job.jd_skills || []).map((s) => (
@@ -359,7 +372,7 @@ export default function CandidateTable({ job, onAddMore }) {
                   setMinScore(0);
                   setMustHaveSkill("");
                 }}
-                className="mt-4 text-sm text-[#4648d4] hover:underline font-medium"
+                className="mt-4 text-sm text-[var(--color-accent)] hover:underline font-medium"
               >
                 Clear filters
               </button>

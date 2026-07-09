@@ -28,7 +28,7 @@ export default function App() {
   const sidebarActive = view === "job" || view.startsWith("upload") ? "upload" : view;
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff]">
+    <div className="min-h-screen bg-[var(--color-bg)] transition-colors">
       <Sidebar current={sidebarActive} onNavigate={navigate} />
       <main className="ml-[260px]">
         {view === "dashboard" && <Dashboard onOpenJob={openJob} onNavigate={navigate} />}

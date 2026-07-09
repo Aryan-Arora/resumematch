@@ -3,11 +3,15 @@ import { getJobs } from "../api";
 
 function StatCard({ label, value, sublabel }) {
   return (
-    <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm p-5">
-      <p className="text-xs font-medium text-[#45464d] uppercase tracking-wide mb-1">{label}</p>
-      <p className="font-heading text-2xl font-semibold text-[#0b1c30]">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+      <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+        {label}
+      </p>
+      <p className="font-heading text-2xl font-semibold text-[var(--color-text)]">
         {value}
-        {sublabel && <span className="text-sm font-normal text-[#45464d] ml-1">{sublabel}</span>}
+        {sublabel && (
+          <span className="text-sm font-normal text-[var(--color-text-muted)] ml-1">{sublabel}</span>
+        )}
       </p>
     </div>
   );
@@ -25,8 +29,8 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="p-10 text-[#45464d]">Loading dashboard...</p>;
-  if (error) return <p className="p-10 text-[#ba1a1a]">{error}</p>;
+  if (loading) return <p className="p-10 text-[var(--color-text-muted)]">Loading dashboard...</p>;
+  if (error) return <p className="p-10 text-[var(--color-danger)]">{error}</p>;
 
   const totalCandidates = jobs.reduce((sum, j) => sum + j.candidate_count, 0);
   const scored = jobs.filter((j) => j.avg_score !== null);
@@ -40,12 +44,16 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
     <div className="max-w-6xl mx-auto px-8 py-10">
       <div className="flex justify-between items-end mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-[#0b1c30]">Recruitment Overview</h1>
-          <p className="text-[#45464d] text-sm mt-0.5">Real-time snapshot of your talent pipelines.</p>
+          <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)]">
+            Recruitment Overview
+          </h1>
+          <p className="text-[var(--color-text-muted)] text-sm mt-0.5">
+            Real-time snapshot of your talent pipelines.
+          </p>
         </div>
         <button
           onClick={() => onNavigate("upload")}
-          className="bg-black hover:bg-[#1a1a1a] text-white font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition flex items-center gap-2"
+          className="bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition flex items-center gap-2"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           New Project
@@ -55,27 +63,30 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
       <div className="grid grid-cols-3 gap-4 mb-8">
         <StatCard label="Active Projects" value={jobs.length} />
         <StatCard label="Candidates Processed" value={totalCandidates} />
-        <StatCard label="Avg. Match Score" value={avgScore !== null ? `${Math.round(avgScore * 100)}%` : "—"} />
+        <StatCard
+          label="Avg. Match Score"
+          value={avgScore !== null ? `${Math.round(avgScore * 100)}%` : "—"}
+        />
       </div>
 
-      <div className="bg-white border border-[#c6c6cd]/60 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#c6c6cd]/60 flex items-center justify-between">
-          <h2 className="font-heading text-sm font-semibold text-[#0b1c30]">Recent Projects</h2>
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm overflow-hidden transition-colors">
+        <div className="px-5 py-4 border-b border-[var(--color-border)]/60 flex items-center justify-between">
+          <h2 className="font-heading text-sm font-semibold text-[var(--color-text)]">Recent Projects</h2>
           <button
             onClick={() => onNavigate("projects")}
-            className="text-sm text-[#4648d4] hover:underline font-medium"
+            className="text-sm text-[var(--color-accent)] hover:underline font-medium"
           >
             View all
           </button>
         </div>
         {recent.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-[#45464d]">
+          <p className="px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">
             No projects yet. Create one to get started.
           </p>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="bg-[#eff4ff] text-[#45464d] text-xs uppercase tracking-wide">
+              <tr className="bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
                 <th className="py-3 px-5 font-medium">Role & Project</th>
                 <th className="py-3 px-5 font-medium">Candidates</th>
                 <th className="py-3 px-5 font-medium">Avg. Match</th>
@@ -86,11 +97,11 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
                 <tr
                   key={job.id}
                   onClick={() => onOpenJob(job)}
-                  className="border-t border-[#c6c6cd]/40 hover:bg-[#eff4ff]/60 cursor-pointer transition"
+                  className="border-t border-[var(--color-border)]/40 hover:bg-[var(--color-surface-hover)] cursor-pointer transition"
                 >
-                  <td className="py-3 px-5 text-[#0b1c30] font-medium">{job.title}</td>
-                  <td className="py-3 px-5 text-[#45464d]">{job.candidate_count}</td>
-                  <td className="py-3 px-5 text-[#45464d]">
+                  <td className="py-3 px-5 text-[var(--color-text)] font-medium">{job.title}</td>
+                  <td className="py-3 px-5 text-[var(--color-text-muted)]">{job.candidate_count}</td>
+                  <td className="py-3 px-5 text-[var(--color-text-muted)]">
                     {job.avg_score !== null ? `${Math.round(job.avg_score * 100)}%` : "—"}
                   </td>
                 </tr>

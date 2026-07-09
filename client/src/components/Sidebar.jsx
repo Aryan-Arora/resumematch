@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { getTheme, toggleTheme } from "../theme";
+
 const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard" },
   { key: "projects", label: "Projects", icon: "folder_shared" },
@@ -6,16 +9,37 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ current, onNavigate }) {
+  const [theme, setThemeState] = useState("light");
+
+  useEffect(() => {
+    setThemeState(getTheme());
+  }, []);
+
+  function handleToggle() {
+    setThemeState(toggleTheme());
+  }
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-[#c6c6cd]/60 flex flex-col py-6 z-50">
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-[#4648d4] flex items-center justify-center text-white font-bold text-sm">
-            R
+    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[var(--color-surface)] border-r border-[var(--color-border)]/60 flex flex-col py-6 z-50 transition-colors">
+      <div className="px-6 mb-8 flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded bg-[var(--color-accent)] flex items-center justify-center text-[var(--color-accent-contrast)] font-bold text-sm">
+              R
+            </div>
+            <h1 className="font-heading text-lg font-bold text-[var(--color-text)]">ResumeMatch</h1>
           </div>
-          <h1 className="font-heading text-lg font-bold text-[#0b1c30]">ResumeMatch</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">HR Candidate Screening</p>
         </div>
-        <p className="text-xs text-[#45464d] mt-1">HR Candidate Screening</p>
+        <button
+          onClick={handleToggle}
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-accent)] transition flex-shrink-0"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            {theme === "dark" ? "light_mode" : "dark_mode"}
+          </span>
+        </button>
       </div>
       <nav className="flex-1 px-3 space-y-1">
         {NAV_ITEMS.map((item) => {
@@ -26,8 +50,8 @@ export default function Sidebar({ current, onNavigate }) {
               onClick={() => onNavigate(item.key)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-heading text-sm transition-colors ${
                 active
-                  ? "bg-[#e5eeff] text-[#4648d4] font-bold border-r-4 border-[#4648d4]"
-                  : "text-[#45464d] hover:bg-[#eff4ff]"
+                  ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)] font-bold border-r-4 border-[var(--color-accent)]"
+                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
               }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
@@ -39,7 +63,7 @@ export default function Sidebar({ current, onNavigate }) {
       <div className="px-3">
         <button
           onClick={() => onNavigate("upload")}
-          className="w-full flex items-center justify-center gap-2 bg-[#4648d4] text-white font-heading text-sm font-medium py-2.5 rounded-lg hover:opacity-90 transition"
+          className="w-full flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-accent-contrast)] font-heading text-sm font-medium py-2.5 rounded-lg hover:opacity-90 transition"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           New Project
