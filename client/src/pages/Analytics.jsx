@@ -10,7 +10,7 @@ const CHART_COLORS = {
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
       <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
         {label}
       </p>
@@ -52,7 +52,7 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
           <h2 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">
             Score Distribution
           </h2>
@@ -70,7 +70,7 @@ export default function Analytics() {
           )}
         </div>
 
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
           <h2 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">
             Most Common Matched Skills
           </h2>

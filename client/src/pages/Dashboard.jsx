@@ -3,7 +3,7 @@ import { getJobs } from "../api";
 
 function StatCard({ label, value, sublabel }) {
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
       <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
         {label}
       </p>
@@ -69,7 +69,7 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
         />
       </div>
 
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm overflow-hidden transition-colors">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl overflow-hidden transition-colors">
         <div className="px-5 py-4 border-b border-[var(--color-border)]/60 flex items-center justify-between">
           <h2 className="font-heading text-sm font-semibold text-[var(--color-text)]">Recent Projects</h2>
           <button

@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { uploadCandidates } from "../api";
+import { uploadCandidates, getUploadStatus } from "../api";
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function fileIcon(name) {
   const ext = name.split(".").pop().toLowerCase();
@@ -26,33 +30,55 @@ export default function BulkUpload({ job, onUploaded }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [progress, setProgress] = useState(null); // { done, failed, total }
 
   function addFiles(fileList) {
     setFiles(Array.from(fileList));
+  }
+
+  async function pollUntilDone(candidateIds) {
+    const pending = new Set(candidateIds);
+    let failedCount = 0;
+    while (pending.size > 0) {
+      await sleep(1000);
+      const statuses = await getUploadStatus(job.id);
+      const byId = new Map(statuses.map((s) => [s.id, s.status]));
+      for (const id of Array.from(pending)) {
+        const status = byId.get(id);
+        if (status === "done") pending.delete(id);
+        else if (status === "failed") {
+          pending.delete(id);
+          failedCount += 1;
+        }
+      }
+      setProgress({ done: candidateIds.length - pending.size, failed: failedCount, total: candidateIds.length });
+    }
+    return failedCount;
   }
 
   async function handleUpload() {
     if (files.length === 0) return;
     setError(null);
     setLoading(true);
+    setProgress({ done: 0, failed: 0, total: files.length });
     try {
-      const result = await uploadCandidates(job.id, files);
-      if (result.failures && result.failures.length > 0) {
-        const summary = result.failures.map((f) => `${f.file_name}: ${f.error}`).join("; ");
-        setError(`${result.failures.length} file(s) failed to process — ${summary}`);
-        setLoading(false);
-        return;
+      const { candidates } = await uploadCandidates(job.id, files);
+      const failedCount = await pollUntilDone(candidates.map((c) => c.id));
+      if (failedCount > 0) {
+        setError(`${failedCount} of ${candidates.length} resume(s) failed to process.`);
       }
       onUploaded();
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(false);
+      setProgress(null);
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto px-8 py-10">
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-8 transition-colors">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-8 transition-colors">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-lg bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)]">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -142,6 +168,21 @@ export default function BulkUpload({ job, onUploaded }) {
           </div>
         )}
 
+        {progress && (
+          <div className="mt-4">
+            <div className="w-full h-2 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[var(--color-accent)] transition-all"
+                style={{ width: `${(progress.done / progress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1.5">
+              Processed {progress.done} of {progress.total}
+              {progress.failed > 0 ? ` (${progress.failed} failed)` : ""}
+            </p>
+          </div>
+        )}
+
         {error && (
           <p className="mt-4 text-[var(--color-danger)] text-sm bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2">
             {error}
@@ -154,7 +195,7 @@ export default function BulkUpload({ job, onUploaded }) {
             disabled={loading || files.length === 0}
             className="bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg disabled:opacity-50 transition"
           >
-            {loading ? "Uploading & Scoring..." : "Upload & Score"}
+            {loading ? "Processing..." : "Upload & Score"}
           </button>
           <button
             onClick={() => onUploaded()}

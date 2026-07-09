@@ -49,7 +49,4 @@ app.use((err, req, res, next) => {
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`ResumeMatch API listening on port ${port}`);
-  if (!process.env.APP_PASSWORD) {
-    console.log("APP_PASSWORD not set — API auth is disabled (fine for local dev only).");
-  }
 });

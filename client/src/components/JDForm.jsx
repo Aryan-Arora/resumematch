@@ -1,18 +1,34 @@
-import { useState } from "react";
-import { createJob } from "../api";
+import { useEffect, useState } from "react";
+import { createJob, getJobDomains } from "../api";
+
+const DOMAIN_LABELS = {
+  tech: "Tech",
+  service_delivery: "Service Delivery",
+  sales: "Sales",
+  marketing: "Marketing",
+  finance_accounting: "Finance & Accounting",
+  hr_recruiting: "HR & Recruiting",
+  general: "General (auto-extract keywords)",
+};
 
 export default function JDForm({ onJobCreated }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [domain, setDomain] = useState("");
+  const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getJobDomains().then(setDomains).catch(() => {});
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const job = await createJob(title, description);
+      const job = await createJob(title, description, domain);
       onJobCreated(job);
     } catch (err) {
       setError(err.message);
@@ -23,7 +39,7 @@ export default function JDForm({ onJobCreated }) {
 
   return (
     <div className="max-w-2xl mx-auto px-8 py-10">
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-8 transition-colors">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-8 transition-colors">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-lg bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)]">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -59,6 +75,23 @@ export default function JDForm({ onJobCreated }) {
               placeholder="Paste the full job description here..."
               required
             />
+          </div>
+          <div>
+            <label className="block font-heading text-sm font-medium text-[var(--color-text-muted)] mb-1.5">
+              Skill Domain
+            </label>
+            <select
+              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+            >
+              <option value="">Auto-detect from description</option>
+              {domains.map((d) => (
+                <option key={d} value={d}>
+                  {DOMAIN_LABELS[d] || d}
+                </option>
+              ))}
+            </select>
           </div>
           {error && (
             <p className="text-[var(--color-danger)] text-sm bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2">

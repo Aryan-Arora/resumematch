@@ -20,7 +20,6 @@ Fill in `.env`:
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — from your Supabase project settings (Project Settings → API). The service role key bypasses RLS, so keep it server-side only.
 - `PORT` — defaults to `4000` if unset.
-- `APP_PASSWORD` — optional. If set, every API request must include it in the `x-api-key` header, and the frontend will show a password gate. Leave empty for local dev.
 - `CORS_ORIGIN` — comma-separated list of origins allowed to call the API. Defaults to the local Vite dev ports.
 
 Your Supabase project needs the `pgvector` extension enabled and the `jobs` / `candidates` tables + `resumes` storage bucket created — see the SQL migrations that were run when this project was set up (ask in the conversation history, or recreate from `server/routes/*.js` which shows the expected schema).
@@ -42,18 +41,27 @@ cp .env.example .env
 npm run dev
 ```
 
-`client/.env` sets `VITE_API_URL` — defaults to `http://localhost:4100/api` in the example file; point it at wherever your backend actually runs.
+`client/.env` sets:
 
-### 3. Verify the pipeline standalone (optional)
+- `VITE_API_URL` — defaults to `http://localhost:4100/api`; point it at wherever your backend actually runs.
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — same Supabase project as the backend, but the **anon** key (safe to expose client-side), used only for login/signup. From Project Settings → API.
+
+### 3. Run tests
 
 ```bash
-npm run test:pipeline
+npm test
 ```
 
-Runs one hardcoded JD/resume pair through parsing → embedding → skill matching → scoring and prints the result. This is a manual smoke-check script, not an automated test suite — there is no `npm test` with assertions yet.
+Vitest suite covering skill extraction, scoring, the upload queue, domain classification, and full-pipeline integration tests (real embeddings, no mocks). `npm run test:pipeline` also still exists as a manual one-off smoke script.
+
+## Auth & multi-tenancy
+
+Each HR user signs up/logs in with their work email (Supabase Auth, email + password). A user's "company" is derived from their email domain — everyone `@acmecorp.com` shares one workspace and only sees jobs/candidates created by someone with that same domain. This means personal email domains (gmail.com, outlook.com, etc.) all share one workspace, which is fine for local testing but not for real multi-company use — use real company emails to sign up.
+
+Enforcement is at the Express layer (every query filtered by the requester's email domain) plus Postgres RLS policies on `jobs`/`candidates` as defense-in-depth (only relevant if something ever queries Supabase directly with a user JWT instead of through this API).
 
 ## Notes
 
 - First run downloads the embedding model (`all-MiniLM-L6-v2`) locally — expect a slower first request.
 - Resume uploads: max 100 files per batch, 10MB per file. Unparseable files (scanned images, corrupted PDFs) are flagged, not silently scored as 0.
-- No authentication beyond the optional shared `APP_PASSWORD` gate — do not deploy this publicly without setting one, since the backend uses the Supabase service role key and has no other access control.
+- Every API route (except `/api/health`) requires a valid Supabase session token — there is no way to disable auth for local dev anymore, sign up with any email to get started.

@@ -7,8 +7,17 @@ import { supabase } from "../supabaseClient.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, compareSkills } from "../services/skillMatch.js";
-import { findImpliedSkills } from "../services/semanticSkillMatch.js";
+import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
+import { classifyDomain, getDomainList } from "../services/domainClassify.js";
+import { extractKeyphrases } from "../services/keyphraseExtract.js";
+import { enqueue } from "../services/uploadQueue.js";
+
+function domainTaxonomy(job) {
+  return job.jd_domain === "general"
+    ? { keyphrases: job.jd_skills }
+    : taxonomy[job.jd_domain] || taxonomy.tech;
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const taxonomy = JSON.parse(
@@ -30,13 +39,15 @@ const router = Router();
 router.get("/jobs", async (req, res) => {
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
-    .select("id, title, description, jd_skills, created_at")
+    .select("id, title, description, jd_skills, jd_domain, created_at")
+    .eq("company_domain", req.companyDomain)
     .order("created_at", { ascending: false });
   if (jobsError) return res.status(500).json({ error: jobsError.message });
 
   const { data: candidates, error: candidatesError } = await supabase
     .from("candidates")
-    .select("job_id, final_score, unparseable");
+    .select("job_id, final_score, unparseable")
+    .eq("company_domain", req.companyDomain);
   if (candidatesError) return res.status(500).json({ error: candidatesError.message });
 
   const statsByJob = new Map();
@@ -62,14 +73,42 @@ router.get("/jobs", async (req, res) => {
   res.json(result);
 });
 
+router.get("/jobs/domains", (req, res) => {
+  res.json(getDomainList());
+});
+
 router.post("/jobs", async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, domain } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
   }
 
   const jdEmbedding = await getEmbedding(description);
-  const jdSkills = extractSkills(description, taxonomy);
+
+  let jdDomain;
+  let jdSkills;
+  if (domain === "general") {
+    jdDomain = "general";
+    jdSkills = extractKeyphrases(description, { minWordsPerPhrase: 2 });
+  } else if (domain && taxonomy[domain]) {
+    jdDomain = domain;
+    jdSkills = extractSkills(description, taxonomy[jdDomain]);
+  } else {
+    // Auto-classify, then verify the chosen domain's taxonomy actually finds
+    // anything in the JD — embedding similarity alone isn't reliable enough
+    // at the margin (a terse tech JD can score lower than an unrelated JD).
+    // Zero literal matches means the domain doesn't fit; fall back to
+    // extracting the JD's own keyphrases instead of forcing a bad taxonomy.
+    const candidateDomain = await classifyDomain(jdEmbedding);
+    const candidateSkills = extractSkills(description, taxonomy[candidateDomain]);
+    if (candidateSkills.length === 0) {
+      jdDomain = "general";
+      jdSkills = extractKeyphrases(description, { minWordsPerPhrase: 2 });
+    } else {
+      jdDomain = candidateDomain;
+      jdSkills = candidateSkills;
+    }
+  }
 
   const { data, error } = await supabase
     .from("jobs")
@@ -78,6 +117,8 @@ router.post("/jobs", async (req, res) => {
       description,
       jd_embedding: jdEmbedding,
       jd_skills: jdSkills,
+      jd_domain: jdDomain,
+      company_domain: req.companyDomain,
     })
     .select()
     .single();
@@ -85,6 +126,84 @@ router.post("/jobs", async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
 });
+
+async function processCandidate(job, candidateId, file, skillEmbeddingCache) {
+  try {
+    const ext = extname(file.originalname).toLowerCase();
+    let parsed;
+    if (ext === ".pdf") {
+      parsed = await parsePdf(file.buffer);
+    } else if (ext === ".docx") {
+      parsed = await parseDocx(file.buffer);
+    } else {
+      parsed = { text: "", unparseable: true };
+    }
+
+    if (parsed.unparseable) {
+      const { error } = await supabase
+        .from("candidates")
+        .update({ unparseable: true, status: "done" })
+        .eq("id", candidateId);
+      if (error) throw error;
+      return;
+    }
+
+    const storagePath = `${job.id}/${Date.now()}-${file.originalname}`;
+    const { error: uploadError } = await supabase.storage
+      .from("resumes")
+      .upload(storagePath, file.buffer, { contentType: file.mimetype });
+    if (uploadError) throw uploadError;
+
+    const resumeEmbedding = await getEmbedding(parsed.text);
+    const semanticScore = cosineSimilarity(job.jd_embedding, resumeEmbedding);
+
+    const resumeSkills = extractSkills(parsed.text, domainTaxonomy(job));
+    const { matched, missing } = compareSkills(job.jd_skills, resumeSkills);
+
+    const { impliedSkills, evidence } = await findImpliedSkills(
+      missing,
+      parsed.text,
+      skillEmbeddingCache,
+      { threshold: job.jd_domain === "general" ? KEYPHRASE_MATCH_THRESHOLD : undefined }
+    );
+    const stillMissing = missing.filter((s) => !impliedSkills.includes(s));
+
+    const skillScore =
+      job.jd_skills.length > 0
+        ? (matched.length + impliedSkills.length) / job.jd_skills.length
+        : 0;
+    const finalScore = computeFinalScore(semanticScore, skillScore);
+
+    const { error } = await supabase
+      .from("candidates")
+      .update({
+        file_path: storagePath,
+        resume_text: parsed.text,
+        resume_embedding: resumeEmbedding,
+        matched_skills: matched,
+        missing_skills: stillMissing,
+        implied_skills: impliedSkills,
+        implied_skill_evidence: evidence,
+        semantic_score: semanticScore,
+        skill_score: skillScore,
+        final_score: finalScore,
+        unparseable: false,
+        status: "done",
+      })
+      .eq("id", candidateId);
+
+    if (error) {
+      // Update failed after the file was already uploaded to storage — clean up the orphaned file.
+      await supabase.storage.from("resumes").remove([storagePath]);
+      throw error;
+    }
+  } catch (err) {
+    await supabase
+      .from("candidates")
+      .update({ status: "failed", error_message: err.message || String(err) })
+      .eq("id", candidateId);
+  }
+}
 
 router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) => {
   const jobId = req.params.id;
@@ -97,97 +216,44 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
     .from("jobs")
     .select("*")
     .eq("id", jobId)
+    .eq("company_domain", req.companyDomain)
     .single();
   if (jobError || !job) return res.status(404).json({ error: "job not found" });
 
-  const results = [];
-  const failures = [];
-  const skillEmbeddingCache = new Map();
-
+  // Create a placeholder row per file up front so the client can poll status
+  // immediately, then respond without waiting for parsing/embedding to finish.
+  const queued = [];
   for (const file of files) {
-    try {
-      const ext = extname(file.originalname).toLowerCase();
-      let parsed;
-      if (ext === ".pdf") {
-        parsed = await parsePdf(file.buffer);
-      } else if (ext === ".docx") {
-        parsed = await parseDocx(file.buffer);
-      } else {
-        parsed = { text: "", unparseable: true };
-      }
-
-      if (parsed.unparseable) {
-        const { data, error } = await supabase
-          .from("candidates")
-          .insert({
-            job_id: jobId,
-            file_name: file.originalname,
-            unparseable: true,
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        results.push(data);
-        continue;
-      }
-
-      const storagePath = `${jobId}/${Date.now()}-${file.originalname}`;
-      const { error: uploadError } = await supabase.storage
-        .from("resumes")
-        .upload(storagePath, file.buffer, { contentType: file.mimetype });
-      if (uploadError) throw uploadError;
-
-      const resumeEmbedding = await getEmbedding(parsed.text);
-      const semanticScore = cosineSimilarity(job.jd_embedding, resumeEmbedding);
-
-      const resumeSkills = extractSkills(parsed.text, taxonomy);
-      const { matched, missing } = compareSkills(job.jd_skills, resumeSkills);
-
-      const { impliedSkills, evidence } = await findImpliedSkills(
-        missing,
-        parsed.text,
-        skillEmbeddingCache
-      );
-      const stillMissing = missing.filter((s) => !impliedSkills.includes(s));
-
-      const skillScore =
-        job.jd_skills.length > 0
-          ? (matched.length + impliedSkills.length) / job.jd_skills.length
-          : 0;
-      const finalScore = computeFinalScore(semanticScore, skillScore);
-
-      const { data, error } = await supabase
-        .from("candidates")
-        .insert({
-          job_id: jobId,
-          file_name: file.originalname,
-          file_path: storagePath,
-          resume_text: parsed.text,
-          resume_embedding: resumeEmbedding,
-          matched_skills: matched,
-          missing_skills: stillMissing,
-          implied_skills: impliedSkills,
-          implied_skill_evidence: evidence,
-          semantic_score: semanticScore,
-          skill_score: skillScore,
-          final_score: finalScore,
-          unparseable: false,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        // Insert failed after the file was already uploaded to storage — clean up the orphaned file.
-        await supabase.storage.from("resumes").remove([storagePath]);
-        throw error;
-      }
-      results.push(data);
-    } catch (err) {
-      failures.push({ file_name: file.originalname, error: err.message || String(err) });
-    }
+    const { data, error } = await supabase
+      .from("candidates")
+      .insert({
+        job_id: jobId,
+        file_name: file.originalname,
+        status: "queued",
+        company_domain: req.companyDomain,
+      })
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    queued.push({ candidate: data, file });
   }
 
-  res.status(201).json({ candidates: results, failures });
+  res.status(202).json({ candidates: queued.map((q) => q.candidate) });
+
+  const skillEmbeddingCache = new Map();
+  for (const { candidate, file } of queued) {
+    enqueue(() => processCandidate(job, candidate.id, file, skillEmbeddingCache));
+  }
+});
+
+router.get("/jobs/:id/candidates/status", async (req, res) => {
+  const { data, error } = await supabase
+    .from("candidates")
+    .select("id, status")
+    .eq("job_id", req.params.id)
+    .eq("company_domain", req.companyDomain);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 router.get("/jobs/:id/candidates", async (req, res) => {
@@ -195,6 +261,7 @@ router.get("/jobs/:id/candidates", async (req, res) => {
     .from("candidates")
     .select("*")
     .eq("job_id", req.params.id)
+    .eq("company_domain", req.companyDomain)
     .order("final_score", { ascending: false, nullsFirst: false });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -206,6 +273,7 @@ router.get("/jobs/:id/export", async (req, res) => {
     .from("candidates")
     .select("*")
     .eq("job_id", req.params.id)
+    .eq("company_domain", req.companyDomain)
     .order("final_score", { ascending: false, nullsFirst: false });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -253,7 +321,8 @@ router.delete("/jobs/:id", async (req, res) => {
   const { error, count } = await supabase
     .from("jobs")
     .delete({ count: "exact" })
-    .eq("id", jobId);
+    .eq("id", jobId)
+    .eq("company_domain", req.companyDomain);
   if (error) return res.status(500).json({ error: error.message });
   if (count === 0) return res.status(404).json({ error: "job not found" });
 

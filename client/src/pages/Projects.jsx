@@ -55,7 +55,7 @@ export default function Projects({ onOpenJob, onNavigate }) {
               tabIndex={0}
               onClick={() => onOpenJob(job)}
               onKeyDown={(e) => e.key === "Enter" && onOpenJob(job)}
-              className="relative text-left bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 hover:border-[var(--color-accent)]/50 hover:shadow-md transition cursor-pointer"
+              className="relative text-left bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 hover:border-[var(--color-accent)]/50 hover:shadow-md transition cursor-pointer"
             >
               <button
                 onClick={(e) => handleDelete(e, job)}

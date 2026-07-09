@@ -1,33 +1,90 @@
 {
-  "languages": [
-    "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Go", "Rust",
-    "Ruby", "PHP", "Swift", "Kotlin", "Scala", "R", "SQL", "Bash", "C",
-    "Objective-C", "Dart", "Perl", "MATLAB", "Elixir", "Haskell"
-  ],
-  "frameworks": [
-    "React", "Angular", "Vue.js", "Next.js", "Node.js", "Express",
-    "Django", "Flask", "FastAPI", "Spring Boot", "Ruby on Rails",
-    ".NET", "ASP.NET", "Laravel", "Svelte", "NestJS", "GraphQL",
-    "Redux", "jQuery", "Tailwind CSS", "Bootstrap", "Vite", "Electron",
-    "React Native", "Flutter"
-  ],
-  "cloud": [
-    "AWS", "Azure", "Google Cloud Platform", "Docker", "Kubernetes",
-    "Terraform", "CloudFormation", "Serverless", "Lambda", "EC2", "S3",
-    "Heroku", "Vercel", "Netlify", "Railway", "DigitalOcean", "Ansible",
-    "Nginx", "CI/CD", "Jenkins", "GitHub Actions", "CircleCI"
-  ],
-  "databases": [
-    "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "Supabase",
-    "Firebase", "DynamoDB", "Elasticsearch", "Cassandra", "MariaDB",
-    "Oracle", "Microsoft SQL Server", "Neo4j", "pgvector"
-  ],
-  "tools": [
-    "Git", "GitHub", "GitLab", "Jira", "Docker Compose", "Postman",
-    "Webpack", "Babel", "ESLint", "Jest", "Cypress", "Selenium",
-    "Figma", "VS Code", "Linux", "npm", "Yarn", "pnpm", "REST APIs",
-    "Microservices", "Agile", "Scrum", "TDD", "Machine Learning",
-    "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy",
-    "Kafka", "RabbitMQ", "gRPC", "OAuth", "JWT", "WebSockets"
-  ]
+  "tech": {
+    "languages": [
+      "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Go", "Rust",
+      "Ruby", "PHP", "Swift", "Kotlin", "Scala", "R", "SQL", "Bash", "C",
+      "Objective-C", "Dart", "Perl", "MATLAB", "Elixir", "Haskell"
+    ],
+    "frameworks": [
+      "React", "Angular", "Vue.js", "Next.js", "Node.js", "Express",
+      "Django", "Flask", "FastAPI", "Spring Boot", "Ruby on Rails",
+      ".NET", "ASP.NET", "Laravel", "Svelte", "NestJS", "GraphQL",
+      "Redux", "jQuery", "Tailwind CSS", "Bootstrap", "Vite", "Electron",
+      "React Native", "Flutter"
+    ],
+    "cloud": [
+      "AWS", "Azure", "Google Cloud Platform", "Docker", "Kubernetes",
+      "Terraform", "CloudFormation", "Serverless", "Lambda", "EC2", "S3",
+      "Heroku", "Vercel", "Netlify", "Railway", "DigitalOcean", "Ansible",
+      "Nginx", "CI/CD", "Jenkins", "GitHub Actions", "CircleCI"
+    ],
+    "databases": [
+      "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "Supabase",
+      "Firebase", "DynamoDB", "Elasticsearch", "Cassandra", "MariaDB",
+      "Oracle", "Microsoft SQL Server", "Neo4j", "pgvector"
+    ],
+    "tools": [
+      "Git", "GitHub", "GitLab", "Jira", "Docker Compose", "Postman",
+      "Webpack", "Babel", "ESLint", "Jest", "Cypress", "Selenium",
+      "Figma", "VS Code", "Linux", "npm", "Yarn", "pnpm", "REST APIs",
+      "Microservices", "Agile", "Scrum", "TDD", "Machine Learning",
+      "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy",
+      "Kafka", "RabbitMQ", "gRPC", "OAuth", "JWT", "WebSockets"
+    ]
+  },
+  "service_delivery": {
+    "certifications": ["ITIL", "ITIL v4", "PMP", "Six Sigma", "Lean Six Sigma", "PRINCE2"],
+    "processes": [
+      "SLA management", "incident management", "problem management",
+      "change management", "escalation management", "vendor management",
+      "root cause analysis", "capacity planning", "service level agreements",
+      "on-call rotation", "runbook", "post-mortem"
+    ],
+    "tools": [
+      "ServiceNow", "Zendesk", "Jira Service Management", "Freshdesk",
+      "PagerDuty", "Salesforce Service Cloud", "Remedy"
+    ],
+    "metrics": ["KPI reporting", "CSAT", "NPS", "SLA compliance", "MTTR", "uptime reporting"]
+  },
+  "sales": {
+    "processes": [
+      "pipeline management", "lead generation", "prospecting", "cold calling",
+      "account management", "contract negotiation", "quota attainment",
+      "territory management", "upselling", "cross-selling", "forecasting"
+    ],
+    "tools": [
+      "Salesforce", "HubSpot", "Outreach", "Salesloft", "ZoomInfo",
+      "LinkedIn Sales Navigator", "Gong", "Pipedrive"
+    ],
+    "metrics": ["quota", "ARR", "MRR", "win rate", "deal size", "sales cycle"]
+  },
+  "marketing": {
+    "processes": [
+      "campaign management", "content strategy", "SEO", "SEM", "brand strategy",
+      "market research", "A/B testing", "lead nurturing", "copywriting",
+      "social media strategy", "email marketing"
+    ],
+    "tools": [
+      "Google Analytics", "Google Ads", "HubSpot", "Mailchimp", "Hootsuite",
+      "SEMrush", "Ahrefs", "Adobe Creative Suite", "Canva", "Marketo"
+    ],
+    "metrics": ["CAC", "conversion rate", "engagement rate", "ROAS", "CTR"]
+  },
+  "finance_accounting": {
+    "certifications": ["CPA", "CFA", "CMA", "ACCA"],
+    "processes": [
+      "financial reporting", "budgeting", "forecasting", "accounts payable",
+      "accounts receivable", "reconciliation", "audit", "tax compliance",
+      "GAAP", "IFRS", "financial modeling", "variance analysis"
+    ],
+    "tools": ["QuickBooks", "SAP", "NetSuite", "Excel", "Oracle Financials", "Xero"]
+  },
+  "hr_recruiting": {
+    "processes": [
+      "talent acquisition", "onboarding", "employee relations", "performance management",
+      "compensation and benefits", "HRIS administration", "workforce planning",
+      "diversity and inclusion", "conflict resolution", "policy development"
+    ],
+    "tools": ["Workday", "ADP", "Greenhouse", "Lever", "BambooHR", "SuccessFactors"]
+  }
 }

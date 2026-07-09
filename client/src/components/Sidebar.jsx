@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTheme, toggleTheme } from "../theme";
+import { useSession, signOut } from "../auth";
+import Logo from "./Logo";
 
 const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard" },
@@ -10,6 +12,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar({ current, onNavigate }) {
   const [theme, setThemeState] = useState("light");
+  const session = useSession();
 
   useEffect(() => {
     setThemeState(getTheme());
@@ -24,9 +27,7 @@ export default function Sidebar({ current, onNavigate }) {
       <div className="px-6 mb-8 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-[var(--color-accent)] flex items-center justify-center text-[var(--color-accent-contrast)] font-bold text-sm">
-              R
-            </div>
+            <Logo size={32} className="rounded-[12px] flex-shrink-0" />
             <h1 className="font-heading text-lg font-bold text-[var(--color-text)]">ResumeMatch</h1>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">HR Candidate Screening</p>
@@ -60,7 +61,7 @@ export default function Sidebar({ current, onNavigate }) {
           );
         })}
       </nav>
-      <div className="px-3">
+      <div className="px-3 space-y-2">
         <button
           onClick={() => onNavigate("upload")}
           className="w-full flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-accent-contrast)] font-heading text-sm font-medium py-2.5 rounded-lg hover:opacity-90 transition"
@@ -68,6 +69,23 @@ export default function Sidebar({ current, onNavigate }) {
           <span className="material-symbols-outlined text-[18px]">add</span>
           New Project
         </button>
+        {session?.user?.email && (
+          <div className="flex items-center justify-between px-1 pt-1">
+            <span
+              className="text-xs text-[var(--color-text-faint)] truncate"
+              title={session.user.email}
+            >
+              {session.user.email}
+            </span>
+            <button
+              onClick={() => signOut()}
+              title="Sign out"
+              className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] transition flex-shrink-0"
+            >
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

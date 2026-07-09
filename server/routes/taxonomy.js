@@ -11,7 +11,9 @@ const taxonomy = JSON.parse(
 const router = Router();
 
 router.get("/skill-taxonomy", (req, res) => {
-  res.json(taxonomy);
+  const { domain } = req.query;
+  if (domain === "general") return res.json({}); // no curated categories to bucket by
+  res.json(domain && taxonomy[domain] ? taxonomy[domain] : taxonomy.tech);
 });
 
 export default router;

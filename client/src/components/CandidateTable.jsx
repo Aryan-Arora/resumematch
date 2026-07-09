@@ -1,11 +1,21 @@
 import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
-import { getCandidates, deleteCandidate, downloadExport, getSkillTaxonomy } from "../api";
+import { getCandidates, deleteCandidate, downloadExport, getSkillTaxonomy, viewResume } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
 
 function formatScore(score) {
   return score === null || score === undefined ? "—" : Number(score).toFixed(2);
 }
+
+const DOMAIN_LABELS = {
+  tech: "Tech",
+  service_delivery: "Service Delivery",
+  sales: "Sales",
+  marketing: "Marketing",
+  finance_accounting: "Finance & Accounting",
+  hr_recruiting: "HR & Recruiting",
+  general: "General (auto-extracted)",
+};
 
 function ScoreRing({ score }) {
   if (score === null || score === undefined) {
@@ -37,7 +47,7 @@ export default function CandidateTable({ job, onAddMore }) {
     try {
       const [candidateData, taxonomyData] = await Promise.all([
         getCandidates(job.id),
-        getSkillTaxonomy(),
+        getSkillTaxonomy(job.jd_domain),
       ]);
       setCandidates(candidateData);
       setTaxonomy(taxonomyData);
@@ -102,7 +112,12 @@ export default function CandidateTable({ job, onAddMore }) {
     <div className="max-w-6xl mx-auto px-8 py-10">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)]">{job.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)]">{job.title}</h1>
+            <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)] bg-[var(--color-accent-soft)] rounded-full px-2 py-1">
+              {DOMAIN_LABELS[job.jd_domain] || "Tech"}
+            </span>
+          </div>
           <p className="text-[var(--color-text-muted)] text-sm mt-0.5">
             {filteredCandidates.length} of {candidates.length} candidate(s)
           </p>
@@ -130,7 +145,7 @@ export default function CandidateTable({ job, onAddMore }) {
               No candidates match the current filters.
             </p>
           ) : (
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm overflow-x-auto transition-colors">
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl overflow-x-auto transition-colors">
               <table className="w-full min-w-[760px] border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
@@ -175,7 +190,20 @@ export default function CandidateTable({ job, onAddMore }) {
                           {formatScore(c.skill_score)}
                         </td>
                         <td className="py-3 px-5">
-                          {c.unparseable ? (
+                          {c.status === "queued" ? (
+                            <span className="inline-flex items-center gap-1.5 text-[var(--color-text-muted)] text-xs font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-faint)] animate-pulse" />
+                              Processing
+                            </span>
+                          ) : c.status === "failed" ? (
+                            <span
+                              className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium"
+                              title={c.error_message || ""}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" />
+                              Failed
+                            </span>
+                          ) : c.unparseable ? (
                             <span className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium">
                               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" />
                               Unparseable
@@ -188,15 +216,28 @@ export default function CandidateTable({ job, onAddMore }) {
                           )}
                         </td>
                         <td className="py-3 px-5">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(c.id, c.file_name);
-                            }}
-                            className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] text-xs font-medium transition"
-                          >
-                            Remove
-                          </button>
+                          <div className="flex items-center gap-3">
+                            {!c.unparseable && c.file_path && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  viewResume(c.id);
+                                }}
+                                className="text-[var(--color-accent)] hover:underline text-xs font-medium transition"
+                              >
+                                View
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(c.id, c.file_name);
+                              }}
+                              className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] text-xs font-medium transition"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </td>
                       </tr>
                       {expandedId === c.id && (
@@ -330,7 +371,7 @@ export default function CandidateTable({ job, onAddMore }) {
             </div>
           </div>
 
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl shadow-sm p-5 transition-colors">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
             <h4 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">Filters</h4>
             <div className="mb-4">
               <label className="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">

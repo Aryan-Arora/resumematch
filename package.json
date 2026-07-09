@@ -5,6 +5,7 @@
   "type": "module",
   "description": "HR candidate screening tool: JD-to-resume semantic matching with explainable skill-gap analysis",
   "scripts": {
+    "test": "vitest run",
     "test:pipeline": "node server/test/pipeline.test.js",
     "dev": "node server/index.js"
   },
@@ -17,5 +18,8 @@
     "mammoth": "^1.8.0",
     "multer": "^2.2.0",
     "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }

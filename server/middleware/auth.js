@@ -1,12 +1,14 @@
-export function requireAuth(req, res, next) {
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) {
-    // No password configured (e.g. local dev) — auth is disabled.
-    return next();
-  }
-  const provided = req.header("x-api-key");
-  if (provided !== expected) {
-    return res.status(401).json({ error: "unauthorized" });
-  }
+import { supabase } from "../supabaseClient.js";
+
+export async function requireAuth(req, res, next) {
+  const authHeader = req.header("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) return res.status(401).json({ error: "unauthorized" });
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user?.email) return res.status(401).json({ error: "unauthorized" });
+
+  req.userEmail = data.user.email;
+  req.companyDomain = data.user.email.split("@")[1].toLowerCase();
   next();
 }

@@ -10,6 +10,15 @@ import { getPreciseEmbedding, cosineSimilarity } from "./embedding.js";
 // still fall short — this is a deliberate precision-over-recall choice.
 const SEMANTIC_MATCH_THRESHOLD = 0.5;
 
+// Longer JD-derived keyphrases (from keyphraseExtract.js, used for the
+// "general" domain fallback) score systematically lower than short taxonomy
+// terms even for genuine paraphrase matches — averaging more tokens dilutes
+// the embedding. Calibrated against a real paraphrased resume: an unrelated
+// resume topped out at 0.32 against public-speaking phrases, while genuine
+// paraphrased matches ("audience engagement" / "stage presence") landed
+// 0.42-0.54. 0.42 keeps a comfortable margin above the false-positive ceiling.
+const KEYPHRASE_MATCH_THRESHOLD = 0.42;
+
 // Minimum word count for a resume line to be considered — drops headers,
 // names, and section titles that produce noisy, generically-similar embeddings.
 const MIN_CHUNK_WORDS = 6;
@@ -34,9 +43,16 @@ function skillEmbeddingPhrase(skill) {
   return `professional experience using ${expanded}`;
 }
 
+export { KEYPHRASE_MATCH_THRESHOLD };
+
 export function chunkResumeText(text) {
+  // Split on newlines first, then further split each block into sentences —
+  // a resume written as continuous prose (no line breaks) would otherwise
+  // collapse into one giant chunk, diluting the embedding for any single
+  // skill mention. A no-op for already bullet/line-per-fact resumes.
   const lines = text
     .split(/\n+/)
+    .flatMap((block) => block.split(/(?<=[.!?])\s+(?=[A-Z])/))
     .map((line) => line.trim())
     .filter((line) => line.split(/\s+/).filter(Boolean).length >= MIN_CHUNK_WORDS);
 
@@ -53,9 +69,11 @@ export function chunkResumeText(text) {
  * @param missingSkills - skills required by the JD but not literally matched
  * @param resumeText - full extracted resume text
  * @param skillEmbeddingCache - Map<skill, embedding> reused across a batch upload
+ * @param options.threshold - overrides SEMANTIC_MATCH_THRESHOLD (use KEYPHRASE_MATCH_THRESHOLD for JD-derived phrases)
  * @returns { impliedSkills: string[], evidence: Record<string, string> }
  */
-export async function findImpliedSkills(missingSkills, resumeText, skillEmbeddingCache) {
+export async function findImpliedSkills(missingSkills, resumeText, skillEmbeddingCache, options = {}) {
+  const threshold = options.threshold ?? SEMANTIC_MATCH_THRESHOLD;
   if (missingSkills.length === 0) {
     return { impliedSkills: [], evidence: {} };
   }
@@ -90,7 +108,7 @@ export async function findImpliedSkills(missingSkills, resumeText, skillEmbeddin
       }
     }
 
-    if (bestSimilarity >= SEMANTIC_MATCH_THRESHOLD) {
+    if (bestSimilarity >= threshold) {
       impliedSkills.push(skill);
       evidence[skill] = bestChunk;
     }
