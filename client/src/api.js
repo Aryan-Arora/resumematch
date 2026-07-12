@@ -84,6 +84,17 @@ export async function downloadExport(jobId, jobTitle) {
   URL.revokeObjectURL(url);
 }
 
+export async function viewComplianceNotice(jobId, semanticWeight) {
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/compliance-notice?semanticWeight=${semanticWeight}`, {
+    headers: await authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Compliance notice failed with status ${res.status}`);
+  const html = await res.text();
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export async function getSkillTaxonomy(domain) {
   const qs = domain ? `?domain=${encodeURIComponent(domain)}` : "";
   return fetch(`${API_BASE}/skill-taxonomy${qs}`, { headers: await authHeaders() }).then(handle);

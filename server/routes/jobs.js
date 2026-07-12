@@ -12,6 +12,7 @@ import { computeFinalScore } from "../services/scoring.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { enqueue } from "../services/uploadQueue.js";
+import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -317,6 +318,21 @@ router.get("/jobs/:id/candidates", async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+router.get("/jobs/:id/compliance-notice", async (req, res) => {
+  const { data: job, error } = await supabase
+    .from("jobs")
+    .select("*")
+    .eq("id", req.params.id)
+    .eq("company_domain", req.companyDomain)
+    .single();
+  if (error || !job) return res.status(404).json({ error: "job not found" });
+
+  const semanticWeight = Number(req.query.semanticWeight) || 60;
+  const html = generateComplianceNoticeHtml(job, semanticWeight);
+  res.setHeader("Content-Type", "text/html");
+  res.send(html);
 });
 
 router.get("/jobs/:id/export", async (req, res) => {

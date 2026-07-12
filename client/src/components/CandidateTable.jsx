@@ -1,5 +1,12 @@
 import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
-import { getCandidates, deleteCandidate, downloadExport, getSkillTaxonomy, viewResume } from "../api";
+import {
+  getCandidates,
+  deleteCandidate,
+  downloadExport,
+  getSkillTaxonomy,
+  viewResume,
+  viewComplianceNotice,
+} from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
 
@@ -128,6 +135,13 @@ export default function CandidateTable({ job, onAddMore }) {
             className="border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
           >
             Add More Resumes
+          </button>
+          <button
+            onClick={() => viewComplianceNotice(job.id, semanticWeight)}
+            title="Auto-generated AEDT candidate disclosure notice for this role — have counsel review before use"
+            className="border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
+          >
+            Compliance Notice
           </button>
           <button
             onClick={() => downloadExport(job.id, job.title)}
