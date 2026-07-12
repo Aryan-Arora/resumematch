@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import multer from "multer";
-import jobsRouter from "./routes/jobs.js";
+import * as Sentry from "@sentry/node";
+import jobsRouter, { recoverStuckCandidates } from "./routes/jobs.js";
 import candidatesRouter from "./routes/candidates.js";
 import taxonomyRouter from "./routes/taxonomy.js";
 import analyticsRouter from "./routes/analytics.js";
@@ -10,6 +11,13 @@ import authRouter from "./routes/auth.js";
 import { requireAuth } from "./middleware/auth.js";
 
 dotenv.config();
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
+  console.log("Sentry error monitoring enabled.");
+} else {
+  console.log("SENTRY_DSN not set — error monitoring disabled (fine for local dev only).");
+}
 
 const app = express();
 
@@ -32,6 +40,10 @@ app.use("/api", requireAuth, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);
 app.use("/api", requireAuth, analyticsRouter);
 
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
@@ -43,10 +55,12 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: err.message });
   }
   console.error(err);
+  if (process.env.SENTRY_DSN) Sentry.captureException(err);
   res.status(500).json({ error: "Internal server error" });
 });
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`ResumeMatch API listening on port ${port}`);
+  recoverStuckCandidates();
 });

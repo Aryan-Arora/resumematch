@@ -60,6 +60,13 @@ Each HR user signs up/logs in with their work email (Supabase Auth, email + pass
 
 Enforcement is at the Express layer (every query filtered by the requester's email domain) plus Postgres RLS policies on `jobs`/`candidates` as defense-in-depth (only relevant if something ever queries Supabase directly with a user JWT instead of through this API).
 
+## Reliability & operations
+
+- **Upload durability**: resumes are uploaded to Supabase Storage synchronously, before the candidate row is even created — parsing/scoring is what's queued in the background, not the upload itself. If the server crashes or restarts mid-processing, a recovery sweep on boot re-queues anything left `status: "queued"`, re-downloading the file from storage rather than relying on the original in-memory request.
+- **Error monitoring**: set `SENTRY_DSN` to enable Sentry error reporting. Unset by default — errors only go to `console.error` locally.
+- **Email delivery**: Supabase's default auth email sender is rate-limited and meant for development only. Before real sign-ups, configure a real SMTP provider (Resend, Postmark, SES, etc.) under Supabase Dashboard → Authentication → Emails → SMTP Settings.
+- **Data retention**: see [`docs/DATA_RETENTION.md`](docs/DATA_RETENTION.md) for what's stored, how deletion works today, and what's still needed before handling real candidate data at scale.
+
 ## Notes
 
 - First run downloads the embedding model (`all-MiniLM-L6-v2`) locally — expect a slower first request.

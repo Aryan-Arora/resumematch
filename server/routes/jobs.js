@@ -127,14 +127,25 @@ router.post("/jobs", async (req, res) => {
   res.status(201).json(data);
 });
 
-async function processCandidate(job, candidateId, file, skillEmbeddingCache) {
+async function downloadFromStorage(storagePath) {
+  const { data, error } = await supabase.storage.from("resumes").download(storagePath);
+  if (error) throw error;
+  return Buffer.from(await data.arrayBuffer());
+}
+
+// Takes a storage path, not a raw file buffer — the file is uploaded to
+// storage *before* this is ever queued (see the upload route below), so a
+// server restart mid-processing can always re-download and retry instead of
+// losing the resume along with the in-memory request that received it.
+async function processCandidate(job, candidateId, storagePath, fileName, skillEmbeddingCache) {
   try {
-    const ext = extname(file.originalname).toLowerCase();
+    const ext = extname(fileName).toLowerCase();
+    const buffer = await downloadFromStorage(storagePath);
     let parsed;
     if (ext === ".pdf") {
-      parsed = await parsePdf(file.buffer);
+      parsed = await parsePdf(buffer);
     } else if (ext === ".docx") {
-      parsed = await parseDocx(file.buffer);
+      parsed = await parseDocx(buffer);
     } else {
       parsed = { text: "", unparseable: true };
     }
@@ -147,12 +158,6 @@ async function processCandidate(job, candidateId, file, skillEmbeddingCache) {
       if (error) throw error;
       return;
     }
-
-    const storagePath = `${job.id}/${Date.now()}-${file.originalname}`;
-    const { error: uploadError } = await supabase.storage
-      .from("resumes")
-      .upload(storagePath, file.buffer, { contentType: file.mimetype });
-    if (uploadError) throw uploadError;
 
     const resumeEmbedding = await getEmbedding(parsed.text);
     const semanticScore = cosineSimilarity(job.jd_embedding, resumeEmbedding);
@@ -177,7 +182,6 @@ async function processCandidate(job, candidateId, file, skillEmbeddingCache) {
     const { error } = await supabase
       .from("candidates")
       .update({
-        file_path: storagePath,
         resume_text: parsed.text,
         resume_embedding: resumeEmbedding,
         matched_skills: matched,
@@ -192,11 +196,7 @@ async function processCandidate(job, candidateId, file, skillEmbeddingCache) {
       })
       .eq("id", candidateId);
 
-    if (error) {
-      // Update failed after the file was already uploaded to storage — clean up the orphaned file.
-      await supabase.storage.from("resumes").remove([storagePath]);
-      throw error;
-    }
+    if (error) throw error;
   } catch (err) {
     await supabase
       .from("candidates")
@@ -220,31 +220,82 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
     .single();
   if (jobError || !job) return res.status(404).json({ error: "job not found" });
 
-  // Create a placeholder row per file up front so the client can poll status
-  // immediately, then respond without waiting for parsing/embedding to finish.
+  // Upload every file to storage synchronously (fast — this is I/O, not the
+  // slow part) before creating its candidate row, so the resume bytes are
+  // durable from the moment a row exists. Parsing/embedding is what's queued
+  // in the background, not the upload — a crash mid-processing can always
+  // re-download from storage and retry (see the recovery sweep in index.js),
+  // instead of losing the file along with the in-memory request that received it.
   const queued = [];
+  const failures = [];
   for (const file of files) {
+    const storagePath = `${jobId}/${Date.now()}-${file.originalname}`;
+    const { error: uploadError } = await supabase.storage
+      .from("resumes")
+      .upload(storagePath, file.buffer, { contentType: file.mimetype });
+    if (uploadError) {
+      failures.push({ file_name: file.originalname, error: uploadError.message });
+      continue;
+    }
+
     const { data, error } = await supabase
       .from("candidates")
       .insert({
         job_id: jobId,
         file_name: file.originalname,
+        file_path: storagePath,
         status: "queued",
         company_domain: req.companyDomain,
       })
       .select()
       .single();
-    if (error) return res.status(500).json({ error: error.message });
-    queued.push({ candidate: data, file });
+    if (error) {
+      await supabase.storage.from("resumes").remove([storagePath]);
+      failures.push({ file_name: file.originalname, error: error.message });
+      continue;
+    }
+    queued.push(data);
   }
 
-  res.status(202).json({ candidates: queued.map((q) => q.candidate) });
+  res.status(202).json({ candidates: queued, failures });
 
   const skillEmbeddingCache = new Map();
-  for (const { candidate, file } of queued) {
-    enqueue(() => processCandidate(job, candidate.id, file, skillEmbeddingCache));
+  for (const candidate of queued) {
+    enqueue(() =>
+      processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
+    );
   }
 });
+
+export async function recoverStuckCandidates() {
+  const { data: stuck, error } = await supabase
+    .from("candidates")
+    .select("id, job_id, file_path, file_name")
+    .eq("status", "queued");
+  if (error || !stuck || stuck.length === 0) return;
+
+  console.log(`Recovering ${stuck.length} candidate(s) left queued from a previous run...`);
+  const jobCache = new Map();
+  const skillEmbeddingCache = new Map();
+  for (const candidate of stuck) {
+    let job = jobCache.get(candidate.job_id);
+    if (!job) {
+      const { data } = await supabase.from("jobs").select("*").eq("id", candidate.job_id).single();
+      if (!data) {
+        await supabase
+          .from("candidates")
+          .update({ status: "failed", error_message: "parent job no longer exists" })
+          .eq("id", candidate.id);
+        continue;
+      }
+      job = data;
+      jobCache.set(candidate.job_id, job);
+    }
+    enqueue(() =>
+      processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
+    );
+  }
+}
 
 router.get("/jobs/:id/candidates/status", async (req, res) => {
   const { data, error } = await supabase

@@ -62,10 +62,13 @@ export default function BulkUpload({ job, onUploaded }) {
     setLoading(true);
     setProgress({ done: 0, failed: 0, total: files.length });
     try {
-      const { candidates } = await uploadCandidates(job.id, files);
-      const failedCount = await pollUntilDone(candidates.map((c) => c.id));
-      if (failedCount > 0) {
-        setError(`${failedCount} of ${candidates.length} resume(s) failed to process.`);
+      const { candidates, failures } = await uploadCandidates(job.id, files);
+      const uploadFailedCount = failures?.length || 0;
+      const processingFailedCount =
+        candidates.length > 0 ? await pollUntilDone(candidates.map((c) => c.id)) : 0;
+      const totalFailed = uploadFailedCount + processingFailedCount;
+      if (totalFailed > 0) {
+        setError(`${totalFailed} of ${files.length} resume(s) failed.`);
       }
       onUploaded();
     } catch (err) {
