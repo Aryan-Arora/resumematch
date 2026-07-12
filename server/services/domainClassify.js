@@ -9,6 +9,10 @@ const DOMAIN_ANCHORS = {
   marketing: "marketing role handling campaigns, content, SEO, and brand strategy",
   finance_accounting: "finance or accounting role handling budgeting, reporting, and reconciliation",
   hr_recruiting: "human resources or recruiting role handling talent acquisition and employee relations",
+  skilled_trades: "skilled trade role such as an electrician, plumber, HVAC technician, welder, or carpenter requiring certifications and hands-on technical work",
+  healthcare_support: "healthcare support role such as a certified nursing assistant, medical assistant, or home health aide providing direct patient care",
+  hospitality_food_service: "hospitality or food service role such as a server, cook, or guest services associate in a restaurant or hotel",
+  logistics_warehouse: "warehouse or logistics role handling inventory, shipping, forklift operation, and supply chain coordination",
 };
 
 let anchorEmbeddingsPromise = null;

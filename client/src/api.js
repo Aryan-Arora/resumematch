@@ -16,6 +16,15 @@ async function handle(res) {
   return res.json();
 }
 
+// Unauthenticated — no session token needed.
+export async function classifyPreview(description) {
+  return fetch(`${API_BASE}/public/classify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ description }),
+  }).then(handle);
+}
+
 export async function getJobs() {
   return fetch(`${API_BASE}/jobs`, { headers: await authHeaders() }).then(handle);
 }

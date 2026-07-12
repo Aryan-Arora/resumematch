@@ -102,6 +102,12 @@ export default function AuthGate({ children }) {
         >
           {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </button>
+        <a
+          href="/demo"
+          className="block w-full text-center text-xs text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] mt-3"
+        >
+          Not ready to sign up? Try it on your job description first →
+        </a>
       </div>
     </div>
   );

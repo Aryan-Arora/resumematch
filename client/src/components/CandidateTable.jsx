@@ -21,6 +21,10 @@ const DOMAIN_LABELS = {
   marketing: "Marketing",
   finance_accounting: "Finance & Accounting",
   hr_recruiting: "HR & Recruiting",
+  skilled_trades: "Skilled Trades",
+  healthcare_support: "Healthcare Support",
+  hospitality_food_service: "Hospitality & Food Service",
+  logistics_warehouse: "Logistics & Warehouse",
   general: "General (auto-extracted)",
 };
 

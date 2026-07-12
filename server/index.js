@@ -8,6 +8,7 @@ import candidatesRouter from "./routes/candidates.js";
 import taxonomyRouter from "./routes/taxonomy.js";
 import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
+import publicRouter from "./routes/public.js";
 import { requireAuth } from "./middleware/auth.js";
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use(express.json());
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api", authRouter);
+app.use("/api", publicRouter);
 app.use("/api", requireAuth, jobsRouter);
 app.use("/api", requireAuth, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);

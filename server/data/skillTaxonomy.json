@@ -86,5 +86,78 @@
       "diversity and inclusion", "conflict resolution", "policy development"
     ],
     "tools": ["Workday", "ADP", "Greenhouse", "Lever", "BambooHR", "SuccessFactors"]
+  },
+  "skilled_trades": {
+    "certifications": [
+      "OSHA 10", "OSHA 30", "Journeyman License", "Master License",
+      "EPA 608 Certification", "NCCER Certification", "Apprenticeship Certification",
+      "CDL", "Welding Certification"
+    ],
+    "skills": [
+      "electrical wiring", "plumbing installation", "HVAC repair", "welding",
+      "carpentry", "pipefitting", "blueprint reading", "troubleshooting",
+      "preventive maintenance", "equipment calibration", "framing", "drywall installation",
+      "soldering", "sheet metal fabrication"
+    ],
+    "tools": [
+      "power tools", "multimeter", "pipe threading", "welding equipment",
+      "hand tools", "hydraulic tools", "diagnostic equipment", "torque wrench"
+    ],
+    "safety": [
+      "OSHA compliance", "fall protection", "lockout tagout", "confined space entry",
+      "PPE compliance", "hazard communication", "job site safety"
+    ]
+  },
+  "healthcare_support": {
+    "certifications": [
+      "CNA", "CMA", "CPR Certification", "BLS Certification",
+      "Phlebotomy Certification", "HHA Certification", "Medical Assistant Certification",
+      "EMT Certification", "First Aid Certification"
+    ],
+    "skills": [
+      "patient care", "vital signs monitoring", "medication administration",
+      "wound care", "patient charting", "infection control", "mobility assistance",
+      "specimen collection", "patient intake", "activities of daily living"
+    ],
+    "systems": [
+      "Epic", "Cerner", "EHR documentation", "electronic health records", "Meditech"
+    ],
+    "compliance": [
+      "HIPAA compliance", "infection control protocols", "patient confidentiality"
+    ]
+  },
+  "hospitality_food_service": {
+    "certifications": [
+      "ServSafe Certification", "Food Handler Permit", "TIPS Certification",
+      "Alcohol Service Certification"
+    ],
+    "skills": [
+      "food preparation", "customer service", "point of sale systems",
+      "inventory management", "menu planning", "food safety", "guest relations",
+      "table service", "cash handling", "food plating", "line cooking"
+    ],
+    "tools": [
+      "POS systems", "kitchen equipment", "reservation software", "OpenTable", "Toast POS"
+    ],
+    "operations": [
+      "shift scheduling", "team supervision", "cost control", "health code compliance"
+    ]
+  },
+  "logistics_warehouse": {
+    "certifications": [
+      "Forklift Certification", "OSHA Warehouse Safety", "Hazmat Certification", "CDL"
+    ],
+    "skills": [
+      "inventory management", "shipment coordination", "order fulfillment",
+      "pallet jack operation", "forklift operation", "warehouse safety",
+      "quality control", "logistics coordination", "picking and packing", "cycle counting"
+    ],
+    "systems": [
+      "WMS", "warehouse management system", "SAP", "inventory tracking software",
+      "barcode scanning"
+    ],
+    "operations": [
+      "supply chain coordination", "route planning", "loading dock operations"
+    ]
   }
 }
