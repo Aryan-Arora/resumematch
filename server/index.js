@@ -60,7 +60,7 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`ResumeMatch API listening on port ${port}`);
   recoverStuckCandidates();
 });
