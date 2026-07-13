@@ -380,20 +380,49 @@ router.get("/jobs/:id/export", async (req, res) => {
 router.delete("/jobs/:id", async (req, res) => {
   const jobId = req.params.id;
 
-  const { data: files } = await supabase.storage.from("resumes").list(jobId);
-  if (files && files.length > 0) {
-    await supabase.storage.from("resumes").remove(files.map((f) => `${jobId}/${f.name}`));
-  }
-
-  const { error, count } = await supabase
+  const { data: job } = await supabase
     .from("jobs")
-    .delete({ count: "exact" })
+    .select("id, title")
     .eq("id", jobId)
-    .eq("company_domain", req.companyDomain);
-  if (error) return res.status(500).json({ error: error.message });
-  if (count === 0) return res.status(404).json({ error: "job not found" });
+    .eq("company_domain", req.companyDomain)
+    .single();
+  if (!job) return res.status(404).json({ error: "job not found" });
+
+  await deleteJobCascade(job);
 
   res.status(204).send();
 });
+
+// Deletes a job along with every non-starred candidate (row + resume file).
+// Starred candidates are preserved: detached from the job (job_id set to
+// null) with a snapshot of the job title, since starring is meant to survive
+// the job it was found under, both on manual delete and the 180-day sweep.
+export async function deleteJobCascade(job) {
+  const { data: candidates } = await supabase
+    .from("candidates")
+    .select("id, file_path, starred")
+    .eq("job_id", job.id);
+
+  const starred = (candidates || []).filter((c) => c.starred);
+  const unstarred = (candidates || []).filter((c) => !c.starred);
+
+  if (unstarred.length > 0) {
+    const paths = unstarred.map((c) => c.file_path).filter(Boolean);
+    if (paths.length > 0) await supabase.storage.from("resumes").remove(paths);
+    await supabase
+      .from("candidates")
+      .delete()
+      .in("id", unstarred.map((c) => c.id));
+  }
+
+  if (starred.length > 0) {
+    await supabase
+      .from("candidates")
+      .update({ job_id: null, starred_job_title: job.title })
+      .in("id", starred.map((c) => c.id));
+  }
+
+  await supabase.from("jobs").delete().eq("id", job.id);
+}
 
 export default router;

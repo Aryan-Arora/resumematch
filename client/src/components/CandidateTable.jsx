@@ -6,6 +6,7 @@ import {
   getSkillTaxonomy,
   viewResume,
   viewComplianceNotice,
+  setCandidateStarred,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -79,6 +80,11 @@ export default function CandidateTable({ job, onAddMore }) {
     if (!confirmed) return;
     await deleteCandidate(id);
     setCandidates((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  async function handleToggleStar(id, starred) {
+    const updated = await setCandidateStarred(id, !starred);
+    setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, starred: updated.starred } : c)));
   }
 
   const skillWeight = 100 - semanticWeight;
@@ -235,6 +241,22 @@ export default function CandidateTable({ job, onAddMore }) {
                         </td>
                         <td className="py-3 px-5">
                           <div className="flex items-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleStar(c.id, c.starred);
+                              }}
+                              title={c.starred ? "Unstar (removes retention protection)" : "Star (saves this CV even if the job is deleted or auto-expires)"}
+                              className={`text-xs transition ${
+                                c.starred
+                                  ? "text-[var(--color-accent)]"
+                                  : "text-[var(--color-text-faint)] hover:text-[var(--color-accent)]"
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[18px]" style={c.starred ? { fontVariationSettings: "'FILL' 1" } : undefined}>
+                                star
+                              </span>
+                            </button>
                             {!c.unparseable && c.file_path && (
                               <button
                                 onClick={(e) => {

@@ -25,6 +25,18 @@ export async function classifyPreview(description) {
   }).then(handle);
 }
 
+// Unauthenticated — no session token needed. Resumes are scored in memory on
+// the server and never stored; up to 3 at a time (more requires signing up).
+export async function matchPreview(description, files) {
+  const formData = new FormData();
+  formData.append("description", description);
+  for (const file of files) formData.append("resumes", file);
+  return fetch(`${API_BASE}/public/match`, {
+    method: "POST",
+    body: formData,
+  }).then(handle);
+}
+
 export async function getJobs() {
   return fetch(`${API_BASE}/jobs`, { headers: await authHeaders() }).then(handle);
 }
@@ -68,6 +80,18 @@ export async function viewResume(candidateId) {
     headers: await authHeaders(),
   }).then(handle);
   window.open(url, "_blank", "noopener,noreferrer");
+}
+
+export async function getStarredCandidates() {
+  return fetch(`${API_BASE}/candidates/starred`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function setCandidateStarred(candidateId, starred) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/star`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ starred }),
+  }).then(handle);
 }
 
 export async function deleteCandidate(candidateId) {

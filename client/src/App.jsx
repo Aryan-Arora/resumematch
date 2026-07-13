@@ -6,6 +6,7 @@ import CandidateTable from "./components/CandidateTable";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Analytics from "./pages/Analytics";
+import StarredCandidates from "./pages/StarredCandidates";
 
 export default function App() {
   const [view, setView] = useState("dashboard");
@@ -34,6 +35,7 @@ export default function App() {
         {view === "dashboard" && <Dashboard onOpenJob={openJob} onNavigate={navigate} />}
         {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
         {view === "analytics" && <Analytics />}
+        {view === "starred" && <StarredCandidates />}
         {view === "upload-jd" && (
           <JDForm
             onJobCreated={(job) => {

@@ -10,6 +10,7 @@ import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
 import publicRouter from "./routes/public.js";
 import { requireAuth } from "./middleware/auth.js";
+import { scheduleRetentionSweep } from "./services/retention.js";
 
 dotenv.config();
 
@@ -65,4 +66,5 @@ const port = process.env.PORT || 4000;
 app.listen(port, "0.0.0.0", () => {
   console.log(`ResumeMatch API listening on port ${port}`);
   recoverStuckCandidates();
+  scheduleRetentionSweep();
 });

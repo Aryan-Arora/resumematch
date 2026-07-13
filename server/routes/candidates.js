@@ -3,6 +3,22 @@ import { supabase } from "../supabaseClient.js";
 
 const router = Router();
 
+router.get("/candidates/starred", async (req, res) => {
+  const { data, error } = await supabase
+    .from("candidates")
+    .select("*, jobs(title)")
+    .eq("company_domain", req.companyDomain)
+    .eq("starred", true)
+    .order("starred_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+
+  const result = data.map((c) => {
+    const { jobs, ...rest } = c;
+    return { ...rest, job_title: jobs?.title || c.starred_job_title || "Job deleted" };
+  });
+  res.json(result);
+});
+
 router.get("/candidates/:id", async (req, res) => {
   const { data, error } = await supabase
     .from("candidates")
@@ -31,6 +47,19 @@ router.get("/candidates/:id/resume", async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
 
   res.json({ url: data.signedUrl });
+});
+
+router.patch("/candidates/:id/star", async (req, res) => {
+  const { starred } = req.body;
+  const { data, error } = await supabase
+    .from("candidates")
+    .update({ starred: !!starred, starred_at: starred ? new Date().toISOString() : null })
+    .eq("id", req.params.id)
+    .eq("company_domain", req.companyDomain)
+    .select()
+    .single();
+  if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  res.json(data);
 });
 
 router.delete("/candidates/:id", async (req, res) => {

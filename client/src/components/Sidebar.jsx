@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard" },
   { key: "projects", label: "Projects", icon: "folder_shared" },
   { key: "upload", label: "Upload", icon: "cloud_upload" },
+  { key: "starred", label: "Starred CVs", icon: "star" },
   { key: "analytics", label: "Analytics", icon: "analytics" },
 ];
 
