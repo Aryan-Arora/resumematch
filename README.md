@@ -56,9 +56,9 @@ Vitest suite covering skill extraction, scoring, the upload queue, domain classi
 
 ## Auth & multi-tenancy
 
-Each HR user signs up/logs in with their work email (Supabase Auth, email + password). A user's "company" is derived from their email domain — everyone `@acmecorp.com` shares one workspace and only sees jobs/candidates created by someone with that same domain. This means personal email domains (gmail.com, outlook.com, etc.) all share one workspace, which is fine for local testing but not for real multi-company use — use real company emails to sign up.
+Each HR user signs up/logs in with any email (Supabase Auth, email + password). Workspaces are explicit organizations, not inferred from email domain: after signing in, a user either creates a new organization (getting a join code to share with teammates) or joins an existing one by entering its code. This is deliberate — deriving the workspace from email domain would put every Gmail/Outlook signup in one shared workspace with strangers.
 
-Enforcement is at the Express layer (every query filtered by the requester's email domain) plus Postgres RLS policies on `jobs`/`candidates` as defense-in-depth (only relevant if something ever queries Supabase directly with a user JWT instead of through this API).
+Enforcement is at the Express layer (every query filtered by the requester's `org_id`, resolved from a `profiles` table keyed by user id) plus Postgres RLS policies on `jobs`/`candidates`/`organizations`/`profiles` as defense-in-depth (only relevant if something ever queries Supabase directly with a user JWT instead of through this API).
 
 ## Reliability & operations
 

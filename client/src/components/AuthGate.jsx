@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useSession } from "../auth";
+import { useSession, requestPasswordReset } from "../auth";
 import { supabase } from "../supabaseClient";
 import Logo from "./Logo";
 
 export default function AuthGate({ children }) {
   const session = useSession();
-  const [mode, setMode] = useState("login"); // "login" | "signup"
+  const [mode, setMode] = useState("login"); // "login" | "signup" | "reset"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -20,13 +20,22 @@ export default function AuthGate({ children }) {
     return children;
   }
 
+  function switchMode(nextMode) {
+    setMode(nextMode);
+    setError(null);
+    setInfo(null);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     setInfo(null);
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (mode === "reset") {
+        await requestPasswordReset(email);
+        setInfo("Check your email for a password reset link.");
+      } else if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
         if (!data.session) {
@@ -43,8 +52,6 @@ export default function AuthGate({ children }) {
     }
   }
 
-  const companyDomain = email.includes("@") ? email.split("@")[1] : null;
-
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center px-8">
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-8 w-full max-w-sm">
@@ -53,9 +60,9 @@ export default function AuthGate({ children }) {
           <span className="font-heading font-bold text-[var(--color-text)]">ResumeMatch</span>
         </div>
         <p className="text-[var(--color-text-muted)] text-sm mb-6">
-          {mode === "login"
-            ? "Sign in with your work email."
-            : "Create an account with your work email."}
+          {mode === "login" && "Sign in with your email."}
+          {mode === "signup" && "Create an account with your email."}
+          {mode === "reset" && "Enter your email and we'll send you a reset link."}
         </p>
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
@@ -64,23 +71,28 @@ export default function AuthGate({ children }) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
+            placeholder="you@example.com"
             className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
           />
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
-          />
-          {companyDomain && (
-            <p className="text-xs text-[var(--color-text-faint)]">
-              Workspace: <span className="text-[var(--color-text-muted)]">{companyDomain}</span> —
-              you'll only see projects from colleagues sharing this email domain.
-            </p>
+          {mode !== "reset" && (
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
+            />
+          )}
+          {mode === "login" && (
+            <button
+              type="button"
+              onClick={() => switchMode("reset")}
+              className="block text-xs text-[var(--color-text-faint)] hover:text-[var(--color-accent)] transition"
+            >
+              Forgot password?
+            </button>
           )}
           {error && <p className="text-[var(--color-danger)] text-sm">{error}</p>}
           {info && <p className="text-[var(--color-success)] text-sm">{info}</p>}
@@ -89,19 +101,30 @@ export default function AuthGate({ children }) {
             disabled={loading}
             className="w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg disabled:opacity-50 transition"
           >
-            {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
+            {loading
+              ? "Please wait..."
+              : mode === "login"
+                ? "Sign in"
+                : mode === "signup"
+                  ? "Create account"
+                  : "Send reset link"}
           </button>
         </form>
-        <button
-          onClick={() => {
-            setMode(mode === "login" ? "signup" : "login");
-            setError(null);
-            setInfo(null);
-          }}
-          className="w-full text-center text-xs text-[var(--color-accent)] hover:underline mt-4"
-        >
-          {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-        </button>
+        {mode === "reset" ? (
+          <button
+            onClick={() => switchMode("login")}
+            className="w-full text-center text-xs text-[var(--color-accent)] hover:underline mt-4"
+          >
+            Back to sign in
+          </button>
+        ) : (
+          <button
+            onClick={() => switchMode(mode === "login" ? "signup" : "login")}
+            className="w-full text-center text-xs text-[var(--color-accent)] hover:underline mt-4"
+          >
+            {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+        )}
         <a
           href="/demo"
           className="block w-full text-center text-xs text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] mt-3"

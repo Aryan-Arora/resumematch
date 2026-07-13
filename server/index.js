@@ -9,7 +9,8 @@ import taxonomyRouter from "./routes/taxonomy.js";
 import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
 import publicRouter from "./routes/public.js";
-import { requireAuth } from "./middleware/auth.js";
+import organizationsRouter from "./routes/organizations.js";
+import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 
 dotenv.config();
@@ -38,10 +39,11 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
-app.use("/api", requireAuth, jobsRouter);
-app.use("/api", requireAuth, candidatesRouter);
+app.use("/api", requireAuth, organizationsRouter);
+app.use("/api", requireAuth, requireOrg, jobsRouter);
+app.use("/api", requireAuth, requireOrg, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);
-app.use("/api", requireAuth, analyticsRouter);
+app.use("/api", requireAuth, requireOrg, analyticsRouter);
 
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);

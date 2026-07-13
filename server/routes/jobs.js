@@ -41,14 +41,14 @@ router.get("/jobs", async (req, res) => {
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
     .select("id, title, description, jd_skills, jd_domain, created_at")
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .order("created_at", { ascending: false });
   if (jobsError) return res.status(500).json({ error: jobsError.message });
 
   const { data: candidates, error: candidatesError } = await supabase
     .from("candidates")
     .select("job_id, final_score, unparseable")
-    .eq("company_domain", req.companyDomain);
+    .eq("org_id", req.orgId);
   if (candidatesError) return res.status(500).json({ error: candidatesError.message });
 
   const statsByJob = new Map();
@@ -119,7 +119,7 @@ router.post("/jobs", async (req, res) => {
       jd_embedding: jdEmbedding,
       jd_skills: jdSkills,
       jd_domain: jdDomain,
-      company_domain: req.companyDomain,
+      org_id: req.orgId,
     })
     .select()
     .single();
@@ -217,7 +217,7 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
     .from("jobs")
     .select("*")
     .eq("id", jobId)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
   if (jobError || !job) return res.status(404).json({ error: "job not found" });
 
@@ -246,7 +246,7 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
         file_name: file.originalname,
         file_path: storagePath,
         status: "queued",
-        company_domain: req.companyDomain,
+        org_id: req.orgId,
       })
       .select()
       .single();
@@ -303,7 +303,7 @@ router.get("/jobs/:id/candidates/status", async (req, res) => {
     .from("candidates")
     .select("id, status")
     .eq("job_id", req.params.id)
-    .eq("company_domain", req.companyDomain);
+    .eq("org_id", req.orgId);
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -313,7 +313,7 @@ router.get("/jobs/:id/candidates", async (req, res) => {
     .from("candidates")
     .select("*")
     .eq("job_id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .order("final_score", { ascending: false, nullsFirst: false });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -325,7 +325,7 @@ router.get("/jobs/:id/compliance-notice", async (req, res) => {
     .from("jobs")
     .select("*")
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
   if (error || !job) return res.status(404).json({ error: "job not found" });
 
@@ -340,7 +340,7 @@ router.get("/jobs/:id/export", async (req, res) => {
     .from("candidates")
     .select("*")
     .eq("job_id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .order("final_score", { ascending: false, nullsFirst: false });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -384,7 +384,7 @@ router.delete("/jobs/:id", async (req, res) => {
     .from("jobs")
     .select("id, title")
     .eq("id", jobId)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
   if (!job) return res.status(404).json({ error: "job not found" });
 

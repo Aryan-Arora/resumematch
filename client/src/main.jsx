@@ -3,20 +3,26 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import AuthGate from './components/AuthGate.jsx'
+import OrgGate from './components/OrgGate.jsx'
 import PublicDemo from './components/PublicDemo.jsx'
+import ResetPassword from './components/ResetPassword.jsx'
 
-// No client-side router in this app — the one public, unauthenticated route
-// (/demo) is handled here, before the auth wall, rather than pulling in a
-// routing library for a single page.
-const isPublicDemo = window.location.pathname === '/demo'
+// No client-side router in this app — the public, unauthenticated routes
+// (/demo, /reset-password) are handled here, before the auth wall, rather
+// than pulling in a routing library for two pages.
+const path = window.location.pathname
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {isPublicDemo ? (
+    {path === '/demo' ? (
       <PublicDemo />
+    ) : path === '/reset-password' ? (
+      <ResetPassword />
     ) : (
       <AuthGate>
-        <App />
+        <OrgGate>
+          <App />
+        </OrgGate>
       </AuthGate>
     )}
   </StrictMode>,

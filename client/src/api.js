@@ -8,12 +8,41 @@ async function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// A 401 means the session we're holding is no longer valid (expired,
+// user deleted, etc). Without this, the app is stuck showing a raw
+// "unauthorized" error with no way back to the login screen — this clears
+// the stale session and reloads so AuthGate renders the login form again.
 async function handle(res) {
+  if (res.status === 401) {
+    await supabase.auth.signOut();
+    window.location.reload();
+    throw new Error("Session expired — signing out.");
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Request failed with status ${res.status}`);
   }
   return res.json();
+}
+
+export async function getMyOrganization() {
+  return fetch(`${API_BASE}/organizations/me`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function createOrganization(name) {
+  return fetch(`${API_BASE}/organizations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ name }),
+  }).then(handle);
+}
+
+export async function joinOrganization(code) {
+  return fetch(`${API_BASE}/organizations/join`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ code }),
+  }).then(handle);
 }
 
 // Unauthenticated — no session token needed.

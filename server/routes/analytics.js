@@ -15,13 +15,13 @@ router.get("/analytics", async (req, res) => {
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
     .select("id")
-    .eq("company_domain", req.companyDomain);
+    .eq("org_id", req.orgId);
   if (jobsError) return res.status(500).json({ error: jobsError.message });
 
   const { data: candidates, error: candidatesError } = await supabase
     .from("candidates")
     .select("final_score, unparseable, matched_skills")
-    .eq("company_domain", req.companyDomain);
+    .eq("org_id", req.orgId);
   if (candidatesError) return res.status(500).json({ error: candidatesError.message });
 
   const scored = candidates.filter((c) => !c.unparseable && c.final_score !== null);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTheme, toggleTheme } from "../theme";
 import { useSession, signOut } from "../auth";
+import { getMyOrganization } from "../api";
 import Logo from "./Logo";
 
 const NAV_ITEMS = [
@@ -13,10 +14,15 @@ const NAV_ITEMS = [
 
 export default function Sidebar({ current, onNavigate }) {
   const [theme, setThemeState] = useState("light");
+  const [organization, setOrganization] = useState(null);
+  const [showCode, setShowCode] = useState(false);
   const session = useSession();
 
   useEffect(() => {
     setThemeState(getTheme());
+    getMyOrganization()
+      .then((data) => setOrganization(data.organization))
+      .catch(() => {});
   }, []);
 
   function handleToggle() {
@@ -32,6 +38,20 @@ export default function Sidebar({ current, onNavigate }) {
             <h1 className="font-heading text-lg font-bold text-[var(--color-text)]">ResumeMatch</h1>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">HR Candidate Screening</p>
+          {organization && (
+            <button
+              onClick={() => setShowCode((v) => !v)}
+              title="Click to show/hide your organization's join code"
+              className="text-xs text-[var(--color-text-faint)] hover:text-[var(--color-accent)] transition mt-1 text-left"
+            >
+              {organization.name}
+              {showCode && (
+                <span className="ml-1.5 font-mono tracking-wider text-[var(--color-accent)]">
+                  {organization.join_code}
+                </span>
+              )}
+            </button>
+          )}
         </div>
         <button
           onClick={handleToggle}

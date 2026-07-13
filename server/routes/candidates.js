@@ -7,7 +7,7 @@ router.get("/candidates/starred", async (req, res) => {
   const { data, error } = await supabase
     .from("candidates")
     .select("*, jobs(title)")
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .eq("starred", true)
     .order("starred_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
@@ -24,7 +24,7 @@ router.get("/candidates/:id", async (req, res) => {
     .from("candidates")
     .select("*")
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
 
   if (error) return res.status(404).json({ error: "candidate not found" });
@@ -36,7 +36,7 @@ router.get("/candidates/:id/resume", async (req, res) => {
     .from("candidates")
     .select("file_path")
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
   if (fetchError || !candidate) return res.status(404).json({ error: "candidate not found" });
   if (!candidate.file_path) return res.status(404).json({ error: "no file stored for this candidate" });
@@ -55,7 +55,7 @@ router.patch("/candidates/:id/star", async (req, res) => {
     .from("candidates")
     .update({ starred: !!starred, starred_at: starred ? new Date().toISOString() : null })
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .select()
     .single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
@@ -67,7 +67,7 @@ router.delete("/candidates/:id", async (req, res) => {
     .from("candidates")
     .select("file_path")
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain)
+    .eq("org_id", req.orgId)
     .single();
   if (fetchError) return res.status(404).json({ error: "candidate not found" });
 
@@ -79,7 +79,7 @@ router.delete("/candidates/:id", async (req, res) => {
     .from("candidates")
     .delete()
     .eq("id", req.params.id)
-    .eq("company_domain", req.companyDomain);
+    .eq("org_id", req.orgId);
   if (error) return res.status(500).json({ error: error.message });
 
   res.status(204).send();
