@@ -55,7 +55,7 @@ export default function ResetPassword() {
                 type="password"
                 autoFocus
                 required
-                minLength={6}
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="New password"
@@ -64,7 +64,7 @@ export default function ResetPassword() {
               <input
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"

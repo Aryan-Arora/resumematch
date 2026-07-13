@@ -78,7 +78,7 @@ export default function AuthGate({ children }) {
             <input
               type="password"
               required
-              minLength={6}
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
