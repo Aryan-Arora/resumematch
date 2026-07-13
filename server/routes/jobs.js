@@ -13,6 +13,7 @@ import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { enqueue } from "../services/uploadQueue.js";
 import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
+import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -27,12 +28,30 @@ const taxonomy = JSON.parse(
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB per file
 const MAX_FILES_PER_UPLOAD = 100;
+const ALLOWED_RESUME_EXTENSIONS = new Set([".pdf", ".docx"]);
+const ALLOWED_RESUME_CONTENT_TYPES = {
+  ".pdf": "application/pdf",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
 
+// Only .pdf/.docx get past this — without it, any file type (including
+// HTML/SVG) could be uploaded to Storage and later served back via a signed
+// URL with an attacker-controlled Content-Type, which is a stored-content
+// risk once opened in a browser tab.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_FILE_SIZE_BYTES,
     files: MAX_FILES_PER_UPLOAD,
+  },
+  fileFilter(req, file, cb) {
+    const ext = extname(file.originalname).toLowerCase();
+    if (!ALLOWED_RESUME_EXTENSIONS.has(ext)) {
+      const err = new Error("Only .pdf and .docx resumes are accepted.");
+      err.status = 400;
+      return cb(err);
+    }
+    cb(null, true);
   },
 });
 const router = Router();
@@ -78,10 +97,16 @@ router.get("/jobs/domains", (req, res) => {
   res.json(getDomainList());
 });
 
-router.post("/jobs", async (req, res) => {
+router.post("/jobs", jobWriteLimiter, async (req, res) => {
   const { title, description, domain } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
+  }
+  if (title.length > 200) {
+    return res.status(400).json({ error: "Title is too long (max 200 characters)." });
+  }
+  if (description.length > 5000) {
+    return res.status(400).json({ error: "Description is too long (max 5,000 characters)." });
   }
 
   const jdEmbedding = await getEmbedding(description);
@@ -206,7 +231,7 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
   }
 }
 
-router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) => {
+router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), async (req, res) => {
   const jobId = req.params.id;
   const files = req.files;
   if (!files || files.length === 0) {
@@ -230,10 +255,19 @@ router.post("/jobs/:id/candidates", upload.array("resumes"), async (req, res) =>
   const queued = [];
   const failures = [];
   for (const file of files) {
-    const storagePath = `${jobId}/${Date.now()}-${file.originalname}`;
+    const ext = extname(file.originalname).toLowerCase();
+    // The storage key only ever contains a sanitized basename — never the
+    // raw, attacker-controlled original filename — so nothing in it can
+    // affect the object's path. Content-Type comes from the verified
+    // extension, not the client-supplied (and equally spoofable) mimetype.
+    const safeBasename = file.originalname
+      .replace(/[/\\]/g, "_")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .slice(-100);
+    const storagePath = `${jobId}/${Date.now()}-${safeBasename}`;
     const { error: uploadError } = await supabase.storage
       .from("resumes")
-      .upload(storagePath, file.buffer, { contentType: file.mimetype });
+      .upload(storagePath, file.buffer, { contentType: ALLOWED_RESUME_CONTENT_TYPES[ext] });
     if (uploadError) {
       failures.push({ file_name: file.originalname, error: uploadError.message });
       continue;
@@ -355,7 +389,15 @@ router.get("/jobs/:id/export", async (req, res) => {
     "missing_skills",
     "unparseable",
   ];
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  // Neutralize CSV formula injection: file names are attacker-controlled
+  // (an uploaded resume's original filename), and a value starting with
+  // =, +, -, or @ is interpreted as a formula by Excel/Sheets when opened —
+  // prefixing with a leading quote forces it to be read as plain text.
+  const escape = (v) => {
+    let s = String(v ?? "");
+    if (/^[=+\-@]/.test(s)) s = `'${s}`;
+    return `"${s.replace(/"/g, '""')}"`;
+  };
   const rows = candidates.map((c) =>
     [
       c.file_name,

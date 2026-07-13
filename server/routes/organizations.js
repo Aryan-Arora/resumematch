@@ -1,6 +1,7 @@
 import { Router } from "express";
 import crypto from "crypto";
 import { supabase } from "../supabaseClient.js";
+import { orgActionLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.get("/organizations/me", async (req, res) => {
   res.json({ organization: data });
 });
 
-router.post("/organizations", async (req, res) => {
+router.post("/organizations", orgActionLimiter, async (req, res) => {
   const { name } = req.body || {};
   if (!name || !name.trim()) {
     return res.status(400).json({ error: "Organization name is required." });
@@ -65,7 +66,7 @@ router.post("/organizations", async (req, res) => {
   }
 });
 
-router.post("/organizations/join", async (req, res) => {
+router.post("/organizations/join", orgActionLimiter, async (req, res) => {
   const { code } = req.body || {};
   if (!code || !code.trim()) {
     return res.status(400).json({ error: "Enter an organization code." });

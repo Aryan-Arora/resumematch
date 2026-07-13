@@ -59,6 +59,12 @@ app.use((err, req, res, next) => {
     }
     return res.status(400).json({ error: err.message });
   }
+  // Errors from a multer fileFilter (e.g. rejecting a non-resume file type)
+  // aren't MulterError instances, but we tag them with .status so they still
+  // surface as a clean 4xx instead of falling through to a generic 500.
+  if (err.status) {
+    return res.status(err.status).json({ error: err.message });
+  }
   console.error(err);
   if (process.env.SENTRY_DSN) Sentry.captureException(err);
   res.status(500).json({ error: "Internal server error" });
