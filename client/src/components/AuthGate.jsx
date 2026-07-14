@@ -65,15 +65,22 @@ export default function AuthGate({ children }) {
           {mode === "reset" && "Enter your email and we'll send you a reset link."}
         </p>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="email"
-            autoFocus
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
-          />
+          <div>
+            {mode === "reset" && (
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
+                Email address
+              </label>
+            )}
+            <input
+              type="email"
+              autoFocus
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
+            />
+          </div>
           {mode !== "reset" && (
             <input
               type="password"
@@ -111,12 +118,15 @@ export default function AuthGate({ children }) {
           </button>
         </form>
         {mode === "reset" ? (
-          <button
-            onClick={() => switchMode("login")}
-            className="w-full text-center text-xs text-[var(--color-accent)] hover:underline mt-4"
-          >
-            Back to sign in
-          </button>
+          <div className="border-t border-[var(--color-border)]/60 mt-5 pt-4">
+            <button
+              onClick={() => switchMode("login")}
+              className="w-full flex items-center justify-center gap-1 text-xs text-[var(--color-accent)] hover:underline"
+            >
+              <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+              Back to sign in
+            </button>
+          </div>
         ) : (
           <button
             onClick={() => switchMode(mode === "login" ? "signup" : "login")}
