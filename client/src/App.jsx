@@ -31,7 +31,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)] transition-colors">
       <Sidebar current={sidebarActive} onNavigate={navigate} />
-      <main className="ml-[260px]">
+      <main className="pt-14 md:pt-0 md:ml-[260px]">
         {view === "dashboard" && <Dashboard onOpenJob={openJob} onNavigate={navigate} />}
         {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
         {view === "analytics" && <Analytics />}

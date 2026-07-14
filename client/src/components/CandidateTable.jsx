@@ -289,7 +289,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 It was not scored.
                               </p>
                             ) : (
-                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">
                                     Matched Skills ({c.matched_skills?.length || 0})

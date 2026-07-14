@@ -80,9 +80,18 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
           </button>
         </div>
         {recent.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">
-            No projects yet. Create one to get started.
-          </p>
+          <div className="px-5 py-10 text-center">
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">
+              No projects yet — create one to start screening candidates.
+            </p>
+            <button
+              onClick={() => onNavigate("upload")}
+              className="inline-flex items-center gap-2 bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Project
+            </button>
+          </div>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
@@ -96,8 +105,11 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
               {recent.map((job) => (
                 <tr
                   key={job.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onOpenJob(job)}
-                  className="border-t border-[var(--color-border)]/40 hover:bg-[var(--color-surface-hover)] cursor-pointer transition"
+                  onKeyDown={(e) => e.key === "Enter" && onOpenJob(job)}
+                  className="border-t border-[var(--color-border)]/40 hover:bg-[var(--color-surface-hover)] cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-accent)]"
                 >
                   <td className="py-3 px-5 text-[var(--color-text)] font-medium">{job.title}</td>
                   <td className="py-3 px-5 text-[var(--color-text-muted)]">{job.candidate_count}</td>

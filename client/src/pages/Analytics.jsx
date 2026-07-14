@@ -4,8 +4,8 @@ import { getAnalytics } from "../api";
 import { useTheme } from "../theme";
 
 const CHART_COLORS = {
-  light: { grid: "#eff4ff", tick: "#45464d", accent: "#4648d4", success: "#0c9488" },
-  dark: { grid: "#171f33", tick: "#c7c4d7", accent: "#c0c1ff", success: "#4cd7f6" },
+  light: { grid: "#eff4ff", tick: "#45464d", accent: "#4648d4" },
+  dark: { grid: "#171f33", tick: "#c7c4d7", accent: "#c0c1ff" },
 };
 
 function StatCard({ label, value }) {
@@ -89,7 +89,7 @@ export default function Analytics() {
                 />
                 <Bar
                   dataKey="count"
-                  fill={colors.success}
+                  fill={colors.accent}
                   radius={[0, 4, 4, 0]}
                   isAnimationActive={false}
                 />

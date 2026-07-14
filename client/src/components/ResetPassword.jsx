@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { updatePassword } from "../auth";
+import { supabase } from "../supabaseClient";
 import Logo from "./Logo";
 
 export default function ResetPassword() {
@@ -8,6 +9,23 @@ export default function ResetPassword() {
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  // undefined = still checking, true = valid recovery session, false = no/expired link
+  const [sessionReady, setSessionReady] = useState(undefined);
+
+  useEffect(() => {
+    // A valid emailed link makes Supabase set a recovery session automatically
+    // from the URL on load. Checking for it upfront means someone who lands
+    // here with an expired/missing link sees a clear message immediately,
+    // instead of filling out the form and only then hitting a raw
+    // "Auth session missing!" error from the SDK.
+    supabase.auth.getSession().then(({ data }) => {
+      setSessionReady(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) setSessionReady(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -35,7 +53,21 @@ export default function ResetPassword() {
           <span className="font-heading font-bold text-[var(--color-text)]">ResumeMatch</span>
         </div>
 
-        {done ? (
+        {sessionReady === undefined ? (
+          <p className="text-[var(--color-text-muted)] text-sm mt-4">Checking your link...</p>
+        ) : sessionReady === false ? (
+          <>
+            <p className="text-[var(--color-danger)] text-sm mt-4 mb-6">
+              This reset link is invalid or has expired. Request a new one from the sign-in screen.
+            </p>
+            <a
+              href="/"
+              className="block w-full text-center bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
+            >
+              Back to sign in
+            </a>
+          </>
+        ) : done ? (
           <>
             <p className="text-[var(--color-success)] text-sm mt-4 mb-6">
               Password updated. You can sign in with your new password now.

@@ -43,9 +43,18 @@ export default function Projects({ onOpenJob, onNavigate }) {
       </div>
 
       {jobs.length === 0 ? (
-        <p className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl px-5 py-10 text-center text-sm text-[var(--color-text-muted)]">
-          No projects yet. Create one to get started.
-        </p>
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl px-5 py-10 text-center">
+          <p className="text-sm text-[var(--color-text-muted)] mb-4">
+            No projects yet — create one to start screening candidates.
+          </p>
+          <button
+            onClick={() => onNavigate("upload")}
+            className="inline-flex items-center gap-2 bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            New Project
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {jobs.map((job) => (
