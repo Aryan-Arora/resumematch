@@ -7,6 +7,7 @@ import {
   viewResume,
   viewComplianceNotice,
   setCandidateStarred,
+  shortlistCandidate,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -53,6 +54,8 @@ export default function CandidateTable({ job, onAddMore }) {
   const [minScore, setMinScore] = useState(0);
   const [mustHaveSkill, setMustHaveSkill] = useState("");
   const [semanticWeight, setSemanticWeight] = useState(60);
+  const [shortlistingId, setShortlistingId] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -85,6 +88,29 @@ export default function CandidateTable({ job, onAddMore }) {
   async function handleToggleStar(id, starred) {
     const updated = await setCandidateStarred(id, !starred);
     setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, starred: updated.starred } : c)));
+  }
+
+  async function handleShortlist(id, fileName) {
+    const confirmed = window.confirm(
+      `Send "${fileName}" a shortlist email for the physical round?`
+    );
+    if (!confirmed) return;
+    setActionError(null);
+    setShortlistingId(id);
+    try {
+      const updated = await shortlistCandidate(id);
+      setCandidates((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, shortlisted: updated.shortlisted, shortlist_email_sent_at: updated.shortlist_email_sent_at }
+            : c
+        )
+      );
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setShortlistingId(null);
+    }
   }
 
   const skillWeight = 100 - semanticWeight;
@@ -162,6 +188,12 @@ export default function CandidateTable({ job, onAddMore }) {
         </div>
       </div>
 
+      {actionError && (
+        <p className="mb-4 text-[var(--color-danger)] text-sm bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2">
+          {actionError}
+        </p>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
           {filteredCandidates.length === 0 ? (
@@ -173,18 +205,18 @@ export default function CandidateTable({ job, onAddMore }) {
               <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[55%] sm:w-[30%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]">
                       Candidate
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[15%] sm:w-[12%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[14%] sm:w-[11%]">
                       Score
                     </th>
-                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[11%]">
+                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[10%]">
                       Semantic
                     </th>
-                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[10%]">Skill</th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[15%] sm:w-[19%]">Status</th>
-                    <th className="py-3 px-5 w-[15%] sm:w-[18%]"></th>
+                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[9%]">Skill</th>
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[15%] sm:w-[17%]">Status</th>
+                    <th className="py-3 px-5 w-[23%] sm:w-[27%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,6 +289,35 @@ export default function CandidateTable({ job, onAddMore }) {
                                 star
                               </span>
                             </button>
+                            {!c.unparseable && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!c.shortlist_email_sent_at && c.email && shortlistingId !== c.id) {
+                                    handleShortlist(c.id, c.file_name);
+                                  }
+                                }}
+                                disabled={shortlistingId === c.id}
+                                title={
+                                  c.shortlist_email_sent_at
+                                    ? `Shortlist email sent ${new Date(c.shortlist_email_sent_at).toLocaleString()}`
+                                    : c.email
+                                      ? "Send shortlist email for the physical round"
+                                      : "No email address found on this resume"
+                                }
+                                className={`text-xs transition disabled:opacity-50 ${
+                                  c.shortlist_email_sent_at
+                                    ? "text-[var(--color-success)]"
+                                    : c.email
+                                      ? "text-[var(--color-text-faint)] hover:text-[var(--color-accent)]"
+                                      : "text-[var(--color-text-faint)]/40 cursor-not-allowed"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[18px]">
+                                  {c.shortlist_email_sent_at ? "mark_email_read" : "forward_to_inbox"}
+                                </span>
+                              </button>
+                            )}
                             {!c.unparseable && c.file_path && (
                               <button
                                 onClick={(e) => {

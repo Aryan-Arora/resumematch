@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
+import { sendShortlistEmail } from "../services/mailer.js";
+import { shortlistLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
@@ -59,6 +61,50 @@ router.patch("/candidates/:id/star", async (req, res) => {
     .select()
     .single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  res.json(data);
+});
+
+router.post("/candidates/:id/shortlist", shortlistLimiter, async (req, res) => {
+  const { data: candidate, error: fetchError } = await supabase
+    .from("candidates")
+    .select("*, jobs(title), organizations(name)")
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .single();
+  if (fetchError || !candidate) return res.status(404).json({ error: "candidate not found" });
+  if (!candidate.email) {
+    return res.status(400).json({ error: "no email address was found on this candidate's resume" });
+  }
+  if (candidate.shortlist_email_sent_at) {
+    return res.status(409).json({ error: "shortlist email was already sent to this candidate" });
+  }
+
+  const candidateName =
+    (candidate.file_name || "")
+      .replace(/\.(pdf|docx)$/i, "")
+      .replace(/[_-]+/g, " ")
+      .trim() || "there";
+
+  try {
+    await sendShortlistEmail({
+      to: candidate.email,
+      candidateName,
+      jobTitle: candidate.jobs?.title || candidate.starred_job_title || "the role",
+      orgName: candidate.organizations?.name,
+    });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("candidates")
+    .update({ shortlisted: true, shortlisted_at: now, shortlist_email_sent_at: now })
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 

@@ -33,6 +33,15 @@ export const uploadLimiter = rateLimit({
   message: { error: "Too many upload requests — please wait a few minutes and try again." },
 });
 
+export const shortlistLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: byUser,
+  message: { error: "Too many shortlist emails sent — please wait a few minutes and try again." },
+});
+
 export const orgActionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,

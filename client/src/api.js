@@ -123,6 +123,13 @@ export async function setCandidateStarred(candidateId, starred) {
   }).then(handle);
 }
 
+export async function shortlistCandidate(candidateId) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/shortlist`, {
+    method: "POST",
+    headers: await authHeaders(),
+  }).then(handle);
+}
+
 export async function deleteCandidate(candidateId) {
   return fetch(`${API_BASE}/candidates/${candidateId}`, {
     method: "DELETE",
