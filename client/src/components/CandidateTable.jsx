@@ -127,11 +127,11 @@ export default function CandidateTable({ job, onAddMore }) {
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)]">{job.title}</h1>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)] bg-[var(--color-accent-soft)] rounded-full px-2 py-1">
+            <span className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)] bg-[var(--color-accent-soft)] rounded-full px-2 py-1">
               {DOMAIN_LABELS[job.jd_domain] || "Tech"}
             </span>
           </div>
@@ -139,23 +139,23 @@ export default function CandidateTable({ job, onAddMore }) {
             {filteredCandidates.length} of {candidates.length} candidate(s)
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 flex-shrink-0">
           <button
             onClick={onAddMore}
-            className="border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
+            className="whitespace-nowrap border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
           >
             Add More Resumes
           </button>
           <button
             onClick={() => viewComplianceNotice(job.id, semanticWeight)}
             title="Auto-generated AEDT candidate disclosure notice for this role — have counsel review before use"
-            className="border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
+            className="whitespace-nowrap border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
           >
             Compliance Notice
           </button>
           <button
             onClick={() => downloadExport(job.id, job.title)}
-            className="bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
+            className="whitespace-nowrap bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
           >
             Export CSV
           </button>
