@@ -24,6 +24,14 @@ if (process.env.SENTRY_DSN) {
 
 const app = express();
 
+// Fly.io sits directly in front of this app as a single proxy hop and sets
+// X-Forwarded-For with the real client IP. Trusting exactly one hop (not an
+// unbounded number) lets express-rate-limit read the real IP for the public
+// demo limiter and the per-user limiters' IP fallback, without opening up
+// the classic X-Forwarded-For spoofing risk that trusting arbitrary hops
+// would.
+app.set("trust proxy", 1);
+
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5174,http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim());
