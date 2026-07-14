@@ -170,21 +170,21 @@ export default function CandidateTable({ job, onAddMore }) {
             </p>
           ) : (
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl overflow-x-auto transition-colors">
-              <table className="w-full min-w-[760px] border-collapse text-left text-sm table-fixed">
+              <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[32%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[30%]">
                       Candidate
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[13%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[12%]">
                       Score
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[13%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[11%]">
                       Semantic
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[11%]">Skill</th>
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[10%]">Skill</th>
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[19%]">Status</th>
-                    <th className="py-3 px-5 w-[12%]"></th>
+                    <th className="py-3 px-5 w-[18%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -263,9 +263,10 @@ export default function CandidateTable({ job, onAddMore }) {
                                   e.stopPropagation();
                                   viewResume(c.id);
                                 }}
-                                className="text-[var(--color-accent)] hover:underline text-xs font-medium transition"
+                                title="View resume"
+                                className="text-[var(--color-accent)] transition"
                               >
-                                View
+                                <span className="material-symbols-outlined text-[18px]">visibility</span>
                               </button>
                             )}
                             <button
@@ -273,9 +274,10 @@ export default function CandidateTable({ job, onAddMore }) {
                                 e.stopPropagation();
                                 handleDelete(c.id, c.file_name);
                               }}
-                              className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] text-xs font-medium transition"
+                              title="Remove candidate"
+                              className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] transition"
                             >
-                              Remove
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
                             </button>
                           </div>
                         </td>
