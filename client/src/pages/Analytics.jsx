@@ -41,7 +41,7 @@ export default function Analytics() {
         Aggregate stats across all projects and candidates.
       </p>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <StatCard label="Total Projects" value={data.totalJobs} />
         <StatCard label="Total Candidates" value={data.totalCandidates} />
         <StatCard
@@ -51,7 +51,7 @@ export default function Analytics() {
         <StatCard label="Unparseable" value={data.unparseableCount} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
           <h2 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">
             Score Distribution

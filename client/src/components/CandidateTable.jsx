@@ -173,18 +173,18 @@ export default function CandidateTable({ job, onAddMore }) {
               <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[30%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[55%] sm:w-[30%]">
                       Candidate
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[12%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[15%] sm:w-[12%]">
                       Score
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[11%]">
+                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[11%]">
                       Semantic
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[10%]">Skill</th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[19%]">Status</th>
-                    <th className="py-3 px-5 w-[18%]"></th>
+                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[10%]">Skill</th>
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[15%] sm:w-[19%]">Status</th>
+                    <th className="py-3 px-5 w-[15%] sm:w-[18%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -194,53 +194,53 @@ export default function CandidateTable({ job, onAddMore }) {
                         className="border-b border-[var(--color-border)]/40 last:border-b-0 cursor-pointer hover:bg-[var(--color-surface-hover)] transition"
                         onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
                       >
-                        <td className="py-3 px-5 min-w-0">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Avatar name={c.file_name} size={36} />
-                            <span className="text-[var(--color-text)] font-medium truncate">
+                        <td className="py-3 px-2 sm:px-5 min-w-0">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <Avatar name={c.file_name} size={36} className="hidden sm:flex" />
+                            <span className="text-[var(--color-text)] font-medium truncate block min-w-0">
                               {c.file_name}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-5">
+                        <td className="py-3 px-2 sm:px-5">
                           <div className="flex justify-center">
                             <ScoreRing score={c.weighted_score} />
                           </div>
                         </td>
-                        <td className="py-3 px-5 text-[var(--color-text-muted)]">
+                        <td className="hidden sm:table-cell py-3 px-5 text-[var(--color-text-muted)]">
                           {formatScore(c.semantic_score)}
                         </td>
-                        <td className="py-3 px-5 text-[var(--color-text-muted)]">
+                        <td className="hidden sm:table-cell py-3 px-5 text-[var(--color-text-muted)]">
                           {formatScore(c.skill_score)}
                         </td>
-                        <td className="py-3 px-5">
+                        <td className="py-3 px-2 sm:px-5">
                           {c.status === "queued" ? (
                             <span className="inline-flex items-center gap-1.5 text-[var(--color-text-muted)] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-faint)] animate-pulse" />
-                              Processing
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-faint)] animate-pulse flex-shrink-0" />
+                              <span className="truncate">Processing</span>
                             </span>
                           ) : c.status === "failed" ? (
                             <span
                               className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium"
                               title={c.error_message || ""}
                             >
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" />
-                              Failed
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)] flex-shrink-0" />
+                              <span className="truncate">Failed</span>
                             </span>
                           ) : c.unparseable ? (
                             <span className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)]" />
-                              Unparseable
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)] flex-shrink-0" />
+                              <span className="truncate">Unparseable</span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 text-[var(--color-success)] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
-                              Scored
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] flex-shrink-0" />
+                              <span className="truncate">Scored</span>
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-5">
-                          <div className="flex items-center gap-3">
+                        <td className="py-3 px-2 sm:px-5">
+                          <div className="flex items-center gap-2 sm:gap-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

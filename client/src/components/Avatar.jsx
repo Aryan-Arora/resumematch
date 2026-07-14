@@ -14,12 +14,12 @@ function colorFor(name) {
   return PALETTE[hash % PALETTE.length];
 }
 
-export default function Avatar({ name, size = 40 }) {
+export default function Avatar({ name, size = 40, className = "" }) {
   const initials = initialsFrom(name);
   const bg = colorFor(name);
   return (
     <div
-      className="rounded-full flex items-center justify-center text-white font-heading font-semibold flex-shrink-0"
+      className={`rounded-full items-center justify-center text-white font-heading font-semibold flex-shrink-0 ${className || "flex"}`}
       style={{ width: size, height: size, backgroundColor: bg, fontSize: size * 0.38 }}
     >
       {initials}
