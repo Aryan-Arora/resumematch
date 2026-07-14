@@ -61,7 +61,7 @@ export default function ResetPassword() {
               This reset link is invalid or has expired. Request a new one from the sign-in screen.
             </p>
             <a
-              href="/"
+              href="/login"
               className="block w-full text-center bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
             >
               Back to sign in
@@ -73,7 +73,7 @@ export default function ResetPassword() {
               Password updated. You can sign in with your new password now.
             </p>
             <a
-              href="/"
+              href="/login"
               className="block w-full text-center bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
             >
               Go to sign in

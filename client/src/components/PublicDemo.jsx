@@ -325,7 +325,7 @@ export default function PublicDemo() {
             including skills candidates never wrote down explicitly.
           </p>
           <a
-            href="/"
+            href="/login"
             className="inline-block bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-5 py-2.5 rounded-lg transition"
           >
             Sign up to screen real resumes →
