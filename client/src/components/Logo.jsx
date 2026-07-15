@@ -9,17 +9,39 @@ export default function Logo({ size = 32, className = "" }) {
       role="img"
       aria-label="ResumeMatch"
     >
-      <rect width="100" height="100" rx="12" fill="#050505" />
-      <circle cx="50" cy="50" r="30" fill="none" stroke="#60A5FA" strokeWidth="1" opacity="0.3" />
-      <line x1="50" y1="20" x2="50" y2="35" stroke="#60A5FA" strokeWidth="1.5" />
-      <line x1="50" y1="65" x2="50" y2="80" stroke="#60A5FA" strokeWidth="1.5" />
-      <path
-        d="M20 50 H40 L45 35 L55 65 L60 50 H80"
+      <defs>
+        <linearGradient id="rm-frosted-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f4f9fc" />
+          <stop offset="100%" stopColor="#dbeaf2" />
+        </linearGradient>
+        <filter id="rm-pulse-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <rect width="100" height="100" rx="22" fill="url(#rm-frosted-fill)" />
+      <rect
+        x="2.5"
+        y="2.5"
+        width="95"
+        height="95"
+        rx="20"
         fill="none"
-        stroke="#60A5FA"
-        strokeWidth="2.5"
-        strokeLinecap="square"
-        strokeLinejoin="miter"
+        stroke="#ffffff"
+        strokeOpacity="0.7"
+        strokeWidth="2"
+      />
+      <path
+        d="M18 52 H36 L43 30 L52 68 L60 40 L66 52 H82"
+        fill="none"
+        stroke="#38bdf8"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        filter="url(#rm-pulse-glow)"
       />
     </svg>
   );
