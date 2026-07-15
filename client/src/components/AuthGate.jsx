@@ -141,6 +141,15 @@ export default function AuthGate({ children }) {
         >
           Not ready to sign up? Try it on your job description first →
         </a>
+
+        <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[var(--color-text-faint)]">
+          <a href="/privacy" className="hover:text-[var(--color-text-muted)]">
+            Privacy Policy
+          </a>
+          <a href="/terms" className="hover:text-[var(--color-text-muted)]">
+            Terms of Service
+          </a>
+        </div>
       </div>
     </div>
   );

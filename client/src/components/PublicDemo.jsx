@@ -331,6 +331,15 @@ export default function PublicDemo() {
             Sign up to screen real resumes →
           </a>
         </div>
+
+        <div className="mt-6 flex items-center justify-center gap-4 text-xs text-[var(--color-text-faint)]">
+          <a href="/privacy" className="hover:text-[var(--color-text-muted)]">
+            Privacy Policy
+          </a>
+          <a href="/terms" className="hover:text-[var(--color-text-muted)]">
+            Terms of Service
+          </a>
+        </div>
       </div>
     </div>
   );
