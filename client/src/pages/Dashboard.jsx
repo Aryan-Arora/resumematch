@@ -3,11 +3,12 @@ import { getJobs } from "../api";
 
 function StatCard({ label, value, sublabel }) {
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
-      <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+    <div className="clay-card p-5 relative overflow-hidden">
+      <div className="absolute -right-4 -top-4 w-20 h-20 bg-[var(--color-accent)]/10 rounded-full blur-2xl" />
+      <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1 relative">
         {label}
       </p>
-      <p className="font-heading text-2xl font-semibold text-[var(--color-text)]">
+      <p className="font-heading text-2xl font-semibold text-[var(--color-text)] relative">
         {value}
         {sublabel && (
           <span className="text-sm font-normal text-[var(--color-text-muted)] ml-1">{sublabel}</span>
@@ -53,7 +54,7 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
         </div>
         <button
           onClick={() => onNavigate("upload")}
-          className="bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition flex items-center gap-2"
+          className="clay-button bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-xl transition flex items-center gap-2"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           New Project
@@ -69,7 +70,7 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
         />
       </div>
 
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl overflow-hidden transition-colors">
+      <div className="clay-card overflow-hidden">
         <div className="px-5 py-4 border-b border-[var(--color-border)]/60 flex items-center justify-between">
           <h2 className="font-heading text-sm font-semibold text-[var(--color-text)]">Recent Projects</h2>
           <button
@@ -86,7 +87,7 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
             </p>
             <button
               onClick={() => onNavigate("upload")}
-              className="inline-flex items-center gap-2 bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg transition"
+              className="clay-button inline-flex items-center gap-2 bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-xl transition"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               New Project

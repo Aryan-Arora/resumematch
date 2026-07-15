@@ -61,7 +61,7 @@ export default function Sidebar({ current, onNavigate }) {
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--color-surface)] border-r border-[var(--color-border)]/60 flex flex-col py-6 z-50 transition-colors transform transition-transform duration-200 md:translate-x-0 ${
+        className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--color-surface)]/70 backdrop-blur-xl border-r border-[var(--color-border)]/50 rounded-r-3xl shadow-[24px_0_48px_-24px_rgba(0,102,138,0.18)] flex flex-col py-6 z-50 transition-colors transform transition-transform duration-200 md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -113,9 +113,9 @@ export default function Sidebar({ current, onNavigate }) {
               <button
                 key={item.key}
                 onClick={() => handleNavigate(item.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-heading text-sm transition-colors ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-heading text-sm transition-colors ${
                   active
-                    ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)] font-bold border-r-4 border-[var(--color-accent)]"
+                    ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)] font-bold shadow-[inset_2px_2px_4px_rgba(255,255,255,0.4),inset_-2px_-2px_4px_rgba(0,102,138,0.08)]"
                     : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
                 }`}
               >
@@ -128,7 +128,7 @@ export default function Sidebar({ current, onNavigate }) {
         <div className="px-3 space-y-2">
           <button
             onClick={() => handleNavigate("upload")}
-            className="w-full flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-accent-contrast)] font-heading text-sm font-medium py-2.5 rounded-lg hover:opacity-90 transition"
+            className="clay-button w-full flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-accent-contrast)] font-heading text-sm font-medium py-3 rounded-2xl hover:opacity-90 transition"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             New Project

@@ -54,7 +54,7 @@ export default function AuthGate({ children }) {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center px-8">
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-8 w-full max-w-sm">
+      <div className="clay-card p-8 w-full max-w-sm rounded-3xl">
         <div className="flex items-center gap-2 mb-1">
           <Logo size={32} className="rounded-[12px]" />
           <span className="font-heading font-bold text-[var(--color-text)]">ResumeMatch</span>
@@ -78,7 +78,7 @@ export default function AuthGate({ children }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
+              className="inner-recess w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
             />
           </div>
           {mode !== "reset" && (
@@ -89,7 +89,7 @@ export default function AuthGate({ children }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
+              className="inner-recess w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition"
             />
           )}
           {mode === "login" && (
@@ -106,7 +106,7 @@ export default function AuthGate({ children }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg disabled:opacity-50 transition"
+            className="clay-button w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-xl disabled:opacity-50 transition"
           >
             {loading
               ? "Please wait..."

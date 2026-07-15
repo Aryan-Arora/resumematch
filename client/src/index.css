@@ -1,53 +1,59 @@
 @import "tailwindcss";
 
+/*
+ * "Soft Intelligence" theme — adapted from the Stitch design exploration.
+ * Palette derived from a Material 3 scheme seeded on #00668a (teal-blue
+ * primary), #4953bc (indigo secondary), #855300 (amber tertiary). Danger
+ * stayed #ba1a1a — it was already identical to the M3 scheme's error role.
+ */
 :root {
-  --color-bg: #f8f9ff;
+  --color-bg: #f7f9fb;
   --color-surface: #ffffff;
-  --color-surface-alt: #eff4ff;
-  --color-surface-hover: #eff4ff;
-  --color-surface-high: #e5eeff;
-  --color-border: #c6c6cd;
-  --color-text: #0b1c30;
-  --color-text-muted: #45464d;
-  --color-text-faint: #8a8b93;
-  --color-accent: #4648d4;
-  --color-accent-soft: #e5eeff;
+  --color-surface-alt: #eceef0;
+  --color-surface-hover: #e6e8ea;
+  --color-surface-high: #e0e3e5;
+  --color-border: #bdc8d1;
+  --color-text: #191c1e;
+  --color-text-muted: #3e484f;
+  --color-text-faint: #6e7980;
+  --color-accent: #00668a;
+  --color-accent-soft: #e3eff2;
   --color-accent-contrast: #ffffff;
-  --color-cta-bg: #000000;
+  --color-cta-bg: #00668a;
   --color-cta-text: #ffffff;
   --color-danger: #ba1a1a;
   --color-danger-soft: #ffdad6;
   --color-success: #0c9488;
   --color-success-soft: #89f5e7;
-  --color-implied: #7c3aed;
-  --color-implied-soft: #ede9fe;
-  --color-panel-dark: #131b2e;
+  --color-implied: #4953bc;
+  --color-implied-soft: #e0e0ff;
+  --color-panel-dark: #072330;
 
   color-scheme: light;
 }
 
 html.dark {
-  --color-bg: #0b1326;
-  --color-surface: #060e20;
-  --color-surface-alt: #171f33;
-  --color-surface-hover: #222a3d;
-  --color-surface-high: #222a3d;
-  --color-border: #464554;
-  --color-text: #dae2fd;
-  --color-text-muted: #c7c4d7;
-  --color-text-faint: #908fa0;
-  --color-accent: #c0c1ff;
-  --color-accent-soft: #2d3449;
-  --color-accent-contrast: #1000a9;
-  --color-cta-bg: #c0c1ff;
-  --color-cta-text: #1000a9;
+  --color-bg: #0a1418;
+  --color-surface: #0f1c22;
+  --color-surface-alt: #16262d;
+  --color-surface-hover: #1c2f37;
+  --color-surface-high: #21353d;
+  --color-border: #2c454e;
+  --color-text: #e3f2f8;
+  --color-text-muted: #a9c2ca;
+  --color-text-faint: #6f8890;
+  --color-accent: #7bd0ff;
+  --color-accent-soft: #113442;
+  --color-accent-contrast: #001e2c;
+  --color-cta-bg: #7bd0ff;
+  --color-cta-text: #001e2c;
   --color-danger: #ffb4ab;
   --color-danger-soft: #93000a;
   --color-success: #4cd7f6;
   --color-success-soft: #009eb9;
-  --color-implied: #ddb7ff;
-  --color-implied-soft: #6f00be;
-  --color-panel-dark: #171f33;
+  --color-implied: #bdc2ff;
+  --color-implied-soft: #2f3aa3;
+  --color-panel-dark: #0d1f28;
 
   color-scheme: dark;
 }
@@ -56,6 +62,10 @@ body {
   margin: 0;
   font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   background: var(--color-bg);
+  background-image:
+    radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, color-mix(in srgb, var(--color-implied) 6%, transparent) 0px, transparent 55%);
+  background-attachment: fixed;
   color: var(--color-text);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -78,4 +88,50 @@ body {
 .circular-progress {
   --percentage: 0;
   background: conic-gradient(var(--color-accent) calc(var(--percentage) * 1%), var(--color-accent-soft) 0);
+}
+
+/* --- Soft Intelligence surface language: clay cards + glass panels --- */
+
+.clay-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow:
+    0 24px 48px -28px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 40%, transparent);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+html.dark .clay-card {
+  box-shadow:
+    0 24px 48px -24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+}
+
+.glass-panel {
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: 16px;
+}
+
+.clay-button {
+  box-shadow:
+    0 8px 18px -6px color-mix(in srgb, var(--color-accent) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+.clay-button:active {
+  transform: scale(0.97);
+}
+
+.inner-recess {
+  box-shadow:
+    inset 2px 2px 5px color-mix(in srgb, black 6%, transparent),
+    inset -2px -2px 5px color-mix(in srgb, white 60%, transparent);
+}
+html.dark .inner-recess {
+  box-shadow:
+    inset 2px 2px 5px color-mix(in srgb, black 30%, transparent),
+    inset -2px -2px 5px color-mix(in srgb, white 4%, transparent);
 }

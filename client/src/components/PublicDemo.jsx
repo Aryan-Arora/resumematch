@@ -132,7 +132,7 @@ export default function PublicDemo() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Paste a job description here..."
             required
-            className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] h-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition resize-none"
+            className="inner-recess w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-2xl px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] h-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition resize-none"
           />
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-[var(--color-text-faint)]">Try:</span>
@@ -148,7 +148,7 @@ export default function PublicDemo() {
             ))}
           </div>
 
-          <div className="border border-dashed border-[var(--color-border)] rounded-lg px-3.5 py-3">
+          <div className="border border-dashed border-[var(--color-border)] rounded-2xl px-3.5 py-3">
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-[var(--color-text-muted)]">
                 Attach up to {MAX_DEMO_RESUMES} resumes (optional) — .pdf or .docx
@@ -192,7 +192,7 @@ export default function PublicDemo() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-lg disabled:opacity-50 transition"
+            className="clay-button w-full bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-4 py-2.5 rounded-xl disabled:opacity-50 transition"
           >
             {loading ? "Analyzing..." : files.length > 0 ? "Score resumes" : "Detect skills"}
           </button>
@@ -205,7 +205,7 @@ export default function PublicDemo() {
               to keep results and screen more than {MAX_DEMO_RESUMES} resumes at a time.
             </p>
 
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5">
+            <div className="clay-card p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs font-medium text-[var(--color-text-faint)] uppercase tracking-wide">
                   Detected domain
@@ -326,7 +326,7 @@ export default function PublicDemo() {
           </p>
           <a
             href="/login"
-            className="inline-block bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-5 py-2.5 rounded-lg transition"
+            className="clay-button inline-block bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-5 py-2.5 rounded-xl transition"
           >
             Sign up to screen real resumes →
           </a>

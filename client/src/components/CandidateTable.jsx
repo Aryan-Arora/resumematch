@@ -168,20 +168,20 @@ export default function CandidateTable({ job, onAddMore }) {
         <div className="flex flex-wrap gap-3 flex-shrink-0">
           <button
             onClick={onAddMore}
-            className="whitespace-nowrap border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
+            className="glass-panel whitespace-nowrap text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 hover:bg-[var(--color-surface-alt)] transition"
           >
             Add More Resumes
           </button>
           <button
             onClick={() => viewComplianceNotice(job.id, semanticWeight)}
             title="Auto-generated AEDT candidate disclosure notice for this role — have counsel review before use"
-            className="whitespace-nowrap border border-[var(--color-border)] text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg hover:bg-[var(--color-surface-alt)] transition"
+            className="glass-panel whitespace-nowrap text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 hover:bg-[var(--color-surface-alt)] transition"
           >
             Compliance Notice
           </button>
           <button
             onClick={() => downloadExport(job.id, job.title)}
-            className="whitespace-nowrap bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-lg transition"
+            className="clay-button whitespace-nowrap bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-xl transition"
           >
             Export CSV
           </button>
@@ -197,11 +197,11 @@ export default function CandidateTable({ job, onAddMore }) {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
           {filteredCandidates.length === 0 ? (
-            <p className="text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl px-5 py-8 text-center text-sm">
+            <p className="clay-card text-[var(--color-text-muted)] px-5 py-8 text-center text-sm">
               No candidates match the current filters.
             </p>
           ) : (
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl overflow-x-auto transition-colors">
+            <div className="clay-card overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
@@ -435,7 +435,7 @@ export default function CandidateTable({ job, onAddMore }) {
         </div>
 
         <aside className="w-full lg:w-[300px] flex-shrink-0 space-y-4">
-          <div className="bg-[var(--color-panel-dark)] text-white rounded-xl p-5">
+          <div className="bg-[var(--color-panel-dark)] text-white rounded-2xl p-5 shadow-[0_24px_48px_-28px_rgba(0,102,138,0.5)]">
             <h3 className="font-heading text-sm font-semibold mb-1">AI Weighting</h3>
             <p className="text-xs text-white/70 mb-4">
               Adjust how semantic similarity vs. skill match combine into the score.
@@ -474,7 +474,7 @@ export default function CandidateTable({ job, onAddMore }) {
             </div>
           </div>
 
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
+          <div className="clay-card p-5">
             <h4 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-4">Filters</h4>
             <div className="mb-4">
               <label className="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
