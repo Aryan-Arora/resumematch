@@ -36,7 +36,7 @@ function ScoreRing({ score }) {
   }
   const pct = Math.round(Number(score) * 100);
   return (
-    <div className="relative w-12 h-12 flex items-center justify-center">
+    <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
       <div className="circular-progress absolute inset-0 rounded-full" style={{ "--percentage": pct }} />
       <div className="absolute inset-1 bg-[var(--color-surface)] rounded-full flex items-center justify-center">
         <span className="font-heading text-xs font-bold text-[var(--color-text)]">{pct}%</span>
@@ -208,15 +208,15 @@ export default function CandidateTable({ job, onAddMore }) {
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]">
                       Candidate
                     </th>
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[14%] sm:w-[11%]">
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[14%] sm:w-[13%]">
                       Score
                     </th>
-                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[10%]">
+                    <th className="hidden sm:table-cell py-3 px-3 font-medium text-xs uppercase tracking-wide sm:w-[12%]">
                       Semantic
                     </th>
-                    <th className="hidden sm:table-cell py-3 px-5 font-medium text-xs uppercase tracking-wide sm:w-[9%]">Skill</th>
+                    <th className="hidden sm:table-cell py-3 px-3 font-medium text-xs uppercase tracking-wide sm:w-[11%]">Skill</th>
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[15%] sm:w-[17%]">Status</th>
-                    <th className="py-3 px-5 w-[23%] sm:w-[27%]"></th>
+                    <th className="py-3 px-5 w-[23%] sm:w-[21%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,10 +239,10 @@ export default function CandidateTable({ job, onAddMore }) {
                             <ScoreRing score={c.weighted_score} />
                           </div>
                         </td>
-                        <td className="hidden sm:table-cell py-3 px-5 text-[var(--color-text-muted)]">
+                        <td className="hidden sm:table-cell py-3 px-3 text-[var(--color-text-muted)]">
                           {formatScore(c.semantic_score)}
                         </td>
-                        <td className="hidden sm:table-cell py-3 px-5 text-[var(--color-text-muted)]">
+                        <td className="hidden sm:table-cell py-3 px-3 text-[var(--color-text-muted)]">
                           {formatScore(c.skill_score)}
                         </td>
                         <td className="py-3 px-2 sm:px-5">
