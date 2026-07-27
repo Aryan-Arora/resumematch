@@ -136,7 +136,7 @@ export default function AuthGate({ children }) {
           </button>
         )}
         <a
-          href="/"
+          href="/demo"
           className="block w-full text-center text-xs text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] mt-3"
         >
           Not ready to sign up? Try it on your job description first →
