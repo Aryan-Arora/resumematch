@@ -26,3 +26,21 @@ export async function searchCandidatesByEmbedding(embedding, orgId, options = {}
   if (error) throw error;
   return data;
 }
+
+// Seeker-side twin of searchCandidatesByEmbedding: given a resume embedding,
+// rank the ingested public job corpus (job_listings) by semantic similarity,
+// down-weighting snippet-only sources vs full-text per the architecture doc.
+// Same engine, query reversed — this powers the seeker UI (M4). Backed by the
+// match_jobs RPC in server/db/migrations/0003_job_listings.sql.
+export async function searchJobsByEmbedding(embedding, options = {}) {
+  const { limit = 20, snippetWeight = 0.9 } = options;
+  const queryEmbedding = typeof embedding === "string" ? JSON.parse(embedding) : embedding;
+
+  const { data, error } = await supabase.rpc("match_jobs", {
+    query_embedding: queryEmbedding,
+    match_count: limit,
+    snippet_weight: snippetWeight,
+  });
+  if (error) throw error;
+  return data;
+}

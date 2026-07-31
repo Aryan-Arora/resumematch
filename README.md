@@ -54,6 +54,21 @@ npm test
 
 Vitest suite covering skill extraction, scoring, the upload queue, domain classification, and full-pipeline integration tests (real embeddings, no mocks). `npm run test:pipeline` also still exists as a manual one-off smoke script.
 
+### 4. (Optional) Ingest live jobs for the seeker side
+
+The seeker experience matches a résumé against a corpus of real job postings.
+Populate it from Adzuna (free tier ~1000 calls/month — get a key at
+[developer.adzuna.com](https://developer.adzuna.com)), then run the ingestion CLI:
+
+```bash
+# in server .env: ADZUNA_APP_ID=... ADZUNA_APP_KEY=... (ADZUNA_COUNTRY optional)
+npm run ingest -- --what "software engineer" --where "remote" --pages 1
+```
+
+Each posting is embedded once on fetch and cached in the `job_listings` table
+(dedupe key `source` + `external_id`), so re-running never re-embeds unchanged
+postings. Requires the `server/db/migrations/0003_job_listings.sql` migration.
+
 ## Auth & multi-tenancy
 
 Each HR user signs up/logs in with any email (Supabase Auth, email + password). Workspaces are explicit organizations, not inferred from email domain: after signing in, a user either creates a new organization (getting a join code to share with teammates) or joins an existing one by entering its code. This is deliberate — deriving the workspace from email domain would put every Gmail/Outlook signup in one shared workspace with strangers.
