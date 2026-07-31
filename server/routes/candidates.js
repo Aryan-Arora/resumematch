@@ -2,6 +2,8 @@ import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
 import { sendShortlistEmail } from "../services/mailer.js";
 import { shortlistLimiter } from "../middleware/rateLimit.js";
+import { getEmbedding } from "../services/embedding.js";
+import { searchCandidatesByEmbedding } from "../services/vectorSearch.js";
 
 const router = Router();
 
@@ -129,6 +131,41 @@ router.delete("/candidates/:id", async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
 
   res.status(204).send();
+});
+
+// Cross-job talent rediscovery: rank the org's ENTIRE candidate pool against a
+// job description using live pgvector nearest-neighbor search (see
+// services/vectorSearch.js), rather than the frozen per-job semantic_score.
+// Accepts either pasted { description } or an existing { jobId } whose stored
+// embedding is reused (and whose own candidates are excluded from results).
+router.post("/candidates/search", async (req, res) => {
+  const { description, jobId, limit } = req.body || {};
+
+  let embedding;
+  if (jobId) {
+    const { data: job, error } = await supabase
+      .from("jobs")
+      .select("jd_embedding")
+      .eq("id", jobId)
+      .eq("org_id", req.orgId)
+      .single();
+    if (error || !job?.jd_embedding) return res.status(404).json({ error: "job not found" });
+    embedding = job.jd_embedding;
+  } else if (description && description.trim()) {
+    embedding = await getEmbedding(description);
+  } else {
+    return res.status(400).json({ error: "provide either a description or a jobId" });
+  }
+
+  try {
+    const results = await searchCandidatesByEmbedding(embedding, req.orgId, {
+      limit: Math.min(Number(limit) || 20, 100),
+      excludeJobId: jobId || null,
+    });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;
