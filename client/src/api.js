@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4100/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();
@@ -42,15 +42,6 @@ export async function joinOrganization(code) {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
     body: JSON.stringify({ code }),
-  }).then(handle);
-}
-
-// Unauthenticated — no session token needed.
-export async function classifyPreview(description) {
-  return fetch(`${API_BASE}/public/classify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ description }),
   }).then(handle);
 }
 

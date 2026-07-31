@@ -22,7 +22,7 @@ Fill in `.env`:
 - `PORT` — defaults to `4000` if unset.
 - `CORS_ORIGIN` — comma-separated list of origins allowed to call the API. Defaults to the local Vite dev ports.
 
-Your Supabase project needs the `pgvector` extension enabled and the `jobs` / `candidates` tables + `resumes` storage bucket created — see the SQL migrations that were run when this project was set up (ask in the conversation history, or recreate from `server/routes/*.js` which shows the expected schema).
+Your Supabase project needs the `pgvector` extension enabled and the schema created. Run [`server/db/migrations/0001_baseline_schema.sql`](server/db/migrations/0001_baseline_schema.sql) against your project (Supabase SQL editor or `psql`) — it creates the `organizations` / `profiles` / `jobs` / `candidates` tables, their indexes, RLS policies, and the `resumes` storage bucket. That migration was reconstructed from the application code, so review it before relying on it in production.
 
 Run the backend:
 
@@ -43,7 +43,7 @@ npm run dev
 
 `client/.env` sets:
 
-- `VITE_API_URL` — defaults to `http://localhost:4100/api`; point it at wherever your backend actually runs.
+- `VITE_API_URL` — defaults to `http://localhost:4000/api`; point it at wherever your backend actually runs.
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — same Supabase project as the backend, but the **anon** key (safe to expose client-side), used only for login/signup. From Project Settings → API.
 
 ### 3. Run tests
