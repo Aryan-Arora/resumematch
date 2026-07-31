@@ -7,6 +7,7 @@ import AuthGate from './components/AuthGate.jsx'
 import OrgGate from './components/OrgGate.jsx'
 import Home from './components/Home.jsx'
 import PublicDemo from './components/PublicDemo.jsx'
+import SeekerApp from './components/SeekerApp.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
 import LegalPage from './components/LegalPage.jsx'
 
@@ -24,6 +25,10 @@ createRoot(document.getElementById('root')).render(
         <OrgGate>
           <App />
         </OrgGate>
+      </AuthGate>
+    ) : path === '/seeker' ? (
+      <AuthGate>
+        <SeekerApp />
       </AuthGate>
     ) : path === '/reset-password' ? (
       <ResetPassword />
