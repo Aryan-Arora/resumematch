@@ -198,4 +198,74 @@ router.delete("/seeker/resumes/:id", async (req, res) => {
   res.status(204).send();
 });
 
+// --- Application tracker (Kanban) ------------------------------------------
+
+const APPLICATION_STATUSES = ["saved", "applied", "interviewing", "offer", "rejected"];
+const APPLICATION_SELECT = "*, job_listings(title, company, location, url, source)";
+
+// Save a job to the tracker (or update its stage if already saved).
+router.post("/seeker/applications", async (req, res) => {
+  const { jobListingId, status } = req.body || {};
+  if (!jobListingId) return res.status(400).json({ error: "jobListingId is required" });
+  if (status && !APPLICATION_STATUSES.includes(status)) {
+    return res.status(400).json({ error: "invalid status" });
+  }
+  const { data, error } = await supabase
+    .from("applications")
+    .upsert(
+      {
+        seeker_id: req.userId,
+        job_listing_id: jobListingId,
+        status: status || "saved",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "seeker_id,job_listing_id" }
+    )
+    .select(APPLICATION_SELECT)
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+// List the seeker's tracked applications with their job details.
+router.get("/seeker/applications", async (req, res) => {
+  const { data, error } = await supabase
+    .from("applications")
+    .select(APPLICATION_SELECT)
+    .eq("seeker_id", req.userId)
+    .order("updated_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// Move an application to another stage (or edit its notes).
+router.patch("/seeker/applications/:id", async (req, res) => {
+  const { status, notes } = req.body || {};
+  if (status && !APPLICATION_STATUSES.includes(status)) {
+    return res.status(400).json({ error: "invalid status" });
+  }
+  const update = { updated_at: new Date().toISOString() };
+  if (status) update.status = status;
+  if (notes !== undefined) update.notes = notes;
+  const { data, error } = await supabase
+    .from("applications")
+    .update(update)
+    .eq("id", req.params.id)
+    .eq("seeker_id", req.userId)
+    .select(APPLICATION_SELECT)
+    .single();
+  if (error || !data) return res.status(404).json({ error: "application not found" });
+  res.json(data);
+});
+
+router.delete("/seeker/applications/:id", async (req, res) => {
+  const { error } = await supabase
+    .from("applications")
+    .delete()
+    .eq("id", req.params.id)
+    .eq("seeker_id", req.userId);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).send();
+});
+
 export default router;

@@ -218,3 +218,34 @@ export async function deleteSeekerResume(resumeId) {
     if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
   });
 }
+
+// --- Seeker application tracker (Kanban) -----------------------------------
+
+export async function getSeekerApplications() {
+  return fetch(`${API_BASE}/seeker/applications`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function saveApplication(jobListingId, status) {
+  return fetch(`${API_BASE}/seeker/applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ jobListingId, status }),
+  }).then(handle);
+}
+
+export async function updateApplication(id, patch) {
+  return fetch(`${API_BASE}/seeker/applications/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify(patch),
+  }).then(handle);
+}
+
+export async function deleteApplication(id) {
+  return fetch(`${API_BASE}/seeker/applications/${id}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  }).then((res) => {
+    if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
+  });
+}

@@ -6,19 +6,24 @@ import {
   explainSeekerMatch,
   deleteSeekerResume,
   setSeekerResumeVisibility,
+  getSeekerApplications,
+  saveApplication,
+  updateApplication,
+  deleteApplication,
 } from "../api";
 import { useSession } from "../auth";
 import { supabase } from "../supabaseClient";
 import { getTheme, toggleTheme } from "../theme";
 import Logo from "./Logo";
 import ScoreRing from "./ScoreRing";
+import ApplicationsBoard from "./ApplicationsBoard";
 
 const SOURCE_LABELS = { adzuna: "Adzuna", greenhouse: "Greenhouse", lever: "Lever" };
 
 // One ranked job. Fetches its "why / gap" explanation lazily the first time the
 // seeker expands it (the matches list stays fast; the explanation reuses the
 // recruiter engine's skill comparison server-side).
-function JobMatchCard({ job, resumeId }) {
+function JobMatchCard({ job, resumeId, saved, onSave }) {
   const [expanded, setExpanded] = useState(false);
   const [explain, setExplain] = useState(null); // { loading, data, error }
 
@@ -59,15 +64,31 @@ function JobMatchCard({ job, resumeId }) {
               job.source}
           </p>
         </div>
-        <button
-          onClick={toggle}
-          className="text-xs text-[var(--color-accent)] hover:underline flex items-center gap-0.5 flex-shrink-0"
-        >
-          {expanded ? "Hide" : "Why?"}
-          <span className="material-symbols-outlined text-[16px]">
-            {expanded ? "expand_less" : "expand_more"}
-          </span>
-        </button>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => onSave(job.id)}
+            disabled={saved}
+            className={`text-xs flex items-center gap-0.5 ${
+              saved
+                ? "text-[var(--color-success)]"
+                : "text-[var(--color-accent)] hover:underline"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              {saved ? "bookmark_added" : "bookmark_add"}
+            </span>
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button
+            onClick={toggle}
+            className="text-xs text-[var(--color-accent)] hover:underline flex items-center gap-0.5"
+          >
+            {expanded ? "Hide" : "Why?"}
+            <span className="material-symbols-outlined text-[16px]">
+              {expanded ? "expand_less" : "expand_more"}
+            </span>
+          </button>
+        </div>
       </div>
 
       {expanded && (
@@ -139,15 +160,17 @@ function JobMatchCard({ job, resumeId }) {
   );
 }
 
-// The seeker front door: upload a résumé, get live jobs ranked by fit, with why
-// you match and where the gaps are. Same engine as the recruiter side, query
-// reversed (résumé -> jobs). Mounted at /seeker behind auth but NOT org-gated.
+// The seeker front door: upload a résumé, get live jobs ranked by fit (with why
+// you match and the gap), and track the ones you save through a Kanban pipeline.
+// Same engine as the recruiter side, query reversed. Behind auth but NOT org.
 export default function SeekerApp() {
   const session = useSession();
   const [theme, setThemeState] = useState("light");
+  const [view, setView] = useState("jobs"); // "jobs" | "tracker"
   const [resumes, setResumes] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loadingResumes, setLoadingResumes] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -171,9 +194,18 @@ export default function SeekerApp() {
     }
   }, []);
 
+  const loadApplications = useCallback(async () => {
+    try {
+      setApplications(await getSeekerApplications());
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
   useEffect(() => {
     loadResumes();
-  }, [loadResumes]);
+    loadApplications();
+  }, [loadResumes, loadApplications]);
 
   const loadMatches = useCallback(async (resumeId) => {
     if (!resumeId) return;
@@ -211,7 +243,7 @@ export default function SeekerApp() {
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDeleteResume(id) {
     if (!window.confirm("Delete this résumé?")) return;
     await deleteSeekerResume(id);
     setResumes((prev) => {
@@ -234,7 +266,46 @@ export default function SeekerApp() {
     }
   }
 
+  async function handleSave(jobListingId) {
+    try {
+      const app = await saveApplication(jobListingId);
+      setApplications((prev) => {
+        const without = prev.filter((a) => a.id !== app.id);
+        return [app, ...without];
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleUpdateStatus(id, status) {
+    const updated = await updateApplication(id, { status });
+    setApplications((prev) => prev.map((a) => (a.id === id ? updated : a)));
+  }
+
+  async function handleDeleteApplication(id) {
+    await deleteApplication(id);
+    setApplications((prev) => prev.filter((a) => a.id !== id));
+  }
+
   const selectedResume = resumes.find((r) => r.id === selectedId);
+  const savedJobIds = new Set(applications.map((a) => a.job_listing_id));
+
+  function ViewTab({ id, label }) {
+    const active = view === id;
+    return (
+      <button
+        onClick={() => setView(id)}
+        className={`text-sm font-heading font-medium px-3 py-1.5 rounded-lg transition ${
+          active
+            ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+            : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
+        }`}
+      >
+        {label}
+      </button>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] transition-colors">
@@ -270,13 +341,10 @@ export default function SeekerApp() {
           </div>
         </div>
 
-        <h1 className="font-heading text-2xl font-bold text-[var(--color-text)] mb-1">
-          Find jobs that fit you
-        </h1>
-        <p className="text-[var(--color-text-muted)] text-sm mb-8">
-          Upload your résumé and get live jobs ranked by fit — with why you match and where the gaps
-          are.
-        </p>
+        <div className="flex items-center gap-2 mb-6">
+          <ViewTab id="jobs" label="Find jobs" />
+          <ViewTab id="tracker" label={`My applications${applications.length ? ` (${applications.length})` : ""}`} />
+        </div>
 
         {error && (
           <p className="text-[var(--color-danger)] text-sm bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2 mb-4">
@@ -284,95 +352,117 @@ export default function SeekerApp() {
           </p>
         )}
 
-        <div className="clay-card p-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-[var(--color-text-faint)] uppercase tracking-wide">
-              Your résumé
-            </span>
-            <label className="clay-button cursor-pointer inline-flex items-center gap-1 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] font-heading font-medium text-xs px-3 py-1.5 rounded-lg hover:opacity-90 transition">
-              <span className="material-symbols-outlined text-[16px]">upload_file</span>
-              {uploading ? "Uploading…" : resumes.length > 0 ? "Upload another" : "Upload résumé"}
-              <input
-                type="file"
-                accept=".pdf,.docx"
-                onChange={handleUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
-          </div>
+        {view === "jobs" && (
+          <>
+            <div className="clay-card p-5 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-[var(--color-text-faint)] uppercase tracking-wide">
+                  Your résumé
+                </span>
+                <label className="clay-button cursor-pointer inline-flex items-center gap-1 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] font-heading font-medium text-xs px-3 py-1.5 rounded-lg hover:opacity-90 transition">
+                  <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                  {uploading ? "Uploading…" : resumes.length > 0 ? "Upload another" : "Upload résumé"}
+                  <input
+                    type="file"
+                    accept=".pdf,.docx"
+                    onChange={handleUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
 
-          {loadingResumes ? (
-            <p className="text-sm text-[var(--color-text-muted)]">Loading…</p>
-          ) : resumes.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              No résumé yet — upload a .pdf or .docx to see matching jobs.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {resumes.map((r) => (
-                <div
-                  key={r.id}
-                  onClick={() => setSelectedId(r.id)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 border transition cursor-pointer ${
-                    selectedId === r.id
-                      ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]/40"
-                      : "border-[var(--color-border)]/60 hover:bg-[var(--color-surface-hover)]"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[var(--color-text-faint)]">
-                    description
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm text-[var(--color-text)] truncate">{r.file_name}</p>
-                    {r.unparseable && (
-                      <p className="text-[11px] text-[var(--color-danger)]">Could not read this file</p>
-                    )}
-                  </div>
-                  <label
-                    className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)] cursor-pointer"
-                    onClick={(e) => e.stopPropagation()}
-                    title="Let recruiters discover you (opt-in)"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={!!r.visible_to_recruiters}
-                      onChange={() => handleToggleVisibility(r.id, r.visible_to_recruiters)}
-                    />
-                    Visible to recruiters
-                  </label>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(r.id);
-                    }}
-                    title="Delete résumé"
-                    className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)]"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
+              {loadingResumes ? (
+                <p className="text-sm text-[var(--color-text-muted)]">Loading…</p>
+              ) : resumes.length === 0 ? (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  No résumé yet — upload a .pdf or .docx to see matching jobs.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {resumes.map((r) => (
+                    <div
+                      key={r.id}
+                      onClick={() => setSelectedId(r.id)}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 border transition cursor-pointer ${
+                        selectedId === r.id
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]/40"
+                          : "border-[var(--color-border)]/60 hover:bg-[var(--color-surface-hover)]"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px] text-[var(--color-text-faint)]">
+                        description
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-[var(--color-text)] truncate">{r.file_name}</p>
+                        {r.unparseable && (
+                          <p className="text-[11px] text-[var(--color-danger)]">
+                            Could not read this file
+                          </p>
+                        )}
+                      </div>
+                      <label
+                        className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)] cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Let recruiters discover you (opt-in)"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!r.visible_to_recruiters}
+                          onChange={() => handleToggleVisibility(r.id, r.visible_to_recruiters)}
+                        />
+                        Visible to recruiters
+                      </label>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteResume(r.id);
+                        }}
+                        title="Delete résumé"
+                        className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)]"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
 
-        {selectedResume && !selectedResume.unparseable && (
-          <div className="space-y-3">
-            <h2 className="text-xs font-medium text-[var(--color-text-faint)] uppercase tracking-wide">
-              Jobs ranked for {selectedResume.file_name}
-            </h2>
-            {loadingMatches ? (
-              <p className="text-sm text-[var(--color-text-muted)]">Finding your best matches…</p>
-            ) : matches.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-muted)] bg-[var(--color-surface-alt)] border border-[var(--color-border)]/60 rounded-lg px-3.5 py-3">
-                No jobs in the corpus yet. Once jobs are ingested (<code>npm run ingest</code>), your
-                matches show up here.
-              </p>
-            ) : (
-              matches.map((job) => <JobMatchCard key={job.id} job={job} resumeId={selectedId} />)
+            {selectedResume && !selectedResume.unparseable && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-medium text-[var(--color-text-faint)] uppercase tracking-wide">
+                  Jobs ranked for {selectedResume.file_name}
+                </h2>
+                {loadingMatches ? (
+                  <p className="text-sm text-[var(--color-text-muted)]">Finding your best matches…</p>
+                ) : matches.length === 0 ? (
+                  <p className="text-sm text-[var(--color-text-muted)] bg-[var(--color-surface-alt)] border border-[var(--color-border)]/60 rounded-lg px-3.5 py-3">
+                    No jobs in the corpus yet. Once jobs are ingested (<code>npm run ingest</code>),
+                    your matches show up here.
+                  </p>
+                ) : (
+                  matches.map((job) => (
+                    <JobMatchCard
+                      key={job.id}
+                      job={job}
+                      resumeId={selectedId}
+                      saved={savedJobIds.has(job.id)}
+                      onSave={handleSave}
+                    />
+                  ))
+                )}
+              </div>
             )}
-          </div>
+          </>
+        )}
+
+        {view === "tracker" && (
+          <ApplicationsBoard
+            applications={applications}
+            onUpdateStatus={handleUpdateStatus}
+            onDelete={handleDeleteApplication}
+          />
         )}
       </div>
     </div>
