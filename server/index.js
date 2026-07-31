@@ -10,6 +10,7 @@ import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
 import publicRouter from "./routes/public.js";
 import organizationsRouter from "./routes/organizations.js";
+import seekerRouter from "./routes/seeker.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 
@@ -51,6 +52,8 @@ app.use("/api", requireAuth, organizationsRouter);
 app.use("/api", requireAuth, requireOrg, jobsRouter);
 app.use("/api", requireAuth, requireOrg, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);
+// Seeker side: authenticated individuals, deliberately NOT org-scoped.
+app.use("/api", requireAuth, seekerRouter);
 app.use("/api", requireAuth, requireOrg, analyticsRouter);
 
 if (process.env.SENTRY_DSN) {

@@ -172,3 +172,49 @@ export async function deleteJob(jobId) {
     if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
   });
 }
+
+// --- Seeker side (job seeker: resume -> ranked jobs) -----------------------
+
+export async function uploadSeekerResume(file) {
+  const formData = new FormData();
+  formData.append("resume", file);
+  return fetch(`${API_BASE}/seeker/resumes`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: formData,
+  }).then(handle);
+}
+
+export async function getSeekerResumes() {
+  return fetch(`${API_BASE}/seeker/resumes`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function getSeekerMatches(resumeId, limit) {
+  const qs = limit ? `?limit=${limit}` : "";
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/matches${qs}`, {
+    headers: await authHeaders(),
+  }).then(handle);
+}
+
+export async function explainSeekerMatch(resumeId, jobId) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/matches/${jobId}/explain`, {
+    headers: await authHeaders(),
+  }).then(handle);
+}
+
+export async function setSeekerResumeVisibility(resumeId, visible) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/visibility`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ visible }),
+  }).then(handle);
+}
+
+export async function deleteSeekerResume(resumeId) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  }).then((res) => {
+    if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
+  });
+}
