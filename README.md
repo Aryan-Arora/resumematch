@@ -9,6 +9,10 @@ HR candidate screening tool: upload one job description, bulk-upload resumes, ge
 
 ## Setup
 
+> **Full walkthrough:** for an end-to-end setup + verification guide covering both
+> the recruiter and seeker sides, the SQL migrations, and job ingestion, see
+> [`docs/SETUP.md`](docs/SETUP.md).
+
 ### 1. Backend
 
 ```bash
