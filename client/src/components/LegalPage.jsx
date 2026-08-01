@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { getTheme, applyStoredTheme } from "../theme";
+import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
 
 const CONTACT_EMAIL = "aryanarora230506@gmail.com";
@@ -150,11 +151,19 @@ function TermsContent() {
 }
 
 export default function LegalPage({ page }) {
+  const isPrivacy = page === "privacy";
+
+  useSEO({
+    title: isPrivacy ? "Privacy Policy" : "Terms of Service",
+    description: isPrivacy
+      ? "How ResumeMatch collects, uses, and protects your account and candidate data."
+      : "The terms governing your use of ResumeMatch.",
+    path: isPrivacy ? "/privacy" : "/terms",
+  });
+
   useEffect(() => {
     applyStoredTheme();
   }, []);
-
-  const isPrivacy = page === "privacy";
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] transition-colors">

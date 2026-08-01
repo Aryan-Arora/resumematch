@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { matchPreview } from "../api";
 import { getTheme, toggleTheme } from "../theme";
+import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
 
 const DOMAIN_LABELS = {
@@ -46,6 +47,13 @@ export default function PublicDemo() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+
+  useSEO({
+    title: "Try the Free Demo — Explainable Resume Matching",
+    description:
+      "Paste any job description and see an instant, explainable candidate match — no signup required. Works for skilled trades, healthcare, sales, and every other role, not just tech.",
+    path: "/demo",
+  });
 
   useEffect(() => {
     setThemeState(getTheme());

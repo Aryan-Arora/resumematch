@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTheme, toggleTheme, applyStoredTheme } from "../theme";
+import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
 
 const STEPS = [
@@ -27,6 +28,13 @@ const STEPS = [
 
 export default function Home() {
   const [theme, setThemeState] = useState("light");
+
+  useSEO({
+    title: "Explainable AI Resume Screening for Recruiters",
+    description:
+      "Paste a job description, upload resumes, and get a ranked shortlist with matched, missing, and implied skills shown in plain English — not a black-box score. Works for any role, any industry.",
+    path: "/",
+  });
 
   useEffect(() => {
     applyStoredTheme();
