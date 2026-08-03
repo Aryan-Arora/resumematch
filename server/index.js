@@ -50,11 +50,14 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
 app.use("/api", requireAuth, organizationsRouter);
+// Seeker side: authenticated individuals, deliberately NOT org-scoped. Must be
+// mounted BEFORE the requireOrg routers below — those apply requireOrg at the
+// "/api" prefix, so a no-org seeker would otherwise be blocked with
+// "no_organization" before their request ever reaches these routes.
+app.use("/api", requireAuth, seekerRouter);
 app.use("/api", requireAuth, requireOrg, jobsRouter);
 app.use("/api", requireAuth, requireOrg, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);
-// Seeker side: authenticated individuals, deliberately NOT org-scoped.
-app.use("/api", requireAuth, seekerRouter);
 app.use("/api", requireAuth, requireOrg, analyticsRouter);
 // Talent marketplace: recruiters (org members) search the opted-in seeker pool.
 app.use("/api", requireAuth, requireOrg, talentRouter);
