@@ -10,6 +10,8 @@ import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
 import publicRouter from "./routes/public.js";
 import organizationsRouter from "./routes/organizations.js";
+import seekerRouter from "./routes/seeker.js";
+import talentRouter from "./routes/talent.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 
@@ -48,10 +50,17 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
 app.use("/api", requireAuth, organizationsRouter);
+// Seeker side: authenticated individuals, deliberately NOT org-scoped. Must be
+// mounted BEFORE the requireOrg routers below — those apply requireOrg at the
+// "/api" prefix, so a no-org seeker would otherwise be blocked with
+// "no_organization" before their request ever reaches these routes.
+app.use("/api", requireAuth, seekerRouter);
 app.use("/api", requireAuth, requireOrg, jobsRouter);
 app.use("/api", requireAuth, requireOrg, candidatesRouter);
 app.use("/api", requireAuth, taxonomyRouter);
 app.use("/api", requireAuth, requireOrg, analyticsRouter);
+// Talent marketplace: recruiters (org members) search the opted-in seeker pool.
+app.use("/api", requireAuth, requireOrg, talentRouter);
 
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);

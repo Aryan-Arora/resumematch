@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:pipeline": "node server/test/pipeline.test.js",
     "dev": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "ingest": "node server/scripts/ingestJobs.js"
   },
   "engines": {
     "node": ">=20"
