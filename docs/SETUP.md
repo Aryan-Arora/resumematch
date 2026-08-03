@@ -4,7 +4,7 @@ End-to-end walkthrough: from a blank Supabase project to both front doors
 running locally — the **recruiter** side (job → ranked candidates) and the new
 **seeker** side (résumé → ranked jobs). Follow top to bottom.
 
-> TL;DR: apply the 4 SQL migrations → set two `.env` files → `npm run dev`
+> TL;DR: apply the 6 SQL migrations → set two `.env` files → `npm run dev`
 > (backend) + `cd client && npm run dev` (frontend) → open `/login` (recruiter)
 > or `/seeker` (job seeker).
 
@@ -30,9 +30,11 @@ the first request is slow, then fast. No paid AI API is used.
    - `server/db/migrations/0002_vector_search.sql` — HNSW indexes + `match_candidates()`
    - `server/db/migrations/0003_job_listings.sql` — job corpus + `match_jobs()`
    - `server/db/migrations/0004_seeker.sql` — seeker résumés + consent
+   - `server/db/migrations/0005_applications.sql` — seeker application tracker (Kanban)
+   - `server/db/migrations/0006_talent_search.sql` — talent marketplace search
 3. Confirm under **Database → Tables** you see `organizations`, `profiles`,
-   `jobs`, `candidates`, `job_listings`, `seeker_resumes`, and under
-   **Storage** a private `resumes` bucket.
+   `jobs`, `candidates`, `job_listings`, `seeker_resumes`, `applications`, and
+   under **Storage** a private `resumes` bucket.
 4. Grab your keys from **Project Settings → API**:
    - Project URL
    - `service_role` key (server only — **never** ship to the browser)
@@ -161,10 +163,21 @@ is to copy it from the Network tab's Authorization header on any API call.)*
 3. You'll see **live jobs ranked by fit**. Expand any job for **"why you match"**
    + **"the gap"**, and a **View & apply** link.
 4. If matches are empty, ingest jobs first (step 4).
-5. Optionally flip **"Visible to recruiters"** — this is the opt-in consent flag
-   for the future talent marketplace (off by default).
+5. **Save** a job → switch to the **My applications** tab → move it through the
+   Kanban stages (Saved → Applied → Interviewing → Offer → Rejected).
+6. Optionally flip **"Visible to recruiters"** — the opt-in consent flag that
+   makes your résumé searchable in the recruiter Talent Search (off by default).
 
 ---
+
+## 7. Verify — Talent marketplace (recruiter searches seekers)
+
+1. As a **seeker** (step 6), toggle a résumé **"Visible to recruiters"** on.
+2. As a **recruiter**, open **Talent Search** in the sidebar.
+3. Pick an existing job or paste a role → **Search talent pool**.
+4. You'll see **anonymized** opted-in candidates ranked by fit (e.g. "Candidate
+   3F9A2C" with a match %). Expand one for its skill overlap (has / lacks) —
+   still no name or contact. (Double-blind contact unlock is a planned follow-on.)
 
 ## Troubleshooting
 

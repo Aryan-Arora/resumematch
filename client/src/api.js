@@ -249,3 +249,21 @@ export async function deleteApplication(id) {
     if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
   });
 }
+
+// --- Talent marketplace (recruiter searches the opted-in seeker pool) -------
+
+export async function searchTalent({ description, jobId, limit }) {
+  return fetch(`${API_BASE}/talent/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ description, jobId, limit }),
+  }).then(handle);
+}
+
+export async function explainTalent(seekerResumeId, { description, jobId }) {
+  return fetch(`${API_BASE}/talent/${seekerResumeId}/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ description, jobId }),
+  }).then(handle);
+}

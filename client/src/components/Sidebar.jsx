@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { key: "projects", label: "Projects", icon: "folder_shared" },
   { key: "upload", label: "Upload", icon: "cloud_upload" },
   { key: "starred", label: "Starred CVs", icon: "star" },
+  { key: "talent", label: "Talent Search", icon: "person_search" },
   { key: "analytics", label: "Analytics", icon: "analytics" },
 ];
 
