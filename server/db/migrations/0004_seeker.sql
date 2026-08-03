@@ -35,6 +35,7 @@ create index if not exists seeker_resumes_embedding_hnsw
 -- RLS (defense-in-depth; the API's service-role client bypasses it): a seeker
 -- can only ever see/manage their own resumes.
 alter table public.seeker_resumes enable row level security;
+drop policy if exists seeker_resumes_owner on public.seeker_resumes;
 create policy seeker_resumes_owner on public.seeker_resumes
   for all
   using (owner_id = auth.uid())

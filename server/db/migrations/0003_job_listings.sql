@@ -44,6 +44,13 @@ create index if not exists job_listings_embedding_hnsw
   on public.job_listings using hnsw (embedding vector_cosine_ops);
 create index if not exists job_listings_source_idx on public.job_listings (source);
 
+-- RLS: job_listings is a public postings corpus reached ONLY through the server
+-- (the service_role client bypasses RLS) — for ingestion writes and match_jobs
+-- reads. Enabling RLS with NO client policy means the exposed anon/authenticated
+-- keys cannot read or write this table directly; the seeker UI still gets its
+-- jobs via the API, not via PostgREST. This is intentional, not an oversight.
+alter table public.job_listings enable row level security;
+
 -- match_jobs(): seeker-side search — given a resume embedding, rank the job
 -- corpus by semantic similarity, down-weighting snippet-only sources.
 create or replace function public.match_jobs(

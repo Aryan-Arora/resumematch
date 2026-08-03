@@ -25,6 +25,7 @@ create index if not exists applications_seeker_idx on public.applications (seeke
 -- RLS (defense-in-depth; the API's service-role client bypasses it): a seeker
 -- can only ever see/manage their own tracked applications.
 alter table public.applications enable row level security;
+drop policy if exists applications_owner on public.applications;
 create policy applications_owner on public.applications
   for all
   using (seeker_id = auth.uid())
