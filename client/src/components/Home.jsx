@@ -1,7 +1,84 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTheme, toggleTheme, applyStoredTheme } from "../theme";
 import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
+
+// Fires `data-visible` once when the element enters the viewport — the
+// scroll-reveal recipe never re-animates on scroll-by.
+function useReveal() {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    // Safety net: never leave content permanently clipped if IO misbehaves
+    // (very tall sections that never cross the threshold, odd viewports, etc).
+    const fallback = setTimeout(() => setVisible(true), 2500);
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
+  }, []);
+
+  return [ref, visible];
+}
+
+function Reveal({ as: Tag = "div", stagger, className = "", children }) {
+  const [ref, visible] = useReveal();
+  const classes = `${stagger ? "reveal-stagger" : "reveal"} ${className}`;
+  return (
+    <Tag ref={ref} className={classes} data-visible={visible || undefined}>
+      {children}
+    </Tag>
+  );
+}
+
+const DOMAINS = [
+  { icon: "code", label: "Tech" },
+  { icon: "support_agent", label: "Service Delivery" },
+  { icon: "trending_up", label: "Sales" },
+  { icon: "campaign", label: "Marketing" },
+  { icon: "account_balance", label: "Finance & Accounting" },
+  { icon: "groups", label: "HR & Recruiting" },
+  { icon: "construction", label: "Skilled Trades" },
+  { icon: "medical_services", label: "Healthcare Support" },
+  { icon: "restaurant", label: "Hospitality & Food Service" },
+  { icon: "local_shipping", label: "Logistics & Warehouse" },
+];
+
+const FAQS = [
+  {
+    q: "Is ResumeMatch free to use?",
+    a: "Yes, it's free during early access. If paid plans are introduced later, pricing will be shown up front before anything changes for existing users.",
+  },
+  {
+    q: "Does my resume data get sent to a third-party AI API?",
+    a: "No. Matching runs on local embeddings on our own servers — resume content never leaves our infrastructure to be scored by an outside AI provider.",
+  },
+  {
+    q: "Does it only work for tech roles?",
+    a: "No. The same matching engine screens skilled trades, healthcare support, hospitality, logistics, sales, and any other job domain — not just software roles.",
+  },
+  {
+    q: "Do I need an account to try it?",
+    a: "No. The free demo requires no signup, and nothing you submit there is saved — it exists only in your browser session.",
+  },
+  {
+    q: "How is this different from a black-box AI score?",
+    a: "Every match shows matched, missing, and implied skills, each with the evidence sentence pulled straight from the resume — so you can see exactly why a candidate scored the way they did, not just a number.",
+  },
+];
 
 const STEPS = [
   {
@@ -28,6 +105,7 @@ const STEPS = [
 
 export default function Home() {
   const [theme, setThemeState] = useState("light");
+  const [openFaq, setOpenFaq] = useState(0);
 
   useSEO({
     title: "Explainable AI Resume Screening for Recruiters",
@@ -118,7 +196,7 @@ export default function Home() {
 
         {/* Value props */}
         <section className="w-full px-6 md:px-16 py-16">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Reveal stagger className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
             <ValueCard
               icon="auto_awesome"
               iconColor="var(--color-accent)"
@@ -137,11 +215,11 @@ export default function Home() {
               title="No per-resume API cost"
               desc="Matching runs on local embeddings, so screening volume doesn't turn into a runaway AI bill."
             />
-          </div>
+          </Reveal>
         </section>
 
         {/* Preview */}
-        <section className="w-full px-6 md:px-16 py-20 flex flex-col lg:flex-row items-center gap-16">
+        <Reveal as="section" className="w-full px-6 md:px-16 py-20 flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1">
             <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-5">
               See the reasoning, not just a score
@@ -181,19 +259,48 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </Reveal>
+
+        {/* Domain coverage */}
+        <section className="w-full px-6 md:px-16 py-20 bg-[var(--color-surface)]">
+          <Reveal className="max-w-6xl mx-auto text-center mb-12">
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-3">
+              One matching engine, every hiring domain
+            </h2>
+            <p className="text-[var(--color-text-muted)] max-w-xl mx-auto">
+              The same explainable matching that works for engineering roles works just as well
+              across the rest of the org chart.
+            </p>
+          </Reveal>
+          <Reveal
+            stagger
+            className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-3"
+          >
+            {DOMAINS.map((d) => (
+              <span
+                key={d.label}
+                className="clay-card inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[var(--color-text)]"
+              >
+                <span className="material-symbols-outlined text-[18px] text-[var(--color-accent)]">
+                  {d.icon}
+                </span>
+                {d.label}
+              </span>
+            ))}
+          </Reveal>
         </section>
 
         {/* How it works */}
-        <section className="w-full px-6 md:px-16 py-20 bg-[var(--color-surface)]">
-          <div className="max-w-6xl mx-auto text-center mb-16">
+        <section className="w-full px-6 md:px-16 py-20">
+          <Reveal className="max-w-6xl mx-auto text-center mb-16">
             <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-3">
               A streamlined journey
             </h2>
             <p className="text-[var(--color-text-muted)] max-w-xl mx-auto">
               From a pile of resumes to a ranked shortlist in four steps.
             </p>
-          </div>
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+          </Reveal>
+          <Reveal stagger className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
             {STEPS.map((step) => (
               <div key={step.title} className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] shadow-[inset_2px_2px_6px_rgba(0,0,0,0.04)] flex items-center justify-center mb-5">
@@ -207,11 +314,31 @@ export default function Home() {
                 <p className="text-xs text-[var(--color-text-muted)] max-w-[200px]">{step.desc}</p>
               </div>
             ))}
-          </div>
+          </Reveal>
+        </section>
+
+        {/* FAQ */}
+        <section className="w-full px-6 md:px-16 py-20 bg-[var(--color-surface)]">
+          <Reveal className="max-w-2xl mx-auto text-center mb-12">
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-3">
+              Questions, answered plainly
+            </h2>
+          </Reveal>
+          <Reveal stagger className="max-w-2xl mx-auto space-y-3">
+            {FAQS.map((item, i) => (
+              <FaqItem
+                key={item.q}
+                q={item.q}
+                a={item.a}
+                open={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? -1 : i)}
+              />
+            ))}
+          </Reveal>
         </section>
 
         {/* CTA banner */}
-        <section className="w-full px-6 md:px-16 py-20">
+        <Reveal as="section" className="w-full px-6 md:px-16 py-20">
           <div className="max-w-6xl mx-auto rounded-[32px] bg-[var(--color-accent)] p-12 md:p-16 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -mr-36 -mt-36 blur-3xl" />
             <div className="relative z-10">
@@ -238,7 +365,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </Reveal>
       </main>
 
       <footer className="w-full bg-[var(--color-surface-alt)] py-12 px-6 md:px-16">
@@ -265,7 +392,7 @@ export default function Home() {
 
 function ValueCard({ icon, iconColor, title, desc }) {
   return (
-    <div className="clay-card p-8 relative overflow-hidden">
+    <div className="clay-card value-card p-8 relative overflow-hidden">
       <div
         className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
         style={{ background: `color-mix(in srgb, ${iconColor} 12%, transparent)` }}
@@ -278,6 +405,37 @@ function ValueCard({ icon, iconColor, title, desc }) {
         {title}
       </h3>
       <p className="text-sm text-[var(--color-text-muted)]">{desc}</p>
+    </div>
+  );
+}
+
+function FaqItem({ q, a, open, onToggle }) {
+  const panelRef = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (panelRef.current) {
+      setHeight(open ? panelRef.current.scrollHeight : 0);
+    }
+  }, [open]);
+
+  return (
+    <div className="clay-card overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
+      >
+        <span className="font-heading text-sm font-semibold text-[var(--color-text)]">{q}</span>
+        <span
+          className="material-symbols-outlined text-[var(--color-accent)] flex-shrink-0"
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 200ms var(--ease-out)" }}
+        >
+          expand_more
+        </span>
+      </button>
+      <div ref={panelRef} className="accordion-panel" style={{ height, opacity: open ? 1 : 0 }}>
+        <p className="px-6 pb-5 text-sm text-[var(--color-text-muted)] leading-relaxed">{a}</p>
+      </div>
     </div>
   );
 }

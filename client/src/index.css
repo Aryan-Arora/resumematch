@@ -37,6 +37,12 @@
      (drag release, flick), never for things that just fade or slide in on their own. */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Standard UI curves (see .claude/skills/animate) — for deliberate
+     enter/exit and on-screen movement, distinct from the spring tokens
+     above which are for direct-manipulation/drag feedback. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 html.dark {
@@ -166,6 +172,50 @@ html.dark .inner-recess {
 }
 .animate-scrim-in {
   animation: scrim-in 0.2s ease-out;
+}
+
+/* Scroll reveal — marketing surfaces only (see Home.jsx). Fires once via
+   IntersectionObserver, never re-animates on scroll-by. */
+.reveal {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 600ms var(--ease-in-out);
+}
+.reveal[data-visible] {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Stagger a group entrance (value cards, domain chips, FAQ rows). Decorative
+   only — must never block interaction while it plays. */
+.reveal-stagger[data-visible] > * {
+  animation: reveal-fade-in 400ms var(--ease-out) both;
+}
+.reveal-stagger[data-visible] > *:nth-child(2) { animation-delay: 60ms; }
+.reveal-stagger[data-visible] > *:nth-child(3) { animation-delay: 120ms; }
+.reveal-stagger[data-visible] > *:nth-child(4) { animation-delay: 180ms; }
+.reveal-stagger[data-visible] > *:nth-child(5) { animation-delay: 240ms; }
+.reveal-stagger:not([data-visible]) > * {
+  opacity: 0;
+}
+@keyframes reveal-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover lift, pointer-gated — touch fires false :hover on tap. */
+.value-card {
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .value-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Accordion (FAQ). Height is measured in JS and set as an inline px value —
+   see useAccordion in Home.jsx — since height can't transition to `auto`. */
+.accordion-panel {
+  overflow: hidden;
+  transition: height 200ms var(--ease-out), opacity 200ms var(--ease-out);
 }
 
 /* Reduced motion doesn't mean no feedback — it means the non-vestibular
