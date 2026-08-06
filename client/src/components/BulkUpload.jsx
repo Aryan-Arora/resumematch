@@ -106,11 +106,12 @@ export default function BulkUpload({ job, onUploaded }) {
             setDragOver(false);
             addFiles(e.dataTransfer.files);
           }}
-          className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl px-6 py-10 text-center cursor-pointer transition ${
+          className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl px-6 py-10 text-center cursor-pointer ${
             dragOver
-              ? "border-[var(--color-accent)] bg-[var(--color-surface-alt)]"
-              : "border-[var(--color-border)] bg-[var(--color-surface-alt)]/60 hover:bg-[var(--color-surface-alt)]"
+              ? "border-[var(--color-accent)] bg-[var(--color-surface-alt)] scale-[1.015]"
+              : "border-[var(--color-border)] bg-[var(--color-surface-alt)]/60 hover:bg-[var(--color-surface-alt)] scale-100"
           }`}
+          style={{ transition: "transform 0.2s var(--ease-spring-bounce), background-color 0.15s ease, border-color 0.15s ease" }}
         >
           <div className="w-14 h-14 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)]">
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

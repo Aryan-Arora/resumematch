@@ -30,6 +30,13 @@
   --color-panel-dark: #072330;
 
   color-scheme: light;
+
+  /* Spring-approximating easing curves (see .claude/skills/apple-design).
+     -spring: critically damped, no overshoot — default for most UI motion.
+     -spring-bounce: slight overshoot — reserve for momentum-driven interactions
+     (drag release, flick), never for things that just fade or slide in on their own. */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html.dark {
@@ -109,20 +116,34 @@ html.dark .clay-card {
 
 .glass-panel {
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-top-color: color-mix(in srgb, white 45%, var(--color-border)); /* bright top edge = light catching the material */
   border-radius: 16px;
+}
+
+/* Any element the user can press should react on press-down, not release —
+   waiting for click to show feedback feels dead. Applies broadly so every
+   button/link in the app gets instant tactile response, not just clay-button. */
+button:not(:disabled),
+a,
+[role="button"] {
+  transition: transform 0.12s var(--ease-spring), opacity 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .clay-button {
   box-shadow:
     0 8px 18px -6px color-mix(in srgb, var(--color-accent) 45%, transparent),
     inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+  transition: transform 0.15s var(--ease-spring), box-shadow 0.15s ease;
 }
 .clay-button:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .inner-recess {
@@ -134,4 +155,38 @@ html.dark .inner-recess {
   box-shadow:
     inset 2px 2px 5px color-mix(in srgb, black 30%, transparent),
     inset -2px -2px 5px color-mix(in srgb, white 4%, transparent);
+}
+
+/* Fade-in for elements that mount as an overlay/scrim (dim-to-focus pattern) —
+   see Sidebar's mobile scrim. Kept short and a plain ease, not a spring: a
+   dimming layer isn't a physical object being thrown, it's a focus cue. */
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-scrim-in {
+  animation: scrim-in 0.2s ease-out;
+}
+
+/* Reduced motion doesn't mean no feedback — it means the non-vestibular
+   equivalent: short cross-fades instead of slides/springs/overshoot. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+    transition-timing-function: ease !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Reduced transparency: make translucent surfaces frostier/solid rather than
+   dropping the effect outright — raise opacity, drop the blur. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--color-surface) !important;
+  }
 }

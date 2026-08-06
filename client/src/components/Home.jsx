@@ -143,7 +143,7 @@ export default function Home() {
         {/* Preview */}
         <section className="w-full px-6 md:px-16 py-20 flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1">
-            <h2 className="font-heading text-3xl font-bold text-[var(--color-text)] mb-5">
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-5">
               See the reasoning, not just a score
             </h2>
             <p className="text-[var(--color-text-muted)] mb-8 max-w-md">
@@ -186,7 +186,7 @@ export default function Home() {
         {/* How it works */}
         <section className="w-full px-6 md:px-16 py-20 bg-[var(--color-surface)]">
           <div className="max-w-6xl mx-auto text-center mb-16">
-            <h2 className="font-heading text-3xl font-bold text-[var(--color-text)] mb-3">
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-3">
               A streamlined journey
             </h2>
             <p className="text-[var(--color-text-muted)] max-w-xl mx-auto">
@@ -215,7 +215,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto rounded-[32px] bg-[var(--color-accent)] p-12 md:p-16 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -mr-36 -mt-36 blur-3xl" />
             <div className="relative z-10">
-              <h2 className="font-heading text-3xl font-bold text-[var(--color-accent-contrast)] mb-4">
+              <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-accent-contrast)] mb-4">
                 Ready to try it on your own JD?
               </h2>
               <p className="text-[var(--color-accent-contrast)]/80 mb-8 max-w-lg mx-auto">

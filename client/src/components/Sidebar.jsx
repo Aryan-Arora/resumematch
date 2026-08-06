@@ -56,14 +56,15 @@ export default function Sidebar({ current, onNavigate }) {
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-40 animate-scrim-in"
         />
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--color-surface)]/70 backdrop-blur-xl border-r border-[var(--color-border)]/50 rounded-r-3xl shadow-[24px_0_48px_-24px_rgba(0,102,138,0.18)] flex flex-col py-6 z-50 transition-colors transform transition-transform duration-200 md:translate-x-0 ${
+        className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--color-surface)]/70 backdrop-blur-xl border-r border-[var(--color-border)]/50 rounded-r-3xl shadow-[24px_0_48px_-24px_rgba(0,102,138,0.18)] flex flex-col py-6 z-50 transition-colors transform md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{ transition: "transform 0.32s var(--ease-spring-bounce), background-color 0.2s ease" }}
       >
         <div className="px-6 mb-8 flex items-start justify-between">
           <div>
