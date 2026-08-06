@@ -140,6 +140,12 @@ export default function Home() {
               </span>
             </button>
             <a
+              href="/blog"
+              className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition"
+            >
+              Blog
+            </a>
+            <a
               href="/demo"
               className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition"
             >
@@ -377,6 +383,9 @@ export default function Home() {
             </span>
           </div>
           <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
+            <a href="/blog" className="hover:text-[var(--color-text)] transition">
+              Blog
+            </a>
             <a href="/privacy" className="hover:text-[var(--color-text)] transition">
               Privacy Policy
             </a>
