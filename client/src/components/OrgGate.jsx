@@ -5,7 +5,8 @@ import Logo from "./Logo";
 
 export default function OrgGate({ children }) {
   const [organization, setOrganization] = useState(undefined); // undefined = loading
-  const [mode, setMode] = useState("join"); // "join" | "create"
+  const [mode, setMode] = useState("create"); // "join" | "create" — default to create: a first-time
+  // signup has no invite code yet, so "join" demands input they can't provide.
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState(null);
