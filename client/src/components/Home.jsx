@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getTheme, toggleTheme, applyStoredTheme } from "../theme";
 import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
+import StreamlinedJourney from "./StreamlinedJourney";
 
 // Fires `data-visible` once when the element enters the viewport — the
 // scroll-reveal recipe never re-animates on scroll-by.
@@ -44,6 +45,43 @@ function Reveal({ as: Tag = "div", stagger, className = "", children }) {
   );
 }
 
+const ROTATING_AUDIENCES = [
+  "any hiring team",
+  "skilled trades",
+  "healthcare hiring",
+  "sales floors",
+  "warehouse ops",
+  "hospitality crews",
+];
+
+function RotatingHeadline() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % ROTATING_AUDIENCES.length);
+    }, 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <h1
+      className="font-heading text-4xl md:text-5xl font-bold text-[var(--color-text)] tracking-tight text-balance"
+      style={{ animation: "jRise .6s cubic-bezier(.22,1,.36,1) both" }}
+    >
+      Explainable resume screening for
+      <br />
+      <span
+        key={index}
+        className="inline-block text-[var(--color-accent)] italic"
+        style={{ animation: "jRise .5s cubic-bezier(.22,1,.36,1) both" }}
+      >
+        {ROTATING_AUDIENCES[index]}
+      </span>
+    </h1>
+  );
+}
+
 const DOMAINS = [
   { icon: "code", label: "Tech" },
   { icon: "support_agent", label: "Service Delivery" },
@@ -80,27 +118,11 @@ const FAQS = [
   },
 ];
 
-const STEPS = [
-  {
-    icon: "upload_file",
-    title: "1. Ingest",
-    desc: "Paste a job description and upload PDF or DOCX resumes.",
-  },
-  {
-    icon: "psychology",
-    title: "2. Analyze",
-    desc: "Local embeddings map skills, experience, and intent signals.",
-  },
-  {
-    icon: "join_inner",
-    title: "3. Match",
-    desc: "Candidates are ranked against your specific JD, including skills they never wrote down.",
-  },
-  {
-    icon: "celebration",
-    title: "4. Hire",
-    desc: "Shortlist and notify candidates for the physical round, right from the table.",
-  },
+const KPIS = [
+  { value: "10+", label: "Hiring domains covered", desc: "Tech to skilled trades, healthcare to hospitality" },
+  { value: "$0", label: "Per-resume API cost", desc: "Matching runs on local embeddings, not a paid AI API" },
+  { value: "3", label: "Skill signals per match", desc: "Matched, missing, and implied — with evidence" },
+  { value: "2", label: "Resume formats supported", desc: "PDF and DOCX" },
 ];
 
 export default function Home() {
@@ -167,22 +189,9 @@ export default function Home() {
           <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] bg-[var(--color-accent)]/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-[-5%] w-[500px] h-[500px] bg-[var(--color-implied)]/5 blur-[150px] rounded-full pointer-events-none" />
           <div className="relative z-10 max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-surface-alt)] shadow-sm mb-8">
-              <span className="flex h-2 w-2 rounded-full bg-[var(--color-accent)] animate-pulse" />
-              <span className="text-xs font-medium text-[var(--color-accent)] uppercase tracking-widest">
-                Explainable Candidate Matching
-              </span>
+            <div className="mb-8">
+              <RotatingHeadline />
             </div>
-            <h1 className="font-heading text-4xl md:text-5xl font-bold text-[var(--color-text)] mb-6 tracking-tight text-balance">
-              Precision matching for
-              <br />
-              <span className="text-[var(--color-accent)] italic">any hiring team</span>
-            </h1>
-            <p className="text-lg text-[var(--color-text-muted)] mb-12 max-w-2xl mx-auto">
-              Paste a job description, upload resumes, and see a ranked shortlist with matched,
-              missing, and implied skills — each backed by evidence from the resume, not a
-              black-box score.
-            </p>
             <div className="max-w-xl mx-auto">
               <a
                 href="/demo"
@@ -198,6 +207,26 @@ export default function Home() {
               </a>
             </div>
           </div>
+        </section>
+
+        {/* How it works */}
+        <section className="w-full px-6 md:px-16 py-20">
+          <StreamlinedJourney />
+        </section>
+
+        {/* KPIs */}
+        <section className="w-full px-6 md:px-16 py-16 bg-[var(--color-surface)]">
+          <Reveal stagger className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+            {KPIS.map((kpi) => (
+              <div key={kpi.label} className="clay-card p-6 text-center">
+                <div className="font-heading text-3xl md:text-4xl font-bold text-[var(--color-accent)] mb-1">
+                  {kpi.value}
+                </div>
+                <div className="text-sm font-medium text-[var(--color-text)] mb-1">{kpi.label}</div>
+                <div className="text-xs text-[var(--color-text-muted)]">{kpi.desc}</div>
+              </div>
+            ))}
+          </Reveal>
         </section>
 
         {/* Value props */}
@@ -292,33 +321,6 @@ export default function Home() {
                 </span>
                 {d.label}
               </span>
-            ))}
-          </Reveal>
-        </section>
-
-        {/* How it works */}
-        <section className="w-full px-6 md:px-16 py-20">
-          <Reveal className="max-w-6xl mx-auto text-center mb-16">
-            <h2 className="font-heading text-3xl font-bold tracking-tight text-[var(--color-text)] mb-3">
-              A streamlined journey
-            </h2>
-            <p className="text-[var(--color-text-muted)] max-w-xl mx-auto">
-              From a pile of resumes to a ranked shortlist in four steps.
-            </p>
-          </Reveal>
-          <Reveal stagger className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
-            {STEPS.map((step) => (
-              <div key={step.title} className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-[var(--color-bg)] shadow-[inset_2px_2px_6px_rgba(0,0,0,0.04)] flex items-center justify-center mb-5">
-                  <span className="material-symbols-outlined text-[var(--color-accent)] text-[28px]">
-                    {step.icon}
-                  </span>
-                </div>
-                <h4 className="font-heading text-sm font-semibold text-[var(--color-text)] mb-2">
-                  {step.title}
-                </h4>
-                <p className="text-xs text-[var(--color-text-muted)] max-w-[200px]">{step.desc}</p>
-              </div>
             ))}
           </Reveal>
         </section>
