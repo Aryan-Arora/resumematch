@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getTheme, toggleTheme, applyStoredTheme } from "../theme";
-import { useSEO } from "../lib/seo";
+import { useSEO, useJsonLd } from "../lib/seo";
 import Logo from "./Logo";
 import StreamlinedJourney from "./StreamlinedJourney";
 
@@ -116,6 +116,18 @@ const FAQS = [
     q: "How is this different from a black-box AI score?",
     a: "Every match shows matched, missing, and implied skills, each with the evidence sentence pulled straight from the resume — so you can see exactly why a candidate scored the way they did, not just a number.",
   },
+  {
+    q: "How does AI resume screening actually work?",
+    a: "Resumes and job descriptions are converted into embeddings — a representation of meaning, not just exact words — so \"led a team of engineers\" and \"managed an engineering team\" register as similar even without shared wording. Each requirement in the JD is compared against the resume's content, and the per-requirement breakdown is kept rather than collapsed into a single score.",
+  },
+  {
+    q: "Is there a good ATS alternative for small teams or agencies?",
+    a: "ResumeMatch isn't a full applicant-tracking system — it's focused specifically on the screening and shortlisting step. It works well as a lightweight alternative for small recruiting teams and agencies who want explainable matching without an enterprise ATS contract, and organizations can invite teammates to share the same jobs and candidates via a join code.",
+  },
+  {
+    q: "What resume file formats can I upload?",
+    a: "PDF and DOCX. Bulk upload is supported, and parsing happens on our own infrastructure — resumes aren't routed through a third-party document-parsing API.",
+  },
 ];
 
 const KPIS = [
@@ -132,8 +144,18 @@ export default function Home() {
   useSEO({
     title: "Explainable AI Resume Screening for Recruiters",
     description:
-      "Paste a job description, upload resumes, and get a ranked shortlist with matched, missing, and implied skills shown in plain English — not a black-box score. Works for any role, any industry.",
+      "Free AI resume screening software with explainable candidate matching. Paste a job description, upload resumes, and get a ranked shortlist with matched, missing, and implied skills — not a black-box score. An ATS alternative for recruiters, HR teams, and agencies, for tech and non-tech roles alike.",
     path: "/",
+  });
+
+  useJsonLd({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
   });
 
   useEffect(() => {

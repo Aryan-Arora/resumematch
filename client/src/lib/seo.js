@@ -42,3 +42,16 @@ export function useSEO({ title, description, path = "/" }) {
     setCanonical(url);
   }, [title, description, path]);
 }
+
+// Injects a JSON-LD schema block scoped to the current page, removing it on
+// unmount so it doesn't leak into other routes in this single-page app.
+export function useJsonLd(schema) {
+  useEffect(() => {
+    if (!schema) return;
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.textContent = JSON.stringify(schema);
+    document.head.appendChild(el);
+    return () => el.remove();
+  }, [schema]);
+}
