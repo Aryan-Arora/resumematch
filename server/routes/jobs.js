@@ -7,7 +7,7 @@ import { supabase } from "../supabaseClient.js";
 import { parsePdf, parseDocx, extractEmail } from "../services/parsing.js";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
-import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD } from "../services/semanticSkillMatch.js";
+import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
@@ -110,7 +110,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   }
 
   const jdEmbedding = await getEmbedding(description);
-  const skillEmbeddingCache = new Map();
+  const skillEmbeddingCache = getSharedSkillEmbeddingCache();
 
   let jdDomain;
   let jdSkills;
@@ -298,7 +298,7 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
 
   res.status(202).json({ candidates: queued, failures });
 
-  const skillEmbeddingCache = new Map();
+  const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of queued) {
     enqueue(() =>
       processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
@@ -315,7 +315,7 @@ export async function recoverStuckCandidates() {
 
   console.log(`Recovering ${stuck.length} candidate(s) left queued from a previous run...`);
   const jobCache = new Map();
-  const skillEmbeddingCache = new Map();
+  const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of stuck) {
     let job = jobCache.get(candidate.job_id);
     if (!job) {

@@ -9,7 +9,7 @@ import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from 
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
-import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD } from "../services/semanticSkillMatch.js";
+import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -112,7 +112,7 @@ router.post("/public/classify", demoLimiter, async (req, res) => {
   }
 
   try {
-    const { domain, skills } = await classifyJobDescription(description, new Map());
+    const { domain, skills } = await classifyJobDescription(description, getSharedSkillEmbeddingCache());
     res.json({ domain, skills, curatedDomains: getDomainList().filter((d) => d !== "general") });
   } catch (err) {
     console.error(err);
@@ -148,9 +148,10 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
 
   try {
     // Shared across JD-side requirement extraction and every resume scored
-    // below — a taxonomy skill's embedding is the same phrase regardless of
-    // which side of the match it's being checked against.
-    const skillEmbeddingCache = new Map();
+    // below, and persisted across requests (see getSharedSkillEmbeddingCache)
+    // — a taxonomy skill's embedding is the same phrase every time, no matter
+    // which request or which side of the match it's being checked against.
+    const skillEmbeddingCache = getSharedSkillEmbeddingCache();
     const { jdEmbedding, domain, skills } = await classifyJobDescription(description, skillEmbeddingCache);
 
     const files = req.files || [];

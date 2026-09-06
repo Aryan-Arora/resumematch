@@ -46,6 +46,19 @@ function skillEmbeddingPhrase(skill) {
 
 export { KEYPHRASE_MATCH_THRESHOLD };
 
+// A canonical taxonomy skill's embedding phrase ("professional experience
+// using Git") never changes, so it only ever needs to be computed once per
+// server process — not once per request. Every previous caller created a
+// fresh `new Map()` per request instead, meaning every single request paid
+// the full cost of re-embedding every unmatched taxonomy skill (up to ~115
+// for the "tech" domain) from scratch. This persists across the process
+// lifetime; only per-request text (JD phrases, resume chunks) should still
+// use a short-lived Map, since that content is rarely repeated verbatim.
+const sharedSkillEmbeddingCache = new Map();
+export function getSharedSkillEmbeddingCache() {
+  return sharedSkillEmbeddingCache;
+}
+
 export function chunkResumeText(text) {
   // Split on newlines first, then further split each block into sentences —
   // a resume written as continuous prose (no line breaks) would otherwise
