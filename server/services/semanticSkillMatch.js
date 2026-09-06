@@ -39,7 +39,7 @@ const SKILL_EMBEDDING_EXPANSIONS = {
   ".NET": "dot net framework",
 };
 
-function skillEmbeddingPhrase(skill) {
+export function skillEmbeddingPhrase(skill) {
   const expanded = SKILL_EMBEDDING_EXPANSIONS[skill] || skill;
   return `professional experience using ${expanded}`;
 }

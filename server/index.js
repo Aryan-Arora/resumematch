@@ -12,6 +12,7 @@ import publicRouter from "./routes/public.js";
 import organizationsRouter from "./routes/organizations.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
+import { warmModels } from "./services/warmup.js";
 
 dotenv.config();
 
@@ -83,4 +84,7 @@ app.listen(port, "0.0.0.0", () => {
   console.log(`ResumeMatch API listening on port ${port}`);
   recoverStuckCandidates();
   scheduleRetentionSweep();
+  // Fired after the port is already bound, so Fly's health check isn't
+  // waiting on it — this can take a while on a cold machine.
+  warmModels();
 });
