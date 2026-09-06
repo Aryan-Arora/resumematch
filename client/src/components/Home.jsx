@@ -93,6 +93,11 @@ const DOMAINS = [
   { icon: "medical_services", label: "Healthcare Support" },
   { icon: "restaurant", label: "Hospitality & Food Service" },
   { icon: "local_shipping", label: "Logistics & Warehouse" },
+  { icon: "precision_manufacturing", label: "Engineering" },
+  { icon: "school", label: "Education" },
+  { icon: "gavel", label: "Legal" },
+  { icon: "palette", label: "Creative & Design" },
+  { icon: "factory", label: "Manufacturing & Production" },
 ];
 
 const FAQS = [
@@ -131,7 +136,7 @@ const FAQS = [
 ];
 
 const KPIS = [
-  { value: "10+", label: "Hiring domains covered", desc: "Tech to skilled trades, healthcare to hospitality" },
+  { value: "15+", label: "Hiring domains covered", desc: "Tech to skilled trades, legal to manufacturing" },
   { value: "$0", label: "Per-resume API cost", desc: "Matching runs on local embeddings, not a paid AI API" },
   { value: "3", label: "Skill signals per match", desc: "Matched, missing, and implied — with evidence" },
   { value: "2", label: "Resume formats supported", desc: "PDF and DOCX" },

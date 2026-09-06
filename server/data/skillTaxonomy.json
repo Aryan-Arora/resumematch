@@ -1,163 +1,609 @@
 {
   "tech": {
     "languages": [
-      "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Go", "Rust",
-      "Ruby", "PHP", "Swift", "Kotlin", "Scala", "R", "SQL", "Bash", "C",
-      "Objective-C", "Dart", "Perl", "MATLAB", "Elixir", "Haskell"
+      "JavaScript",
+      "TypeScript",
+      "Python",
+      "Java",
+      "C++",
+      "C#",
+      "Go",
+      "Rust",
+      "Ruby",
+      "PHP",
+      "Swift",
+      "Kotlin",
+      "Scala",
+      "R",
+      "SQL",
+      "Bash",
+      "C",
+      "Objective-C",
+      "Dart",
+      "Perl",
+      "MATLAB",
+      "Elixir",
+      "Haskell"
     ],
     "frameworks": [
-      "React", "Angular", "Vue.js", "Next.js", "Node.js", "Express",
-      "Django", "Flask", "FastAPI", "Spring Boot", "Ruby on Rails",
-      ".NET", "ASP.NET", "Laravel", "Svelte", "NestJS", "GraphQL",
-      "Redux", "jQuery", "Tailwind CSS", "Bootstrap", "Vite", "Electron",
-      "React Native", "Flutter"
+      "React",
+      "Angular",
+      "Vue.js",
+      "Next.js",
+      "Node.js",
+      "Express",
+      "Django",
+      "Flask",
+      "FastAPI",
+      "Spring Boot",
+      "Ruby on Rails",
+      ".NET",
+      "ASP.NET",
+      "Laravel",
+      "Svelte",
+      "NestJS",
+      "GraphQL",
+      "Redux",
+      "jQuery",
+      "Tailwind CSS",
+      "Bootstrap",
+      "Vite",
+      "Electron",
+      "React Native",
+      "Flutter"
     ],
     "cloud": [
-      "AWS", "Azure", "Google Cloud Platform", "Docker", "Kubernetes",
-      "Terraform", "CloudFormation", "Serverless", "Lambda", "EC2", "S3",
-      "Heroku", "Vercel", "Netlify", "Railway", "DigitalOcean", "Ansible",
-      "Nginx", "CI/CD", "Jenkins", "GitHub Actions", "CircleCI"
+      "AWS",
+      "Azure",
+      "Google Cloud Platform",
+      "Docker",
+      "Kubernetes",
+      "Terraform",
+      "CloudFormation",
+      "Serverless",
+      "Lambda",
+      "EC2",
+      "S3",
+      "Heroku",
+      "Vercel",
+      "Netlify",
+      "Railway",
+      "DigitalOcean",
+      "Ansible",
+      "Nginx",
+      "CI/CD",
+      "Jenkins",
+      "GitHub Actions",
+      "CircleCI"
     ],
     "databases": [
-      "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "Supabase",
-      "Firebase", "DynamoDB", "Elasticsearch", "Cassandra", "MariaDB",
-      "Oracle", "Microsoft SQL Server", "Neo4j", "pgvector"
+      "PostgreSQL",
+      "MySQL",
+      "MongoDB",
+      "Redis",
+      "SQLite",
+      "Supabase",
+      "Firebase",
+      "DynamoDB",
+      "Elasticsearch",
+      "Cassandra",
+      "MariaDB",
+      "Oracle",
+      "Microsoft SQL Server",
+      "Neo4j",
+      "pgvector"
     ],
     "tools": [
-      "Git", "GitHub", "GitLab", "Jira", "Docker Compose", "Postman",
-      "Webpack", "Babel", "ESLint", "Jest", "Cypress", "Selenium",
-      "Figma", "VS Code", "Linux", "npm", "Yarn", "pnpm", "REST APIs",
-      "Microservices", "Agile", "Scrum", "TDD", "Machine Learning",
-      "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy",
-      "Kafka", "RabbitMQ", "gRPC", "OAuth", "JWT", "WebSockets"
+      "Git",
+      "GitHub",
+      "GitLab",
+      "Jira",
+      "Docker Compose",
+      "Postman",
+      "Webpack",
+      "Babel",
+      "ESLint",
+      "Jest",
+      "Cypress",
+      "Selenium",
+      "Figma",
+      "VS Code",
+      "Linux",
+      "npm",
+      "Yarn",
+      "pnpm",
+      "REST APIs",
+      "Microservices",
+      "Agile",
+      "Scrum",
+      "TDD",
+      "Machine Learning",
+      "Data Analysis",
+      "TensorFlow",
+      "PyTorch",
+      "Pandas",
+      "NumPy",
+      "Kafka",
+      "RabbitMQ",
+      "gRPC",
+      "OAuth",
+      "JWT",
+      "WebSockets"
     ]
   },
   "service_delivery": {
-    "certifications": ["ITIL", "ITIL v4", "PMP", "Six Sigma", "Lean Six Sigma", "PRINCE2"],
+    "certifications": [
+      "ITIL",
+      "ITIL v4",
+      "PMP",
+      "Six Sigma",
+      "Lean Six Sigma",
+      "PRINCE2"
+    ],
     "processes": [
-      "SLA management", "incident management", "problem management",
-      "change management", "escalation management", "vendor management",
-      "root cause analysis", "capacity planning", "service level agreements",
-      "on-call rotation", "runbook", "post-mortem"
+      "SLA management",
+      "incident management",
+      "problem management",
+      "change management",
+      "escalation management",
+      "vendor management",
+      "root cause analysis",
+      "capacity planning",
+      "service level agreements",
+      "on-call rotation",
+      "runbook",
+      "post-mortem"
     ],
     "tools": [
-      "ServiceNow", "Zendesk", "Jira Service Management", "Freshdesk",
-      "PagerDuty", "Salesforce Service Cloud", "Remedy"
+      "ServiceNow",
+      "Zendesk",
+      "Jira Service Management",
+      "Freshdesk",
+      "PagerDuty",
+      "Salesforce Service Cloud",
+      "Remedy"
     ],
-    "metrics": ["KPI reporting", "CSAT", "NPS", "SLA compliance", "MTTR", "uptime reporting"]
+    "metrics": [
+      "KPI reporting",
+      "CSAT",
+      "NPS",
+      "SLA compliance",
+      "MTTR",
+      "uptime reporting"
+    ]
   },
   "sales": {
     "processes": [
-      "pipeline management", "lead generation", "prospecting", "cold calling",
-      "account management", "contract negotiation", "quota attainment",
-      "territory management", "upselling", "cross-selling", "forecasting"
+      "pipeline management",
+      "lead generation",
+      "prospecting",
+      "cold calling",
+      "account management",
+      "contract negotiation",
+      "quota attainment",
+      "territory management",
+      "upselling",
+      "cross-selling",
+      "forecasting"
     ],
     "tools": [
-      "Salesforce", "HubSpot", "Outreach", "Salesloft", "ZoomInfo",
-      "LinkedIn Sales Navigator", "Gong", "Pipedrive"
+      "Salesforce",
+      "HubSpot",
+      "Outreach",
+      "Salesloft",
+      "ZoomInfo",
+      "LinkedIn Sales Navigator",
+      "Gong",
+      "Pipedrive"
     ],
-    "metrics": ["quota", "ARR", "MRR", "win rate", "deal size", "sales cycle"]
+    "metrics": [
+      "quota",
+      "ARR",
+      "MRR",
+      "win rate",
+      "deal size",
+      "sales cycle"
+    ]
   },
   "marketing": {
     "processes": [
-      "campaign management", "content strategy", "SEO", "SEM", "brand strategy",
-      "market research", "A/B testing", "lead nurturing", "copywriting",
-      "social media strategy", "email marketing"
+      "campaign management",
+      "content strategy",
+      "SEO",
+      "SEM",
+      "brand strategy",
+      "market research",
+      "A/B testing",
+      "lead nurturing",
+      "copywriting",
+      "social media strategy",
+      "email marketing"
     ],
     "tools": [
-      "Google Analytics", "Google Ads", "HubSpot", "Mailchimp", "Hootsuite",
-      "SEMrush", "Ahrefs", "Adobe Creative Suite", "Canva", "Marketo"
+      "Google Analytics",
+      "Google Ads",
+      "HubSpot",
+      "Mailchimp",
+      "Hootsuite",
+      "SEMrush",
+      "Ahrefs",
+      "Adobe Creative Suite",
+      "Canva",
+      "Marketo"
     ],
-    "metrics": ["CAC", "conversion rate", "engagement rate", "ROAS", "CTR"]
+    "metrics": [
+      "CAC",
+      "conversion rate",
+      "engagement rate",
+      "ROAS",
+      "CTR"
+    ]
   },
   "finance_accounting": {
-    "certifications": ["CPA", "CFA", "CMA", "ACCA"],
-    "processes": [
-      "financial reporting", "budgeting", "forecasting", "accounts payable",
-      "accounts receivable", "reconciliation", "audit", "tax compliance",
-      "GAAP", "IFRS", "financial modeling", "variance analysis"
+    "certifications": [
+      "CPA",
+      "CFA",
+      "CMA",
+      "ACCA"
     ],
-    "tools": ["QuickBooks", "SAP", "NetSuite", "Excel", "Oracle Financials", "Xero"]
+    "processes": [
+      "financial reporting",
+      "budgeting",
+      "forecasting",
+      "accounts payable",
+      "accounts receivable",
+      "reconciliation",
+      "audit",
+      "tax compliance",
+      "GAAP",
+      "IFRS",
+      "financial modeling",
+      "variance analysis"
+    ],
+    "tools": [
+      "QuickBooks",
+      "SAP",
+      "NetSuite",
+      "Excel",
+      "Oracle Financials",
+      "Xero"
+    ]
   },
   "hr_recruiting": {
     "processes": [
-      "talent acquisition", "onboarding", "employee relations", "performance management",
-      "compensation and benefits", "HRIS administration", "workforce planning",
-      "diversity and inclusion", "conflict resolution", "policy development"
+      "talent acquisition",
+      "onboarding",
+      "employee relations",
+      "performance management",
+      "compensation and benefits",
+      "HRIS administration",
+      "workforce planning",
+      "diversity and inclusion",
+      "conflict resolution",
+      "policy development"
     ],
-    "tools": ["Workday", "ADP", "Greenhouse", "Lever", "BambooHR", "SuccessFactors"]
+    "tools": [
+      "Workday",
+      "ADP",
+      "Greenhouse",
+      "Lever",
+      "BambooHR",
+      "SuccessFactors"
+    ]
   },
   "skilled_trades": {
     "certifications": [
-      "OSHA 10", "OSHA 30", "Journeyman License", "Master License",
-      "EPA 608 Certification", "NCCER Certification", "Apprenticeship Certification",
-      "CDL", "Welding Certification"
+      "OSHA 10",
+      "OSHA 30",
+      "Journeyman License",
+      "Master License",
+      "EPA 608 Certification",
+      "NCCER Certification",
+      "Apprenticeship Certification",
+      "CDL",
+      "Welding Certification"
     ],
     "skills": [
-      "electrical wiring", "plumbing installation", "HVAC repair", "welding",
-      "carpentry", "pipefitting", "blueprint reading", "troubleshooting",
-      "preventive maintenance", "equipment calibration", "framing", "drywall installation",
-      "soldering", "sheet metal fabrication"
+      "electrical wiring",
+      "plumbing installation",
+      "HVAC repair",
+      "welding",
+      "carpentry",
+      "pipefitting",
+      "blueprint reading",
+      "troubleshooting",
+      "preventive maintenance",
+      "equipment calibration",
+      "framing",
+      "drywall installation",
+      "soldering",
+      "sheet metal fabrication"
     ],
     "tools": [
-      "power tools", "multimeter", "pipe threading", "welding equipment",
-      "hand tools", "hydraulic tools", "diagnostic equipment", "torque wrench"
+      "power tools",
+      "multimeter",
+      "pipe threading",
+      "welding equipment",
+      "hand tools",
+      "hydraulic tools",
+      "diagnostic equipment",
+      "torque wrench"
     ],
     "safety": [
-      "OSHA compliance", "fall protection", "lockout tagout", "confined space entry",
-      "PPE compliance", "hazard communication", "job site safety"
+      "OSHA compliance",
+      "fall protection",
+      "lockout tagout",
+      "confined space entry",
+      "PPE compliance",
+      "hazard communication",
+      "job site safety"
     ]
   },
   "healthcare_support": {
     "certifications": [
-      "CNA", "CMA", "CPR Certification", "BLS Certification",
-      "Phlebotomy Certification", "HHA Certification", "Medical Assistant Certification",
-      "EMT Certification", "First Aid Certification"
+      "CNA",
+      "CMA",
+      "CPR Certification",
+      "BLS Certification",
+      "Phlebotomy Certification",
+      "HHA Certification",
+      "Medical Assistant Certification",
+      "EMT Certification",
+      "First Aid Certification"
     ],
     "skills": [
-      "patient care", "vital signs monitoring", "medication administration",
-      "wound care", "patient charting", "infection control", "mobility assistance",
-      "specimen collection", "patient intake", "activities of daily living"
+      "patient care",
+      "vital signs monitoring",
+      "medication administration",
+      "wound care",
+      "patient charting",
+      "infection control",
+      "mobility assistance",
+      "specimen collection",
+      "patient intake",
+      "activities of daily living"
     ],
     "systems": [
-      "Epic", "Cerner", "EHR documentation", "electronic health records", "Meditech"
+      "Epic",
+      "Cerner",
+      "EHR documentation",
+      "electronic health records",
+      "Meditech"
     ],
     "compliance": [
-      "HIPAA compliance", "infection control protocols", "patient confidentiality"
+      "HIPAA compliance",
+      "infection control protocols",
+      "patient confidentiality"
     ]
   },
   "hospitality_food_service": {
     "certifications": [
-      "ServSafe Certification", "Food Handler Permit", "TIPS Certification",
+      "ServSafe Certification",
+      "Food Handler Permit",
+      "TIPS Certification",
       "Alcohol Service Certification"
     ],
     "skills": [
-      "food preparation", "customer service", "point of sale systems",
-      "inventory management", "menu planning", "food safety", "guest relations",
-      "table service", "cash handling", "food plating", "line cooking"
+      "food preparation",
+      "customer service",
+      "point of sale systems",
+      "inventory management",
+      "menu planning",
+      "food safety",
+      "guest relations",
+      "table service",
+      "cash handling",
+      "food plating",
+      "line cooking"
     ],
     "tools": [
-      "POS systems", "kitchen equipment", "reservation software", "OpenTable", "Toast POS"
+      "POS systems",
+      "kitchen equipment",
+      "reservation software",
+      "OpenTable",
+      "Toast POS"
     ],
     "operations": [
-      "shift scheduling", "team supervision", "cost control", "health code compliance"
+      "shift scheduling",
+      "team supervision",
+      "cost control",
+      "health code compliance"
     ]
   },
   "logistics_warehouse": {
     "certifications": [
-      "Forklift Certification", "OSHA Warehouse Safety", "Hazmat Certification", "CDL"
+      "Forklift Certification",
+      "OSHA Warehouse Safety",
+      "Hazmat Certification",
+      "CDL"
     ],
     "skills": [
-      "inventory management", "shipment coordination", "order fulfillment",
-      "pallet jack operation", "forklift operation", "warehouse safety",
-      "quality control", "logistics coordination", "picking and packing", "cycle counting"
+      "inventory management",
+      "shipment coordination",
+      "order fulfillment",
+      "pallet jack operation",
+      "forklift operation",
+      "warehouse safety",
+      "quality control",
+      "logistics coordination",
+      "picking and packing",
+      "cycle counting"
     ],
     "systems": [
-      "WMS", "warehouse management system", "SAP", "inventory tracking software",
+      "WMS",
+      "warehouse management system",
+      "SAP",
+      "inventory tracking software",
       "barcode scanning"
     ],
     "operations": [
-      "supply chain coordination", "route planning", "loading dock operations"
+      "supply chain coordination",
+      "route planning",
+      "loading dock operations"
+    ]
+  },
+  "engineering": {
+    "disciplines": [
+      "mechanical engineering",
+      "civil engineering",
+      "electrical engineering",
+      "industrial engineering",
+      "chemical engineering",
+      "structural engineering",
+      "environmental engineering",
+      "aerospace engineering"
+    ],
+    "tools": [
+      "AutoCAD",
+      "SolidWorks",
+      "Revit",
+      "CATIA",
+      "ANSYS",
+      "MATLAB",
+      "Civil 3D",
+      "Fusion 360"
+    ],
+    "certifications": [
+      "PE License",
+      "EIT Certification",
+      "Six Sigma",
+      "PMP",
+      "OSHA 30"
+    ],
+    "methods": [
+      "finite element analysis",
+      "root cause analysis",
+      "blueprint reading",
+      "GD&T",
+      "quality control",
+      "project scheduling",
+      "failure analysis"
+    ]
+  },
+  "education": {
+    "skills": [
+      "classroom management",
+      "lesson planning",
+      "curriculum development",
+      "student assessment",
+      "differentiated instruction",
+      "parent communication",
+      "classroom teaching",
+      "academic advising",
+      "tutoring"
+    ],
+    "tools": [
+      "Google Classroom",
+      "Canvas LMS",
+      "Blackboard",
+      "PowerSchool",
+      "Zoom",
+      "SMART Board"
+    ],
+    "certifications": [
+      "Teaching License",
+      "TESOL Certification",
+      "Montessori Certification",
+      "CPR Certification",
+      "Special Education Certification"
+    ]
+  },
+  "legal": {
+    "practice_areas": [
+      "contract law",
+      "litigation",
+      "corporate law",
+      "intellectual property",
+      "family law",
+      "real estate law",
+      "employment law",
+      "compliance"
+    ],
+    "tools": [
+      "Westlaw",
+      "LexisNexis",
+      "Clio",
+      "iManage",
+      "Relativity",
+      "DocuSign"
+    ],
+    "skills": [
+      "legal research",
+      "contract drafting",
+      "case management",
+      "due diligence",
+      "legal writing",
+      "regulatory compliance"
+    ],
+    "credentials": [
+      "JD",
+      "Bar Admission",
+      "Paralegal Certification",
+      "Notary Public"
+    ]
+  },
+  "creative_design": {
+    "disciplines": [
+      "graphic design",
+      "UX design",
+      "UI design",
+      "motion graphics",
+      "video editing",
+      "photography",
+      "illustration",
+      "brand design"
+    ],
+    "tools": [
+      "Adobe Photoshop",
+      "Adobe Illustrator",
+      "Adobe Premiere Pro",
+      "Figma",
+      "Sketch",
+      "After Effects",
+      "InDesign",
+      "Canva",
+      "Final Cut Pro"
+    ],
+    "skills": [
+      "typography",
+      "wireframing",
+      "prototyping",
+      "color theory",
+      "storyboarding",
+      "art direction",
+      "design systems"
+    ]
+  },
+  "manufacturing_production": {
+    "roles": [
+      "production line operation",
+      "quality control",
+      "machine operation",
+      "assembly",
+      "process improvement",
+      "inventory management"
+    ],
+    "equipment": [
+      "CNC machines",
+      "PLC systems",
+      "forklift operation",
+      "3D printing",
+      "injection molding",
+      "conveyor systems"
+    ],
+    "methods": [
+      "lean manufacturing",
+      "Six Sigma",
+      "5S",
+      "kaizen",
+      "statistical process control",
+      "total quality management"
+    ],
+    "certifications": [
+      "OSHA 10",
+      "OSHA 30",
+      "ISO 9001",
+      "Forklift Certification"
     ]
   }
 }

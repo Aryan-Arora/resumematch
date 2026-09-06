@@ -13,6 +13,11 @@ const DOMAIN_ANCHORS = {
   healthcare_support: "healthcare support role such as a certified nursing assistant, medical assistant, or home health aide providing direct patient care",
   hospitality_food_service: "hospitality or food service role such as a server, cook, or guest services associate in a restaurant or hotel",
   logistics_warehouse: "warehouse or logistics role handling inventory, shipping, forklift operation, and supply chain coordination",
+  engineering: "mechanical, civil, electrical, or industrial engineering role requiring CAD design, technical analysis, and engineering standards compliance",
+  education: "teaching or education role handling classroom instruction, lesson planning, and student assessment",
+  legal: "legal role such as an attorney, paralegal, or compliance specialist handling contracts, litigation, or regulatory matters",
+  creative_design: "creative or design role such as a graphic designer, UX/UI designer, or video editor handling visual design and content production",
+  manufacturing_production: "manufacturing or production role handling assembly line work, quality control, and machine operation",
 };
 
 let anchorEmbeddingsPromise = null;

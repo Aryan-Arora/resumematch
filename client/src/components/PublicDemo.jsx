@@ -15,6 +15,11 @@ const DOMAIN_LABELS = {
   healthcare_support: "Healthcare Support",
   hospitality_food_service: "Hospitality & Food Service",
   logistics_warehouse: "Logistics & Warehouse",
+  engineering: "Engineering",
+  education: "Education",
+  legal: "Legal",
+  creative_design: "Creative & Design",
+  manufacturing_production: "Manufacturing & Production",
   general: "General — extracted directly from this JD",
 };
 

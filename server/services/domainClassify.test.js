@@ -15,6 +15,11 @@ describe("domainClassify", () => {
       "healthcare_support",
       "hospitality_food_service",
       "logistics_warehouse",
+      "engineering",
+      "education",
+      "legal",
+      "creative_design",
+      "manufacturing_production",
       "general",
     ]);
   });
@@ -75,5 +80,45 @@ describe("domainClassify", () => {
         "certification required."
     );
     expect(await classifyDomain(jd)).toBe("logistics_warehouse");
+  }, 30000);
+
+  it("classifies an engineering JD correctly", async () => {
+    const jd = await getEmbedding(
+      "Mechanical Engineer needed for structural analysis, SolidWorks CAD design, and " +
+        "finite element analysis. PE license and Six Sigma experience preferred."
+    );
+    expect(await classifyDomain(jd)).toBe("engineering");
+  }, 30000);
+
+  it("classifies an education JD correctly", async () => {
+    const jd = await getEmbedding(
+      "Elementary School Teacher responsible for lesson planning, classroom management, " +
+        "and student assessment. Teaching license and experience with Google Classroom required."
+    );
+    expect(await classifyDomain(jd)).toBe("education");
+  }, 30000);
+
+  it("classifies a legal JD correctly", async () => {
+    const jd = await getEmbedding(
+      "Corporate Paralegal supporting contract drafting, due diligence, and litigation " +
+        "case management. Experience with Westlaw and Clio required."
+    );
+    expect(await classifyDomain(jd)).toBe("legal");
+  }, 30000);
+
+  it("classifies a creative/design JD correctly", async () => {
+    const jd = await getEmbedding(
+      "UX/UI Designer needed for wireframing, prototyping, and design systems work in " +
+        "Figma. Strong typography and visual design skills required."
+    );
+    expect(await classifyDomain(jd)).toBe("creative_design");
+  }, 30000);
+
+  it("classifies a manufacturing/production JD correctly", async () => {
+    const jd = await getEmbedding(
+      "Production Line Supervisor overseeing CNC machine operation, quality control, and " +
+        "lean manufacturing initiatives. Six Sigma and OSHA 30 preferred."
+    );
+    expect(await classifyDomain(jd)).toBe("manufacturing_production");
   }, 30000);
 });
