@@ -5,7 +5,7 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, extname } from "path";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
-import { extractSkills, compareSkills } from "../services/skillMatch.js";
+import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
@@ -38,19 +38,24 @@ const publicUpload = multer({
   limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_DEMO_RESUMES },
 });
 
-async function classifyJobDescription(description) {
+async function classifyJobDescription(description, skillEmbeddingCache) {
   const jdEmbedding = await getEmbedding(description);
   const candidateDomain = await classifyDomain(jdEmbedding);
-  const candidateSkills = extractSkills(description, taxonomy[candidateDomain]);
+  // Literal-only check decides whether this domain fits at all — a terse JD
+  // that just barely fits should still fall back to "general" if literally
+  // nothing in the taxonomy is present. The semantic fallback only kicks in
+  // once a domain is already chosen, to fill in requirements phrased
+  // differently than the taxonomy's exact wording.
+  const literalCandidateSkills = extractSkills(description, taxonomy[candidateDomain]);
 
   let domain;
   let skills;
-  if (candidateSkills.length === 0) {
+  if (literalCandidateSkills.length === 0) {
     domain = "general";
     skills = extractKeyphrases(description, { minWordsPerPhrase: 2 });
   } else {
     domain = candidateDomain;
-    skills = candidateSkills;
+    skills = await extractSkillsWithSemanticFallback(description, taxonomy[domain], skillEmbeddingCache);
   }
   return { jdEmbedding, domain, skills };
 }
@@ -107,7 +112,7 @@ router.post("/public/classify", demoLimiter, async (req, res) => {
   }
 
   try {
-    const { domain, skills } = await classifyJobDescription(description);
+    const { domain, skills } = await classifyJobDescription(description, new Map());
     res.json({ domain, skills, curatedDomains: getDomainList().filter((d) => d !== "general") });
   } catch (err) {
     console.error(err);
@@ -142,9 +147,12 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
   }
 
   try {
-    const { jdEmbedding, domain, skills } = await classifyJobDescription(description);
-
+    // Shared across JD-side requirement extraction and every resume scored
+    // below — a taxonomy skill's embedding is the same phrase regardless of
+    // which side of the match it's being checked against.
     const skillEmbeddingCache = new Map();
+    const { jdEmbedding, domain, skills } = await classifyJobDescription(description, skillEmbeddingCache);
+
     const files = req.files || [];
     const candidates = [];
     for (const file of files) {

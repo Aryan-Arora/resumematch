@@ -1,4 +1,5 @@
 import { getPreciseEmbedding, cosineSimilarity } from "./embedding.js";
+import { extractKeyphrases } from "./keyphraseExtract.js";
 
 // Cosine similarity threshold above which a resume chunk counts as evidence
 // for a skill that was never literally mentioned. Calibrated empirically
@@ -115,4 +116,57 @@ export async function findImpliedSkills(missingSkills, resumeText, skillEmbeddin
   }
 
   return { impliedSkills, evidence };
+}
+
+/**
+ * The JD-side counterpart to findImpliedSkills: finds taxonomy skills a job
+ * description implies without literally naming them (e.g. "version control
+ * systems" implying Git, "RESTful API design" implying REST APIs).
+ *
+ * Requirement extraction otherwise stops at literal string matching against
+ * the taxonomy (see skillMatch.js#extractSkills) — a JD phrased even slightly
+ * differently than the canonical skill name gets that requirement silently
+ * dropped before scoring ever runs, regardless of how good the resume-side
+ * semantic matching is.
+ *
+ * @param jdText - full job description text
+ * @param taxonomySkills - flat list of every skill name in the JD's domain
+ * @param alreadyExtracted - skills extractSkills() already found literally
+ * @param skillEmbeddingCache - Map<skill, embedding>, shared with findImpliedSkills
+ * @returns string[] - skills implied by the JD but not literally present
+ */
+export async function findImpliedRequirements(jdText, taxonomySkills, alreadyExtracted, skillEmbeddingCache) {
+  const remaining = taxonomySkills.filter((s) => !alreadyExtracted.includes(s));
+  if (remaining.length === 0) return [];
+
+  // Reuse the RAKE extractor already used for the "general" domain fallback —
+  // it turns the JD into short candidate phrases without needing a JD-side
+  // chunker of its own. minWordsPerPhrase: 1 so single-word requirements
+  // ("Kubernetes", "Terraform") aren't dropped before they're even embedded.
+  const phrases = extractKeyphrases(jdText, { maxPhrases: 25, minWordsPerPhrase: 1 });
+  if (phrases.length === 0) return [];
+
+  const phraseEmbeddings = [];
+  for (const phrase of phrases) {
+    phraseEmbeddings.push(await getPreciseEmbedding(phrase));
+  }
+
+  const implied = [];
+  for (const skill of remaining) {
+    let skillEmbedding = skillEmbeddingCache.get(skill);
+    if (!skillEmbedding) {
+      skillEmbedding = await getPreciseEmbedding(skillEmbeddingPhrase(skill));
+      skillEmbeddingCache.set(skill, skillEmbedding);
+    }
+
+    let bestSimilarity = -1;
+    for (const phraseEmbedding of phraseEmbeddings) {
+      const similarity = cosineSimilarity(skillEmbedding, phraseEmbedding);
+      if (similarity > bestSimilarity) bestSimilarity = similarity;
+    }
+
+    if (bestSimilarity >= KEYPHRASE_MATCH_THRESHOLD) implied.push(skill);
+  }
+
+  return implied;
 }

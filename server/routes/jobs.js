@@ -6,7 +6,7 @@ import { dirname, join, extname } from "path";
 import { supabase } from "../supabaseClient.js";
 import { parsePdf, parseDocx, extractEmail } from "../services/parsing.js";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
-import { extractSkills, compareSkills } from "../services/skillMatch.js";
+import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
@@ -110,6 +110,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   }
 
   const jdEmbedding = await getEmbedding(description);
+  const skillEmbeddingCache = new Map();
 
   let jdDomain;
   let jdSkills;
@@ -118,21 +119,23 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
     jdSkills = extractKeyphrases(description, { minWordsPerPhrase: 2 });
   } else if (domain && taxonomy[domain]) {
     jdDomain = domain;
-    jdSkills = extractSkills(description, taxonomy[jdDomain]);
+    jdSkills = await extractSkillsWithSemanticFallback(description, taxonomy[jdDomain], skillEmbeddingCache);
   } else {
     // Auto-classify, then verify the chosen domain's taxonomy actually finds
     // anything in the JD — embedding similarity alone isn't reliable enough
     // at the margin (a terse tech JD can score lower than an unrelated JD).
     // Zero literal matches means the domain doesn't fit; fall back to
     // extracting the JD's own keyphrases instead of forcing a bad taxonomy.
+    // (Literal-only check here on purpose — semantic fallback only kicks in
+    // once a domain is confirmed to fit at all.)
     const candidateDomain = await classifyDomain(jdEmbedding);
-    const candidateSkills = extractSkills(description, taxonomy[candidateDomain]);
-    if (candidateSkills.length === 0) {
+    const literalCandidateSkills = extractSkills(description, taxonomy[candidateDomain]);
+    if (literalCandidateSkills.length === 0) {
       jdDomain = "general";
       jdSkills = extractKeyphrases(description, { minWordsPerPhrase: 2 });
     } else {
       jdDomain = candidateDomain;
-      jdSkills = candidateSkills;
+      jdSkills = await extractSkillsWithSemanticFallback(description, taxonomy[jdDomain], skillEmbeddingCache);
     }
   }
 
