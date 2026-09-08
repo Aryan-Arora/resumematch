@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSession, requestPasswordReset } from "../auth";
-import { supabase } from "../supabaseClient";
+import { supabase, supabaseConfigured } from "../supabaseClient";
 import Logo from "./Logo";
 
 export default function AuthGate({ children }) {
@@ -13,7 +13,7 @@ export default function AuthGate({ children }) {
   const [loading, setLoading] = useState(false);
 
   if (session === undefined) {
-    return <div className="min-h-screen bg-[var(--color-bg)]" />;
+    return <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center text-sm text-[var(--color-text-muted)]">Loading ResumeMatch...</div>;
   }
 
   if (session) {
@@ -64,6 +64,11 @@ export default function AuthGate({ children }) {
           {mode === "signup" && "Create an account with your email."}
           {mode === "reset" && "Enter your email and we'll send you a reset link."}
         </p>
+        {!supabaseConfigured && (
+          <p className="text-[var(--color-danger)] text-xs bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2 mb-4">
+            Local auth is not configured yet. Add the Supabase values from <code>client/.env.example</code> to sign in.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             {mode === "reset" && (

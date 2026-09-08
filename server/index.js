@@ -42,9 +42,9 @@ app.use(
     origin: allowedOrigins,
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "256kb" }));
 
-app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.get("/api/health", (req, res) => res.json({ ok: true, service: "resumematch-api", timestamp: new Date().toISOString() }));
 
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
@@ -59,6 +59,9 @@ if (process.env.SENTRY_DSN) {
 }
 
 app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ error: "Request body contains invalid JSON." });
+  }
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({ error: "One or more files exceed the 10MB size limit." });
@@ -80,11 +83,20 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, "0.0.0.0", () => {
+const server = app.listen(port, "0.0.0.0", () => {
   console.log(`ResumeMatch API listening on port ${port}`);
   recoverStuckCandidates();
   scheduleRetentionSweep();
   // Fired after the port is already bound, so Fly's health check isn't
   // waiting on it — this can take a while on a cold machine.
   warmModels();
+});
+
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received; shutting down gracefully.");
+  server.close(() => process.exit(0));
+});
+
+process.on("SIGINT", () => {
+  server.close(() => process.exit(0));
 });

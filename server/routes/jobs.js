@@ -98,7 +98,9 @@ router.get("/jobs/domains", (req, res) => {
 });
 
 router.post("/jobs", jobWriteLimiter, async (req, res) => {
-  const { title, description, domain } = req.body;
+  const title = typeof req.body.title === "string" ? req.body.title.trim() : "";
+  const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
+  const domain = typeof req.body.domain === "string" ? req.body.domain.trim() : "";
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
   }

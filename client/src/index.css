@@ -105,6 +105,14 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Keep the application shell calm and readable on dense recruiter screens. */
+::selection { background: var(--color-accent); color: var(--color-accent-contrast); }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  outline-offset: 2px;
+}
+input::placeholder, textarea::placeholder { color: var(--color-text-faint); opacity: .85; }
+
 .font-heading {
   font-family: "Geist", "Inter", system-ui, sans-serif;
 }
