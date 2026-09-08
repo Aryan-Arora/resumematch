@@ -218,6 +218,25 @@ export const BLOG_POSTS = [
       },
     ],
   },
+  {
+    slug: "how-to-screen-100-resumes-quickly",
+    title: "How to Screen 100 Resumes Quickly Without Losing the Human Review",
+    description: "A practical workflow for turning a large applicant pool into a reviewable shortlist while keeping hiring decisions explainable.",
+    date: "2026-09-08",
+    readTime: "4 min read",
+    excerpt: "A large applicant pool does not require a rushed shortlist. Use the job description as the source of truth, rank candidates, and keep the evidence visible.",
+    content: [
+      { type: "p", text: "Screening 100 resumes manually from top to bottom makes every decision slower and less consistent. A better workflow uses software for the first pass and keeps people responsible for the final judgment." },
+      { type: "h2", text: "Start with a specific job description" },
+      { type: "p", text: "Separate must-have requirements from useful signals before reviewing applicants. The shortlist is only as good as the criteria it is measured against." },
+      { type: "h2", text: "Rank before you deeply review" },
+      { type: "p", text: "Use semantic similarity and skill coverage to bring the most relevant resumes to the top. This reduces reading time without pretending that a score is a hiring decision." },
+      { type: "h2", text: "Keep the reason beside the score" },
+      { type: "p", text: "For every candidate, review matched skills, missing requirements, implied experience, and the supporting resume evidence. That is where human judgment adds value." },
+      { type: "h2", text: "Use a repeatable review threshold" },
+      { type: "p", text: "Decide in advance which candidates need a closer look, which are ready for a phone screen, and which are missing a dealbreaker requirement. Apply the same review logic to the whole batch." },
+    ],
+  },
 ];
 
 export function getPostBySlug(slug) {
