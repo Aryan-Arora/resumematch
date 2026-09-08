@@ -11,6 +11,7 @@ import ResetPassword from './components/ResetPassword.jsx'
 import LegalPage from './components/LegalPage.jsx'
 import Blog from './components/Blog.jsx'
 import BlogPost from './components/BlogPost.jsx'
+import SeoLandingPage from './components/SeoLandingPage.jsx'
 
 // No client-side router in this app — the public, unauthenticated routes
 // (/, /demo, /reset-password, /privacy, /terms, /blog, /blog/:slug) are
@@ -20,10 +21,13 @@ import BlogPost from './components/BlogPost.jsx'
 // behind /login.
 const path = window.location.pathname
 const blogSlug = path.startsWith('/blog/') ? path.slice('/blog/'.length) : null
+const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters'])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {path === '/login' ? (
+    {seoPaths.has(path) ? (
+      <SeoLandingPage path={path} />
+    ) : path === '/login' ? (
       <AuthGate>
         <OrgGate>
           <App />

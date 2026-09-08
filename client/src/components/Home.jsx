@@ -280,6 +280,16 @@ export default function Home() {
           </Reveal>
         </section>
 
+        <section className="w-full px-6 md:px-16 pb-20">
+          <div className="max-w-6xl mx-auto clay-card p-7 md:p-9">
+            <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-accent)] font-semibold mb-2">Explore ResumeMatch</p>
+            <h2 className="font-heading text-2xl font-bold tracking-tight text-[var(--color-text)] mb-5">Find the screening workflow that fits your team</h2>
+            <div className="grid md:grid-cols-3 gap-3">
+              {[["/free-resume-screening-software", "Free resume screening software"], ["/explainable-ai-resume-screening", "Explainable AI screening"], ["/ats-alternative-for-recruiters", "ATS alternative for recruiters"]].map(([href, label]) => <a key={href} href={href} className="glass-panel p-4 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]">{label}<span className="block text-xs text-[var(--color-text-faint)] mt-1">Learn more →</span></a>)}
+            </div>
+          </div>
+        </section>
+
         {/* Preview */}
         <Reveal as="section" className="w-full px-6 md:px-16 py-20 flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1">

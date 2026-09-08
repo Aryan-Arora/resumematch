@@ -82,6 +82,11 @@ export default function BlogPost({ slug }) {
             ))}
           </div>
 
+          <div className="mt-10 grid sm:grid-cols-2 gap-3">
+            <a href="/explainable-ai-resume-screening" className="glass-panel p-4 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]">See explainable AI screening →</a>
+            <a href="/free-resume-screening-software" className="glass-panel p-4 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]">Try free resume screening →</a>
+          </div>
+
           <div className="mt-12 pt-8 border-t border-[var(--color-border)]/60">
             <a
               href="/demo"
