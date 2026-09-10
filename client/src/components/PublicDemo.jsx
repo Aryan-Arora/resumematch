@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { matchPreview } from "../api";
 import { getTheme, toggleTheme } from "../theme";
 import { useSEO } from "../lib/seo";
+import { trackEvent } from "../lib/analytics";
 import Logo from "./Logo";
 
 const DOMAIN_LABELS = {
@@ -87,6 +88,9 @@ export default function PublicDemo() {
     }
     setFileError(null);
     setFiles(selected);
+    if (selected.length > 0) {
+      trackEvent("demo_resume_upload", { count: selected.length });
+    }
     e.target.value = "";
   }
 
@@ -99,10 +103,16 @@ export default function PublicDemo() {
     setError(null);
     setResult(null);
     setLoading(true);
+    trackEvent("demo_started", { resume_count: files.length });
     try {
       const data = await matchPreview(description, files);
       setResult(data);
+      trackEvent("demo_completed", {
+        resume_count: files.length,
+        candidate_count: data.candidates?.length || 0,
+      });
     } catch (err) {
+      trackEvent("demo_failed");
       setError(err.message);
     } finally {
       setLoading(false);
@@ -339,6 +349,7 @@ export default function PublicDemo() {
           </p>
           <a
             href="/login"
+            onClick={() => trackEvent("signup_cta_click", { location: "demo_result" })}
             className="clay-button inline-block bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-5 py-2.5 rounded-xl transition"
           >
             Sign up to screen real resumes →

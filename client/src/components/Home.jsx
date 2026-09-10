@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getTheme, toggleTheme, applyStoredTheme } from "../theme";
 import { useSEO, useJsonLd } from "../lib/seo";
+import { trackEvent } from "../lib/analytics";
 import Logo from "./Logo";
 import StreamlinedJourney from "./StreamlinedJourney";
 
@@ -196,12 +197,14 @@ export default function Home() {
             </a>
             <a
               href="/demo"
+              onClick={() => trackEvent("demo_cta_click", { location: "header" })}
               className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition"
             >
               Continue as Guest
             </a>
             <a
               href="/login"
+              onClick={() => trackEvent("signup_cta_click", { location: "header" })}
               className="clay-button px-6 py-2.5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-full font-heading font-medium text-sm transition"
             >
               Sign In / Sign Up
@@ -220,8 +223,12 @@ export default function Home() {
               <RotatingHeadline />
             </div>
             <div className="max-w-xl mx-auto">
+              <p className="text-sm text-[var(--color-text-muted)] mb-3">
+                See a ranked, explainable match in under a minute — no account or credit card.
+              </p>
               <a
                 href="/demo"
+                onClick={() => trackEvent("demo_cta_click", { location: "hero" })}
                 className="clay-button group relative flex items-center gap-4 p-2 pl-6 bg-[var(--color-surface)] rounded-full shadow-lg ring-1 ring-[var(--color-border)]/60 hover:ring-[var(--color-accent)]/40 transition"
               >
                 <span className="material-symbols-outlined text-[var(--color-accent)]">search</span>
@@ -397,12 +404,14 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                   href="/demo"
+                  onClick={() => trackEvent("demo_cta_click", { location: "bottom_banner" })}
                   className="bg-[var(--color-surface)] text-[var(--color-accent)] px-8 py-3.5 rounded-full font-heading font-medium text-sm shadow-xl hover:opacity-90 transition"
                 >
                   Continue as Guest
                 </a>
                 <a
                   href="/login"
+                  onClick={() => trackEvent("signup_cta_click", { location: "bottom_banner" })}
                   className="border-2 border-white/30 text-[var(--color-accent-contrast)] px-8 py-3.5 rounded-full font-heading font-medium text-sm hover:bg-white/10 transition"
                 >
                   Sign In / Sign Up
