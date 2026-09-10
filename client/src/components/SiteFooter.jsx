@@ -25,6 +25,9 @@ export default function SiteFooter() {
               loading="lazy"
             />
           </a>
+          <a href="https://openhunts.com" target="_blank" title="OpenHunts Club">
+            <img alt="OpenHunts Club Member" height="105" src="https://cdn.openhunts.com/badges/club.webp" style={{ width: "195px", height: "auto" }} width="486" loading="lazy" />
+          </a>
           <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
           <a href="/blog" className="hover:text-[var(--color-text)] transition">
             Blog
