@@ -304,6 +304,39 @@ export const BLOG_POSTS = [
       { type: "p", text: "Compare shortlisted candidates with interview outcomes. If strong candidates are consistently missing, refine the job description, threshold, or review process rather than blindly increasing the model's weight." },
     ],
   },
+  {
+    slug: "resume-screening-scorecard-template",
+    title: "Resume Screening Scorecard Template for Recruiters",
+    description:
+      "Use this practical resume screening scorecard to define must-have skills, compare candidates consistently, and document shortlist decisions.",
+    date: "2026-09-10",
+    readTime: "6 min read",
+    excerpt:
+      "A simple scorecard helps recruiters compare candidates consistently without reducing the hiring decision to one unexplained number.",
+    content: [
+      { type: "p", text: "A resume screening scorecard turns a vague first impression into a repeatable review. It gives every reviewer the same questions to answer and leaves a short record of why a candidate moved forward or stopped." },
+      { type: "h2", text: "The scorecard template" },
+      { type: "ul", items: [
+        "Must-have requirement: Is it present, absent, or unclear?",
+        "Relevant experience: What responsibility or outcome demonstrates it?",
+        "Useful additional signal: Does the candidate bring a skill that improves the fit?",
+        "Evidence: Which sentence or section of the resume supports the assessment?",
+        "Next step: Phone screen, hiring-manager review, hold for clarification, or decline",
+      ] },
+      { type: "h2", text: "Step 1: Turn the job description into criteria" },
+      { type: "p", text: "Before opening resumes, list the requirements that are genuinely necessary. Include licenses, certifications, schedule, location, language, and domain experience where they matter. Keep preferred requirements separate so they do not accidentally become rejection criteria." },
+      { type: "h2", text: "Step 2: Define what acceptable evidence looks like" },
+      { type: "p", text: "For each must-have, write one example of acceptable evidence. A warehouse lead might show responsibility for shift planning and safety procedures; a recruiter might show ownership of a hiring pipeline and measurable time-to-fill improvements. This keeps titles from doing too much of the work." },
+      { type: "h2", text: "Step 3: Use three evidence labels" },
+      { type: "p", text: "Mark each requirement as matched when it is directly supported, missing when the resume provides no support, or implied when related experience suggests it but a follow-up is needed. The implied category prevents a promising candidate from being discarded just because they used different wording." },
+      { type: "h2", text: "Step 4: Add a decision threshold" },
+      { type: "p", text: "Choose the next step before reviewing the pool. Candidates with all must-haves can move to a closer review; candidates with one unclear requirement can go to a phone screen; candidates missing a true dealbreaker can be documented and declined. The threshold should be consistent across the batch." },
+      { type: "h2", text: "Step 5: Review the scorecard with a person" },
+      { type: "p", text: "A scorecard organizes evidence; it does not make the hiring decision. A recruiter or hiring manager should check the underlying resume, resolve ambiguous requirements, and consider context that a screening tool cannot see." },
+      { type: "h2", text: "Use the scorecard with ResumeMatch" },
+      { type: "p", text: "ResumeMatch can provide the first-pass comparison by showing matched, missing, and implied skills with supporting resume evidence. You can use that breakdown to fill the scorecard faster, then keep the human review as the final step." },
+    ],
+  },
 ];
 
 export function getPostBySlug(slug) {
