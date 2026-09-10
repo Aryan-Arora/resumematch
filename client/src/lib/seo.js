@@ -25,7 +25,7 @@ function setCanonical(href) {
 // don't execute JS; this keeps them in sync once React mounts and handles
 // per-route values for anything that does render JS (Google, social share
 // unfurls, etc).
-export function useSEO({ title, description, path = "/" }) {
+export function useSEO({ title, description, path = "/", image = "/og-image.png", type = "website" }) {
   useEffect(() => {
     const fullTitle = title ? `${title} | ResumeMatch` : "ResumeMatch — Explainable AI Resume Screening";
     document.title = fullTitle;
@@ -37,10 +37,13 @@ export function useSEO({ title, description, path = "/" }) {
       setMeta("name", "twitter:description", description);
     }
     setMeta("property", "og:title", fullTitle);
+    setMeta("property", "og:type", type);
     setMeta("name", "twitter:title", fullTitle);
+    setMeta("property", "og:image", image.startsWith("http") ? image : `https://resumematch.co.in${image}`);
+    setMeta("name", "twitter:image", image.startsWith("http") ? image : `https://resumematch.co.in${image}`);
     setMeta("property", "og:url", url);
     setCanonical(url);
-  }, [title, description, path]);
+  }, [title, description, path, image, type]);
 }
 
 // Injects a JSON-LD schema block scoped to the current page, removing it on

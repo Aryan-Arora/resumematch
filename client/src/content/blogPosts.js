@@ -237,6 +237,73 @@ export const BLOG_POSTS = [
       { type: "p", text: "Decide in advance which candidates need a closer look, which are ready for a phone screen, and which are missing a dealbreaker requirement. Apply the same review logic to the whole batch." },
     ],
   },
+  {
+    slug: "resume-screening-checklist-for-recruiters",
+    title: "The Resume Screening Checklist Recruiters Can Reuse for Every Role",
+    description:
+      "A practical resume screening checklist for recruiters: define must-haves, separate evidence from assumptions, and document every shortlist decision.",
+    date: "2026-09-10",
+    readTime: "5 min read",
+    excerpt:
+      "Use the same simple checklist for every req so screening stays consistent when the applicant pool grows.",
+    content: [
+      { type: "p", text: "A repeatable screening checklist makes hiring decisions easier to compare and easier to explain. It also keeps a strong candidate from being rejected because one reviewer happened to skim more quickly than another." },
+      { type: "h2", text: "1. Write the must-have requirements first" },
+      { type: "p", text: "Separate requirements that are genuinely necessary on day one from skills that can be learned after hiring. Put certifications, licenses, location, schedule, and work authorization requirements in the same written list as technical or functional skills." },
+      { type: "h2", text: "2. Decide what counts as evidence" },
+      { type: "p", text: "A job title alone is weak evidence. Look for the project, responsibility, outcome, certification, or sentence that demonstrates the requirement. Record the evidence instead of relying on a feeling that someone is a good fit." },
+      { type: "h2", text: "3. Separate missing from unstated" },
+      { type: "p", text: "A resume may not mention a skill even when the candidate has related experience. Mark requirements as matched, missing, or possibly implied so a reviewer can decide whether a follow-up question is worthwhile." },
+      { type: "h2", text: "4. Apply the same threshold to everyone" },
+      { type: "p", text: "Choose a review threshold before you start. For example, move candidates with all must-haves to a closer review, keep candidates with one unclear requirement for a phone screen, and document why candidates below the threshold were not progressed." },
+      { type: "h2", text: "5. Keep a short decision record" },
+      { type: "p", text: "A one-line reason beside every decision is enough: matched the required license, missing the night-shift requirement, or experience is relevant but needs verification. This makes calibration and handoffs much easier." },
+    ],
+  },
+  {
+    slug: "semantic-resume-search-vs-keyword-matching",
+    title: "Semantic Resume Search vs. Keyword Matching: What Recruiters Should Know",
+    description:
+      "Keyword search misses equivalent language in resumes. Learn how semantic resume search works and when recruiters should still review the underlying evidence.",
+    date: "2026-09-10",
+    readTime: "5 min read",
+    excerpt:
+      "Exact keywords are useful for some hard requirements, but they are a poor substitute for understanding what a candidate actually did.",
+    content: [
+      { type: "p", text: "Recruiters often start with keyword search because it is fast and familiar. The problem is that candidates describe the same work in many different ways. A search for one exact phrase can hide relevant experience behind different wording." },
+      { type: "h2", text: "What keyword matching does well" },
+      { type: "p", text: "Exact matching is useful when a term must appear precisely, such as a license number, a required certification, or a specific compliance designation. It is also easy to audit because the match is visible." },
+      { type: "h2", text: "Where keyword matching breaks down" },
+      { type: "p", text: "A candidate who writes managed an engineering team may be relevant to a requirement for led software developers, even though the words are different. Synonyms, abbreviations, job-specific language, and transferable experience create gaps that literal search cannot resolve." },
+      { type: "h2", text: "How semantic search helps" },
+      { type: "p", text: "Semantic matching represents text by meaning, then compares each job requirement with the closest evidence in the resume. It can surface related language while still showing the sentence that drove the match." },
+      { type: "h2", text: "Use both signals together" },
+      { type: "p", text: "Semantic similarity should help prioritize the review, not replace recruiter judgment. Keep exact checks for dealbreakers, use semantic matching to find equivalent experience, and inspect the evidence before making a decision." },
+    ],
+  },
+  {
+    slug: "how-small-recruiting-teams-can-use-ai-screening",
+    title: "How Small Recruiting Teams Can Use AI Screening Without Losing Control",
+    description:
+      "A practical guide to using AI resume screening for small recruiting teams while keeping criteria, evidence, privacy, and human review in control.",
+    date: "2026-09-10",
+    readTime: "6 min read",
+    excerpt:
+      "Small teams can save screening time without handing hiring decisions to an opaque model. Start with clear criteria and keep the reasoning visible.",
+    content: [
+      { type: "p", text: "Small recruiting teams do not need a large ATS implementation to make resume screening more consistent. A focused screening workflow can reduce repetitive reading while leaving the decision with the recruiter or hiring manager." },
+      { type: "h2", text: "Begin with the job description you already use" },
+      { type: "p", text: "AI screening is only as useful as the criteria it receives. Remove vague phrases, identify must-have requirements, and make the responsibilities specific enough to compare against a resume." },
+      { type: "h2", text: "Use ranking for triage, not automatic rejection" },
+      { type: "p", text: "A ranked list helps a small team decide where to spend its limited review time. It should not silently reject applicants without a human checking the requirements and evidence behind the ranking." },
+      { type: "h2", text: "Require an explanation for every recommendation" },
+      { type: "p", text: "The useful output is not just a score. Recruiters should be able to see which skills matched, what appears to be missing, what was inferred, and the resume sentence supporting the result." },
+      { type: "h2", text: "Set a privacy boundary before uploading resumes" },
+      { type: "p", text: "Check where documents are processed, how long they are retained, whether they are used to train models, and who on your team can access them. This should be a procurement question even when the tool is free." },
+      { type: "h2", text: "Review the workflow after every hiring cycle" },
+      { type: "p", text: "Compare shortlisted candidates with interview outcomes. If strong candidates are consistently missing, refine the job description, threshold, or review process rather than blindly increasing the model's weight." },
+    ],
+  },
 ];
 
 export function getPostBySlug(slug) {

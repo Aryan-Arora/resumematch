@@ -1,5 +1,5 @@
 import { getPostBySlug } from "../content/blogPosts";
-import { useSEO } from "../lib/seo";
+import { useSEO, useJsonLd } from "../lib/seo";
 import SiteHeader from "./SiteHeader";
 import SiteFooter from "./SiteFooter";
 
@@ -38,7 +38,20 @@ export default function BlogPost({ slug }) {
     title: post ? post.title : "Post not found",
     description: post ? post.description : "This post doesn't exist.",
     path: `/blog/${slug}`,
+    type: "article",
   });
+
+  useJsonLd(post ? {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { "@type": "Organization", name: "ResumeMatch", url: "https://resumematch.co.in/" },
+    publisher: { "@type": "Organization", name: "ResumeMatch", url: "https://resumematch.co.in/" },
+    mainEntityOfPage: `https://resumematch.co.in/blog/${slug}`,
+  } : null);
 
   if (!post) {
     return (
