@@ -421,16 +421,15 @@ export default function Home() {
               ResumeMatch
             </span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
-            <a href="/blog" className="hover:text-[var(--color-text)] transition">
-              Blog
+          <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-6">
+            <a href="https://startupfa.me/s/resumematch?utm_source=resumematch.co.in" target="_blank" rel="noopener noreferrer" aria-label="ResumeMatch featured on Startup Fame">
+              <img src="https://startupfa.me/badges/featured-badge.webp" alt="ResumeMatch - Featured on Startup Fame" width="171" height="54" loading="lazy" />
             </a>
-            <a href="/privacy" className="hover:text-[var(--color-text)] transition">
-              Privacy Policy
-            </a>
-            <a href="/terms" className="hover:text-[var(--color-text)] transition">
-              Terms of Service
-            </a>
+            <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
+              <a href="/blog" className="hover:text-[var(--color-text)] transition">Blog</a>
+              <a href="/privacy" className="hover:text-[var(--color-text)] transition">Privacy Policy</a>
+              <a href="/terms" className="hover:text-[var(--color-text)] transition">Terms of Service</a>
+            </div>
           </div>
         </div>
       </footer>
