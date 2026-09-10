@@ -1,0 +1,24 @@
+# ResumeMatch
+
+> ResumeMatch is a web-based resume screening tool for recruiters and hiring teams.
+
+## Official pages
+
+- Homepage: https://resumematch.co.in/
+- Free demo: https://resumematch.co.in/demo
+- Resume parser: https://resumematch.co.in/resume-parser
+- Documentation: https://resumematch.co.in/docs
+- Blog: https://resumematch.co.in/blog
+- Privacy policy: https://resumematch.co.in/privacy
+
+## What it does
+
+ResumeMatch accepts PDF and DOCX resumes, extracts job-relevant requirements, and compares candidates against a job description. Results show matched, missing, and implied skills with supporting resume evidence.
+
+## Responsible-use note
+
+ResumeMatch is a prioritization aid, not an automatic hiring decision. Recruiters should inspect the underlying resume, verify requirements, and apply consistent human review.
+
+## Product positioning
+
+ResumeMatch is designed for small recruiting teams, staffing agencies, HR teams, and hiring managers who want explainable screening without adopting a full enterprise ATS.

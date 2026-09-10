@@ -12,6 +12,7 @@ import LegalPage from './components/LegalPage.jsx'
 import Blog from './components/Blog.jsx'
 import BlogPost from './components/BlogPost.jsx'
 import SeoLandingPage from './components/SeoLandingPage.jsx'
+import ResourcePage from './components/ResourcePage.jsx'
 
 // No client-side router in this app — the public, unauthenticated routes
 // (/, /demo, /reset-password, /privacy, /terms, /blog, /blog/:slug) are
@@ -25,7 +26,11 @@ const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-re
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {seoPaths.has(path) ? (
+    {path === '/resume-parser' ? (
+      <ResourcePage type="parser" />
+    ) : path === '/docs' ? (
+      <ResourcePage type="docs" />
+    ) : seoPaths.has(path) ? (
       <SeoLandingPage path={path} />
     ) : path === '/login' ? (
       <AuthGate>

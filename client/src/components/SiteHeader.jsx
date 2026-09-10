@@ -36,6 +36,12 @@ export default function SiteHeader() {
             Blog
           </a>
           <a
+            href="/docs"
+            className="hidden md:inline-block px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition"
+          >
+            Docs
+          </a>
+          <a
             href="/demo"
             className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition"
           >
