@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4100/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();
@@ -42,15 +42,6 @@ export async function joinOrganization(code) {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
     body: JSON.stringify({ code }),
-  }).then(handle);
-}
-
-// Unauthenticated — no session token needed.
-export async function classifyPreview(description) {
-  return fetch(`${API_BASE}/public/classify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ description }),
   }).then(handle);
 }
 
@@ -180,4 +171,99 @@ export async function deleteJob(jobId) {
   }).then((res) => {
     if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
   });
+}
+
+// --- Seeker side (job seeker: resume -> ranked jobs) -----------------------
+
+export async function uploadSeekerResume(file) {
+  const formData = new FormData();
+  formData.append("resume", file);
+  return fetch(`${API_BASE}/seeker/resumes`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: formData,
+  }).then(handle);
+}
+
+export async function getSeekerResumes() {
+  return fetch(`${API_BASE}/seeker/resumes`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function getSeekerMatches(resumeId, limit) {
+  const qs = limit ? `?limit=${limit}` : "";
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/matches${qs}`, {
+    headers: await authHeaders(),
+  }).then(handle);
+}
+
+export async function explainSeekerMatch(resumeId, jobId) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/matches/${jobId}/explain`, {
+    headers: await authHeaders(),
+  }).then(handle);
+}
+
+export async function setSeekerResumeVisibility(resumeId, visible) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}/visibility`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ visible }),
+  }).then(handle);
+}
+
+export async function deleteSeekerResume(resumeId) {
+  return fetch(`${API_BASE}/seeker/resumes/${resumeId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  }).then((res) => {
+    if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
+  });
+}
+
+// --- Seeker application tracker (Kanban) -----------------------------------
+
+export async function getSeekerApplications() {
+  return fetch(`${API_BASE}/seeker/applications`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function saveApplication(jobListingId, status) {
+  return fetch(`${API_BASE}/seeker/applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ jobListingId, status }),
+  }).then(handle);
+}
+
+export async function updateApplication(id, patch) {
+  return fetch(`${API_BASE}/seeker/applications/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify(patch),
+  }).then(handle);
+}
+
+export async function deleteApplication(id) {
+  return fetch(`${API_BASE}/seeker/applications/${id}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  }).then((res) => {
+    if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
+  });
+}
+
+// --- Talent marketplace (recruiter searches the opted-in seeker pool) -------
+
+export async function searchTalent({ description, jobId, limit }) {
+  return fetch(`${API_BASE}/talent/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ description, jobId, limit }),
+  }).then(handle);
+}
+
+export async function explainTalent(seekerResumeId, { description, jobId }) {
+  return fetch(`${API_BASE}/talent/${seekerResumeId}/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ description, jobId }),
+  }).then(handle);
 }

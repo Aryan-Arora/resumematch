@@ -9,6 +9,10 @@ HR candidate screening tool: upload one job description, bulk-upload resumes, ge
 
 ## Setup
 
+> **Full walkthrough:** for an end-to-end setup + verification guide covering both
+> the recruiter and seeker sides, the SQL migrations, and job ingestion, see
+> [`docs/SETUP.md`](docs/SETUP.md).
+
 ### 1. Backend
 
 ```bash
@@ -22,7 +26,7 @@ Fill in `.env`:
 - `PORT` — defaults to `4000` if unset.
 - `CORS_ORIGIN` — comma-separated list of origins allowed to call the API. Defaults to the local Vite dev ports.
 
-Your Supabase project needs the `pgvector` extension enabled and the `jobs` / `candidates` tables + `resumes` storage bucket created — see the SQL migrations that were run when this project was set up (ask in the conversation history, or recreate from `server/routes/*.js` which shows the expected schema).
+Your Supabase project needs the `pgvector` extension enabled and the schema created. Run [`server/db/migrations/0001_baseline_schema.sql`](server/db/migrations/0001_baseline_schema.sql) against your project (Supabase SQL editor or `psql`) — it creates the `organizations` / `profiles` / `jobs` / `candidates` tables, their indexes, RLS policies, and the `resumes` storage bucket. That migration was reconstructed from the application code, so review it before relying on it in production.
 
 Run the backend:
 
@@ -43,7 +47,7 @@ npm run dev
 
 `client/.env` sets:
 
-- `VITE_API_URL` — defaults to `http://localhost:4100/api`; point it at wherever your backend actually runs.
+- `VITE_API_URL` — defaults to `http://localhost:4000/api`; point it at wherever your backend actually runs.
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — same Supabase project as the backend, but the **anon** key (safe to expose client-side), used only for login/signup. From Project Settings → API.
 
 ### 3. Run tests
@@ -53,6 +57,21 @@ npm test
 ```
 
 Vitest suite covering skill extraction, scoring, the upload queue, domain classification, and full-pipeline integration tests (real embeddings, no mocks). `npm run test:pipeline` also still exists as a manual one-off smoke script.
+
+### 4. (Optional) Ingest live jobs for the seeker side
+
+The seeker experience matches a résumé against a corpus of real job postings.
+Populate it from Adzuna (free tier ~1000 calls/month — get a key at
+[developer.adzuna.com](https://developer.adzuna.com)), then run the ingestion CLI:
+
+```bash
+# in server .env: ADZUNA_APP_ID=... ADZUNA_APP_KEY=... (ADZUNA_COUNTRY optional)
+npm run ingest -- --what "software engineer" --where "remote" --pages 1
+```
+
+Each posting is embedded once on fetch and cached in the `job_listings` table
+(dedupe key `source` + `external_id`), so re-running never re-embeds unchanged
+postings. Requires the `server/db/migrations/0003_job_listings.sql` migration.
 
 ## Auth & multi-tenancy
 

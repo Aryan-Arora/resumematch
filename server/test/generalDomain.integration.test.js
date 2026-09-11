@@ -79,7 +79,7 @@ describe("general-domain fallback (JD-derived keyphrases)", () => {
     }
   }, 30000);
 
-  it("falls back to general (none of the 6 curated domains fit)", () => {
+  it("falls back to general (none of the 10 curated domains fit)", () => {
     expect(jdDomain).toBe("general");
   });
 
