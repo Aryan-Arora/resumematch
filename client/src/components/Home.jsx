@@ -243,28 +243,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product demo */}
+        {/* Live product demo */}
         <section className="w-full px-6 md:px-16 pb-20">
           <div className="max-w-5xl mx-auto clay-card p-4 md:p-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5 px-1">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-accent)] font-semibold mb-2">See it in action</p>
-                <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text)]">From job description to explainable shortlist</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-accent)] font-semibold mb-2">Use the real product</p>
+                <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text)]">Try ResumeMatch directly on this page</h2>
               </div>
-              <a href="/demo" onClick={() => trackEvent("demo_cta_click", { location: "video_section" })} className="text-sm font-medium text-[var(--color-accent)] hover:underline">Try the live demo →</a>
+              <a href="/demo" onClick={() => trackEvent("demo_cta_click", { location: "live_demo_section" })} className="text-sm font-medium text-[var(--color-accent)] hover:underline">Open full demo →</a>
             </div>
-            <video
-              className="w-full rounded-2xl bg-[#0b1020] shadow-lg"
-              controls
-              playsInline
-              preload="metadata"
-              poster="/video/resumematch-demo-poster.jpg"
-              onPlay={() => trackEvent("demo_video_play", { location: "homepage" })}
-              aria-label="ResumeMatch product demo showing job description input, resume upload, and explainable match results"
-            >
-              <source src="/video/resumematch-demo.mp4" type="video/mp4" />
-              Your browser does not support video playback. <a href="/demo">Try the live demo instead.</a>
-            </video>
+            <div className="overflow-hidden rounded-2xl border border-[var(--color-border)]/70 shadow-lg bg-[var(--color-bg)]">
+              <iframe
+                src="/demo"
+                title="Live ResumeMatch demo"
+                className="w-full h-[680px] md:h-[760px] bg-[var(--color-bg)]"
+                loading="lazy"
+              />
+            </div>
           </div>
         </section>
 
