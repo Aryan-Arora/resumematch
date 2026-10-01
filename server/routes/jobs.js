@@ -13,6 +13,7 @@ import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { enqueue } from "../services/uploadQueue.js";
 import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
+import { extractRequiredFilters, evaluateEligibility } from "../services/eligibility.js";
 import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 
 function domainTaxonomy(job) {
@@ -149,6 +150,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
       jd_embedding: jdEmbedding,
       jd_skills: jdSkills,
       jd_domain: jdDomain,
+      required_filters: extractRequiredFilters(description),
       org_id: req.orgId,
     })
     .select()
@@ -184,7 +186,7 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
     if (parsed.unparseable) {
       const { error } = await supabase
         .from("candidates")
-        .update({ unparseable: true, status: "done" })
+        .update({ unparseable: true, status: "done", parse_method: parsed.method, parse_confidence: parsed.confidence, parse_warnings: parsed.warnings, eligibility_status: "needs_review", eligibility_reasons: [{ type: "unclear", text: "Resume could not be read reliably." }] })
         .eq("id", candidateId);
       if (error) throw error;
       return;
@@ -209,6 +211,7 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
         ? (matched.length + impliedSkills.length) / job.jd_skills.length
         : 0;
     const finalScore = computeFinalScore(semanticScore, skillScore);
+    const eligibility = evaluateEligibility(job.required_filters, parsed.text);
 
     const { error } = await supabase
       .from("candidates")
@@ -224,6 +227,12 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
         skill_score: skillScore,
         final_score: finalScore,
         unparseable: false,
+        parse_method: parsed.method,
+        parse_confidence: parsed.confidence,
+        parse_warnings: parsed.warnings,
+        eligibility_status: eligibility.status,
+        eligibility_reasons: eligibility.reasons,
+        review_status: "needs_review",
         status: "done",
       })
       .eq("id", candidateId);

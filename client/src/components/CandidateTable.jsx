@@ -50,6 +50,16 @@ function ScoreRing({ score }) {
   );
 }
 
+function EligibilityBadge({ candidate }) {
+  if (candidate.unparseable || candidate.eligibility_status === "needs_review") {
+    return <span className="inline-flex items-center gap-1.5 text-[var(--color-warning,#b7791f)] text-xs font-medium"><span className="w-1.5 h-1.5 rounded-full bg-current" />Needs review</span>;
+  }
+  if (candidate.eligibility_status === "ineligible") {
+    return <span className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium"><span className="w-1.5 h-1.5 rounded-full bg-current" />Gate failed</span>;
+  }
+  return <span className="inline-flex items-center gap-1.5 text-[var(--color-success)] text-xs font-medium"><span className="w-1.5 h-1.5 rounded-full bg-current" />Eligible</span>;
+}
+
 export default function CandidateTable({ job, onAddMore }) {
   const [candidates, setCandidates] = useState([]);
   const [taxonomy, setTaxonomy] = useState(null);
@@ -264,11 +274,8 @@ export default function CandidateTable({ job, onAddMore }) {
                               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)] flex-shrink-0" />
                               <span className="truncate">Failed</span>
                             </span>
-                          ) : c.unparseable ? (
-                            <span className="inline-flex items-center gap-1.5 text-[var(--color-danger)] text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-danger)] flex-shrink-0" />
-                              <span className="truncate">Unparseable</span>
-                            </span>
+                          ) : c.eligibility_status ? (
+                            <EligibilityBadge candidate={c} />
                           ) : (
                             <span className="inline-flex items-center gap-1.5 text-[var(--color-success)] text-xs font-medium">
                               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] flex-shrink-0" />
@@ -358,6 +365,16 @@ export default function CandidateTable({ job, onAddMore }) {
                               </p>
                             ) : (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="sm:col-span-2 rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface)]/60 p-4">
+                                  <div className="flex items-center justify-between gap-3 mb-2">
+                                    <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Eligibility gates</h3>
+                                    {c.parse_confidence !== null && c.parse_confidence !== undefined && <span className="text-xs text-[var(--color-text-faint)]">Parse confidence {Math.round(Number(c.parse_confidence) * 100)}%</span>}
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    {(c.eligibility_reasons || []).map((reason, index) => <p key={`${reason.text}-${index}`} className={`text-sm ${reason.type === "failed" ? "text-[var(--color-danger)]" : reason.type === "passed" ? "text-[var(--color-success)]" : "text-[var(--color-text-muted)]"}`}>{reason.type === "passed" ? "✓" : reason.type === "failed" ? "×" : "?"} {reason.text}</p>)}
+                                    {(c.parse_warnings || []).map((warning) => <p key={warning} className="text-sm text-[var(--color-text-muted)]">⚠ {warning}</p>)}
+                                  </div>
+                                </div>
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">
                                     Matched Skills ({c.matched_skills?.length || 0})

@@ -16,10 +16,11 @@ export async function parsePdf(buffer) {
   try {
     const result = await pdfParse(buffer);
     const text = result.text.trim();
-    if (!text) return { text: "", unparseable: true };
-    return { text, unparseable: false };
+    if (!text) return { text: "", unparseable: true, method: "text", confidence: 0, warnings: ["No text layer found; OCR is required."] };
+    const warnings = text.length < 100 ? ["Very little text was extracted; verify this resume manually."] : [];
+    return { text, unparseable: false, method: "text", confidence: warnings.length ? 0.55 : 0.95, warnings };
   } catch {
-    return { text: "", unparseable: true };
+    return { text: "", unparseable: true, method: "text", confidence: 0, warnings: ["PDF text extraction failed; OCR is required."] };
   }
 }
 
@@ -27,9 +28,10 @@ export async function parseDocx(buffer) {
   try {
     const result = await mammoth.extractRawText({ buffer });
     const text = result.value.trim();
-    if (!text) return { text: "", unparseable: true };
-    return { text, unparseable: false };
+    if (!text) return { text: "", unparseable: true, method: "text", confidence: 0, warnings: ["No text could be extracted from this DOCX."] };
+    const warnings = text.length < 100 ? ["Very little text was extracted; verify this resume manually."] : [];
+    return { text, unparseable: false, method: "text", confidence: warnings.length ? 0.55 : 0.95, warnings };
   } catch {
-    return { text: "", unparseable: true };
+    return { text: "", unparseable: true, method: "text", confidence: 0, warnings: ["DOCX text extraction failed."] };
   }
 }
