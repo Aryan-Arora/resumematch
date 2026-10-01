@@ -337,6 +337,344 @@ export const BLOG_POSTS = [
       { type: "p", text: "ResumeMatch can provide the first-pass comparison by showing matched, missing, and implied skills with supporting resume evidence. You can use that breakdown to fill the scorecard faster, then keep the human review as the final step." },
     ],
   },
+  {
+    slug: "explainable-ai-resume-screening",
+    title: "What Is Explainable AI in Hiring? A Recruiter's Guide",
+    description:
+      "Explainable AI in hiring means every match comes with a reason you can check, not just a score. Here's what that actually looks like in practice.",
+    date: "2026-09-22",
+    readTime: "5 min read",
+    excerpt:
+      "Explainable AI in hiring means every match comes with a reason you can check — here's what that looks like in practice, not just as a buzzword.",
+    content: [
+      {
+        type: "p",
+        text: "\"Explainable AI\" gets used loosely enough in hiring software marketing that it's worth pinning down what it actually means, and what a tool has to do to earn the label rather than just claim it.",
+      },
+      { type: "h2", text: "The plain definition" },
+      {
+        type: "p",
+        text: "An explainable AI system produces an output a person can inspect and verify, not just trust. For resume screening specifically, that means a reviewer can see exactly which parts of a candidate's resume led to a given score — not just the score itself.",
+      },
+      { type: "h2", text: "What it looks like when done properly" },
+      {
+        type: "ul",
+        items: [
+          "Which required skills were matched, and where in the resume they appear",
+          "Which required skills are missing entirely",
+          "Which skills are inferred from related experience the candidate never explicitly listed, with the sentence that justifies the inference",
+          "A breakdown by requirement, not a single blended number",
+        ],
+      },
+      { type: "h2", text: "What it's not" },
+      {
+        type: "p",
+        text: "A confidence percentage next to a score isn't explainability — it's just a second number. Neither is a generic \"our AI considers 50+ factors\" marketing line. If you can't point at the specific resume text that produced a specific part of the result, the system isn't explainable yet, whatever the marketing says.",
+      },
+      { type: "h2", text: "Why it matters beyond trust" },
+      {
+        type: "p",
+        text: "Explainability is also what makes a hiring decision defensible. Jurisdictions are increasingly requiring employers to be able to explain automated hiring outcomes, not just assert they were fair. \"The algorithm scored them lower\" is not an explanation a regulator, or a rejected candidate, has to accept.",
+      },
+      { type: "h2", text: "How to check if a tool actually does this" },
+      {
+        type: "p",
+        text: "Ask for the breakdown behind a single score on a real resume. A tool with genuine explainability shows you the evidence immediately. One without it will either show you nothing more specific, or take noticeably longer to produce an answer because it's generating a plausible-sounding explanation after the fact rather than reporting what it actually checked.",
+      },
+    ],
+  },
+  {
+    slug: "ats-vs-ai-resume-screening",
+    title: "ATS vs. AI Resume Screening: What's Actually Different",
+    description:
+      "An ATS tracks candidates through a pipeline. AI resume screening ranks and explains matches. Most teams need both, and conflating them causes real confusion.",
+    date: "2026-09-24",
+    readTime: "5 min read",
+    excerpt:
+      "An ATS and an AI resume screener solve different problems — conflating them is why a lot of hiring software ends up disappointing people.",
+    content: [
+      {
+        type: "p",
+        text: "\"We need an ATS\" and \"we need AI resume screening\" get used interchangeably in a lot of conversations, but they're solving different problems. Knowing which one you actually need (often both) saves a lot of wasted evaluation time.",
+      },
+      { type: "h2", text: "What an ATS actually does" },
+      {
+        type: "p",
+        text: "An applicant tracking system is a pipeline tool: it stores applications, tracks which stage each candidate is in, manages interview scheduling, stores offer letters, and keeps a hiring record. Its job is organization and compliance record-keeping, not judgment.",
+      },
+      { type: "h2", text: "What AI resume screening actually does" },
+      {
+        type: "p",
+        text: "A screening tool's job is narrower and more specific: given a job description and a pile of resumes, rank them and explain why. It doesn't manage your pipeline or store your offer letters — it answers one question, who should you look at first.",
+      },
+      { type: "h2", text: "Where the confusion comes from" },
+      {
+        type: "p",
+        text: "Most large ATS platforms have bolted on some form of AI matching as a feature, which is where the lines blur. The matching feature inside a big ATS is often a secondary capability, not the core product, and the quality varies widely — some are genuinely useful, some are a basic keyword filter with an AI label on top.",
+      },
+      { type: "h2", text: "How to decide what you need" },
+      {
+        type: "ul",
+        items: [
+          "If your problem is \"we lose track of candidates and interview feedback\" — that's an ATS problem",
+          "If your problem is \"we get 200 applicants and can't tell who's actually qualified\" — that's a screening problem",
+          "If it's both, you likely want a dedicated ATS plus a screening tool that's good at the one thing it does, rather than expecting one platform to excel at both",
+        ],
+      },
+      {
+        type: "p",
+        text: "ResumeMatch is deliberately the second kind of tool — it doesn't try to replace your ATS or manage your pipeline. It does the screening step: rank candidates against a job description with an explainable breakdown, and hand that off to whatever you already use to manage the rest of the process.",
+      },
+    ],
+  },
+  {
+    slug: "job-description-tips-for-better-candidates",
+    title: "How to Write a Job Description That Attracts Qualified Candidates",
+    description:
+      "A vague job description produces a vague applicant pool. Specific, honest requirements attract candidates who actually fit — and make screening far easier.",
+    date: "2026-09-25",
+    readTime: "5 min read",
+    excerpt:
+      "A vague job description produces a vague applicant pool. Here's what actually changes the quality of who applies.",
+    content: [
+      {
+        type: "p",
+        text: "A lot of energy goes into screening tools and processes, and not enough into the document that determines who applies in the first place. A sharper job description does more to improve candidate quality than almost anything downstream of it.",
+      },
+      { type: "h2", text: "Separate must-haves from nice-to-haves, honestly" },
+      {
+        type: "p",
+        text: "A job description that lists 15 requirements as all equally required either scares off qualified people who are missing one, or trains applicants to ignore the list entirely. Be honest about which 3-4 things actually disqualify a candidate versus which are a bonus.",
+      },
+      { type: "h2", text: "Describe the work, not just the qualifications" },
+      {
+        type: "p",
+        text: "\"5+ years of experience in X\" tells a candidate what box to check. \"You'll own the on-call rotation for our payments system and work directly with the two senior engineers who built it\" tells them what the job actually is. The second version attracts people who want that specific job, not just any job with a matching title.",
+      },
+      { type: "h2", text: "Avoid requirement inflation" },
+      {
+        type: "p",
+        text: "A junior role listed with senior-level requirements doesn't get you a senior candidate for junior pay — it gets you fewer qualified applicants and more overqualified ones who'll leave quickly. Match the requirements to the actual seniority and budget of the role.",
+      },
+      { type: "h2", text: "Name the tools and specifics, not just categories" },
+      {
+        type: "p",
+        text: "\"Experience with cloud infrastructure\" is vague enough that it can't be screened well by a human or a tool. \"Experience with AWS, specifically EC2 and S3\" is something a candidate can honestly self-assess against, and something a screening tool can actually extract and match.",
+      },
+      { type: "h2", text: "Why this also makes screening better" },
+      {
+        type: "p",
+        text: "Every resume-screening approach, including ours, works from what's actually in the job description. A specific, well-structured JD gives the matching engine real signal to work with; a vague one forces it to guess at what you actually meant, the same problem a human reviewer would have.",
+      },
+    ],
+  },
+  {
+    slug: "cost-of-manual-resume-screening",
+    title: "The Hidden Cost of Manual Resume Screening",
+    description:
+      "Manual resume screening doesn't show up as a line item, but the hours add up fast — and the cost isn't just time, it's the good candidates who get missed.",
+    date: "2026-09-27",
+    readTime: "4 min read",
+    excerpt:
+      "Manual resume screening doesn't show up as a line item on a budget, but the hours — and the missed candidates — add up fast.",
+    content: [
+      {
+        type: "p",
+        text: "Manual resume review rarely gets costed out directly, because it's absorbed into a recruiter's or hiring manager's existing time rather than billed as its own thing. That makes it easy to underestimate how much it's actually costing.",
+      },
+      { type: "h2", text: "The time cost, roughly" },
+      {
+        type: "p",
+        text: "A careful read of one resume against a job description — actually reading it, not skimming for keywords — takes a few minutes. At 150 applicants for a single role, that's several hours of a recruiter's or hiring manager's time spent before a single interview happens, repeated for every open role.",
+      },
+      { type: "h2", text: "The quality cost is the bigger one" },
+      {
+        type: "p",
+        text: "Time pressure changes how reviews actually get done. A recruiter with 150 resumes and twenty minutes doesn't read carefully — they skim for familiar titles and keywords, which is exactly the pattern that misses a career-changer or a candidate who described their experience differently than the job posting did.",
+      },
+      { type: "h2", text: "The inconsistency cost" },
+      {
+        type: "p",
+        text: "Manual review quality isn't constant across a batch. The first twenty resumes usually get more attention than the last twenty, and reviews done at the end of a long day look different from ones done fresh in the morning. That inconsistency is invisible until you compare notes with a second reviewer on the same pool and get different shortlists.",
+      },
+      { type: "h2", text: "What this doesn't mean" },
+      {
+        type: "p",
+        text: "It doesn't mean human judgment should be removed from hiring — it should be spent on the decisions that actually need it: interview conversations, reference checks, culture fit, final decisions. The case for automating the first-pass screen is about moving the limited supply of careful human attention to the step where it matters most, not eliminating it.",
+      },
+    ],
+  },
+  {
+    slug: "skills-based-hiring-guide",
+    title: "Skills-Based Hiring: What It Means and How to Actually Do It",
+    description:
+      "Skills-based hiring means screening for what a candidate can actually do, not degrees or job titles. Here's what that looks like in a real process, not just a mission statement.",
+    date: "2026-09-29",
+    readTime: "5 min read",
+    excerpt:
+      "Skills-based hiring means screening for what a candidate can actually do — here's what that looks like in a real process, not a mission statement.",
+    content: [
+      {
+        type: "p",
+        text: "Skills-based hiring shows up in a lot of company values pages, and a lot less in the actual screening steps teams use day to day. The gap between the stated intent and the real process is usually where it breaks down.",
+      },
+      { type: "h2", text: "What it means, concretely" },
+      {
+        type: "p",
+        text: "Skills-based hiring means a candidate's fit is assessed against the specific skills the role requires, rather than proxies for skill like a degree, a job title, or years at a recognizable company. A self-taught developer with three strong projects and a candidate with a CS degree and no shipped code are evaluated on the same axis: can they actually do the work.",
+      },
+      { type: "h2", text: "Why titles and degrees are weak proxies" },
+      {
+        type: "p",
+        text: "A job title means different things at different companies — a \"Senior Engineer\" at one company might be doing work that's junior-level elsewhere. A degree indicates exposure to material at some point, not current, applied skill. Both are easier to screen for than actual skill, which is exactly why screening defaults to them under time pressure." ,
+      },
+      { type: "h2", text: "What actually changes in the process" },
+      {
+        type: "ul",
+        items: [
+          "The job description lists specific required skills and experience, not just a target title or degree",
+          "Screening looks for evidence of the skill in the resume's actual content, including skills described differently than the posting's exact wording",
+          "Candidates without the \"expected\" background but with demonstrated relevant skill are not auto-filtered out",
+          "Interviews test the actual skill (a work sample, a practical scenario) rather than relying on credentials as a stand-in",
+        ],
+      },
+      { type: "h2", text: "Where this breaks down in practice" },
+      {
+        type: "p",
+        text: "It breaks down when the screening step still works by literal keyword or title matching, because that silently reintroduces the credential bias the process was supposed to remove — a candidate who did the work but called it something else still gets filtered out, just via a different mechanism than a degree requirement." ,
+      },
+    ],
+  },
+  {
+    slug: "reduce-bias-in-resume-screening",
+    title: "How to Reduce Bias in Resume Screening",
+    description:
+      "Reducing bias in resume screening is about process design, not intentions. Here are the concrete changes that actually move the needle.",
+    date: "2026-09-30",
+    readTime: "5 min read",
+    excerpt:
+      "Reducing bias in resume screening is about process design, not good intentions — here are the concrete changes that actually matter.",
+    content: [
+      {
+        type: "p",
+        text: "Bias in resume screening is usually a process design problem, not a question of individual intent. Good-faith recruiters using a biased process still get biased outcomes. The fixes are concrete, not aspirational.",
+      },
+      { type: "h2", text: "Standardize what gets reviewed first" },
+      {
+        type: "p",
+        text: "If reviewers see names, photos, addresses, or graduation years before assessing qualifications, those details shape the read even unintentionally. Where possible, review the qualifications-relevant content before — or separately from — identifying details." ,
+      },
+      { type: "h2", text: "Use the same criteria for every resume in a batch" },
+      {
+        type: "p",
+        text: "A reviewer's bar quietly shifts over a long review session — more lenient when behind on time, stricter after seeing several strong resumes in a row. A documented, consistent set of must-have criteria applied the same way to resume 1 and resume 150 removes that drift." ,
+      },
+      { type: "h2", text: "Don't let pedigree substitute for evidence" },
+      {
+        type: "p",
+        text: "A recognizable school or employer name is a weak, bias-prone proxy for skill, and it correlates with factors that have nothing to do with job performance. Screening against specific, demonstrated skills and experience — not where someone went to school — removes a large and well-documented source of bias." ,
+      },
+      { type: "h2", text: "Know your legal obligations, not just best practices" },
+      {
+        type: "p",
+        text: "Several jurisdictions now have specific requirements around automated employment decision tools, including bias audits and candidate notification (New York City's Local Law 144 is the most cited example). If you use any automated screening, check what applies in your jurisdiction — this isn't optional compliance.",
+      },
+      { type: "h2", text: "Make the reasoning visible" },
+      {
+        type: "p",
+        text: "A process where every rejection has a documented, specific reason tied to the job's actual requirements is far easier to audit for bias than one that relies on an unrecorded gut read. This is the same reasoning behind explainable screening in general: if you can't see why a decision was made, you can't check it for bias either.",
+      },
+    ],
+  },
+  {
+    slug: "time-to-hire-metrics-explained",
+    title: "Time-to-Hire: What It Actually Measures and How to Improve It",
+    description:
+      "Time-to-hire is one of the most quoted recruiting metrics and one of the most misused. Here's what it actually measures, and where screening speed fits in.",
+    date: "2026-10-01",
+    readTime: "4 min read",
+    excerpt:
+      "Time-to-hire is one of the most quoted recruiting metrics and one of the most misused — here's what it actually measures.",
+    content: [
+      {
+        type: "p",
+        text: "Time-to-hire gets cited constantly as a recruiting health metric, but it's often measured inconsistently and optimized in ways that trade off against hire quality. Worth being precise about what it actually counts.",
+      },
+      { type: "h2", text: "The actual definition" },
+      {
+        type: "p",
+        text: "Time-to-hire measures the days between a candidate applying (or being sourced) and accepting an offer. It's distinct from time-to-fill, which measures from when the requisition opened — a role that sat unposted for three weeks before the first application has a very different time-to-fill than time-to-hire story." ,
+      },
+      { type: "h2", text: "Where the time actually goes" },
+      {
+        type: "p",
+        text: "For most roles, the stages break down roughly into: initial screening of applications, interview scheduling and rounds, decision-making among finalists, and offer negotiation. Screening is often not the largest time sink by stage count, but it's the stage most likely to create a backlog that delays everything after it — a pile of unscreened resumes blocks the interview pipeline from starting at all." ,
+      },
+      { type: "h2", text: "Why faster screening doesn't mean worse screening" },
+      {
+        type: "p",
+        text: "The common tradeoff people assume is speed versus quality — screen faster, miss more good candidates. That tradeoff is real for rushed manual review, but it's not inherent to screening itself. A tool that processes a batch of resumes against explicit criteria in minutes isn't skipping steps a careful human would take; it's doing the same comparison faster and more consistently." ,
+      },
+      { type: "h2", text: "What to actually track" },
+      {
+        type: "ul",
+        items: [
+          "Time from application to first screening decision — this is the stage most likely to silently stall",
+          "Percentage of applicants who get any response within a week — a proxy for candidate experience, not just internal speed",
+          "Time-to-hire by source or channel — a slow stage for one channel may point to a specific process gap, not a general problem",
+        ],
+      },
+      {
+        type: "p",
+        text: "Time-to-hire is a useful diagnostic for where a process is stalling, but it's a means to an end — the actual goal is getting good candidates to an offer before they accept somewhere else, not minimizing the number on a dashboard." ,
+      },
+    ],
+  },
+  {
+    slug: "how-resume-parsing-works",
+    title: "How Resume Parsing Works (And Why It Breaks on Some Resumes)",
+    description:
+      "Resume parsing turns a PDF or DOCX into text a computer can work with. Here's what that process actually involves, and why visually fancy resumes often parse badly.",
+    date: "2026-10-01",
+    readTime: "5 min read",
+    excerpt:
+      "Resume parsing turns a document into text a computer can reason about — and it's also where a lot of screening quality quietly breaks down.",
+    content: [
+      {
+        type: "p",
+        text: "Parsing is the first, least glamorous step in any resume screening pipeline, and it's also where a surprising amount of screening quality gets lost before the actual matching even starts.",
+      },
+      { type: "h2", text: "What parsing actually does" },
+      {
+        type: "p",
+        text: "A resume file — PDF or DOCX — is a layout format, not plain text. Parsing extracts the words from that layout in a sensible reading order: name, contact details, work history, skills, education. The output is just text, which is what every downstream step (matching, scoring) actually works with." ,
+      },
+      { type: "h2", text: "Why a visually clean resume can parse badly" },
+      {
+        type: "p",
+        text: "A resume laid out in two columns (a common modern template choice) looks fine to a human eye, but a parser reading left-to-right across the whole page can interleave the left and right columns into nonsense — a job title from column one next to a bullet point from column two. The resume looks great to a person; the extracted text can be scrambled." ,
+      },
+      { type: "h2", text: "Other common failure points" },
+      {
+        type: "ul",
+        items: [
+          "Text embedded in images (a designed header, a scanned resume) often isn't extractable as text at all without OCR",
+          "Tables used for layout (not just data) can extract in a scrambled or duplicated order",
+          "Unusual fonts or heavy use of icons/symbols as section markers can confuse word-boundary detection",
+          "A resume saved as a flattened image-only PDF has no extractable text layer whatsoever",
+        ],
+      },
+      { type: "h2", text: "What this means practically" },
+      {
+        type: "p",
+        text: "If a resume is scoring surprisingly low or showing as unparseable, a layout issue is a more likely explanation than the candidate genuinely lacking the required skills — worth a quick manual check before ruling someone out. A single-column, standard-section resume (the boring, traditional format) is still the safest choice for parsing reliably, however unfashionable that advice is." ,
+      },
+      {
+        type: "p",
+        text: "This is also why ResumeMatch flags resumes it can't parse (unparseable: true) rather than silently guessing and scoring a candidate based on empty or scrambled content — a wrong score is worse than an honest \"we couldn't read this one.\"",
+      },
+    ],
+  },
 ];
 
 export function getPostBySlug(slug) {
