@@ -9,6 +9,7 @@ import {
   setCandidateStarred,
   shortlistCandidate,
   updateCandidateWorkflow,
+  bulkUpdateCandidateWorkflow,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -72,6 +73,9 @@ export default function CandidateTable({ job, onAddMore }) {
   const [semanticWeight, setSemanticWeight] = useState(60);
   const [shortlistingId, setShortlistingId] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [eligibilityFilter, setEligibilityFilter] = useState("all");
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [savingWorkflowId, setSavingWorkflowId] = useState(null);
 
   const load = useCallback(async () => {
@@ -143,6 +147,16 @@ export default function CandidateTable({ job, onAddMore }) {
     }
   }
 
+  async function bulkStage(stage) {
+    if (!selectedIds.size) return;
+    try {
+      const updated = await bulkUpdateCandidateWorkflow([...selectedIds], stage);
+      const changes = new Map(updated.map((item) => [item.id, item.pipeline_stage]));
+      setCandidates((prev) => prev.map((c) => changes.has(c.id) ? { ...c, pipeline_stage: changes.get(c.id) } : c));
+      setSelectedIds(new Set());
+    } catch (err) { setActionError(err.message); }
+  }
+
   const skillWeight = 100 - semanticWeight;
 
   const weightedCandidates = useMemo(() => {
@@ -160,6 +174,8 @@ export default function CandidateTable({ job, onAddMore }) {
     return weightedCandidates
       .filter((c) => {
         if (c.unparseable) return minScore === 0;
+        if (eligibilityFilter !== "all" && (c.eligibility_status || "needs_review") !== eligibilityFilter) return false;
+        if (search && !`${c.file_name} ${c.email || ""} ${(c.matched_skills || []).join(" ")} ${(c.tags || []).join(" ")} ${c.recruiter_notes || ""}`.toLowerCase().includes(search.toLowerCase())) return false;
         if ((c.weighted_score ?? 0) < minScore) return false;
         if (
           mustHaveSkill &&
@@ -170,7 +186,7 @@ export default function CandidateTable({ job, onAddMore }) {
         return true;
       })
       .sort((a, b) => (b.weighted_score ?? -1) - (a.weighted_score ?? -1));
-  }, [weightedCandidates, minScore, mustHaveSkill]);
+  }, [weightedCandidates, minScore, mustHaveSkill, eligibilityFilter, search]);
 
   if (loading)
     return (
@@ -226,6 +242,11 @@ export default function CandidateTable({ job, onAddMore }) {
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
+          <div className="clay-card p-4 mb-4 flex flex-col sm:flex-row gap-3">
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search candidates, skills, notes..." className="flex-1 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]" />
+            <select value={eligibilityFilter} onChange={(e) => setEligibilityFilter(e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]"><option value="all">All review states</option><option value="eligible">Eligible</option><option value="needs_review">Needs review</option><option value="ineligible">Gate failed</option></select>
+          </div>
+          {selectedIds.size > 0 && <div className="mb-4 flex flex-wrap items-center gap-2 text-sm"><span className="text-[var(--color-text-muted)]">{selectedIds.size} selected</span>{[["screening","Move to screening"],["shortlisted","Shortlist"],["rejected","Reject"]].map(([stage, label]) => <button key={stage} onClick={() => bulkStage(stage)} className="glass-panel px-3 py-1.5 text-[var(--color-text)]">{label}</button>)}</div>}
           {filteredCandidates.length === 0 ? (
             <p className="clay-card text-[var(--color-text-muted)] px-5 py-8 text-center text-sm">
               No candidates match the current filters.
@@ -235,8 +256,7 @@ export default function CandidateTable({ job, onAddMore }) {
               <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]">
-                      Candidate
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]"><span className="flex items-center gap-2"><input type="checkbox" checked={filteredCandidates.length > 0 && filteredCandidates.every((c) => selectedIds.has(c.id))} onChange={(e) => setSelectedIds(e.target.checked ? new Set(filteredCandidates.map((c) => c.id)) : new Set())} />Candidate</span>
                     </th>
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[14%] sm:w-[13%]">
                       Score
@@ -259,7 +279,7 @@ export default function CandidateTable({ job, onAddMore }) {
                         <td className="py-3 px-2 sm:px-5 min-w-0">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <Avatar name={c.file_name} size={36} className="hidden sm:flex" />
-                            <span className="text-[var(--color-text)] font-medium truncate block min-w-0">
+                            <input type="checkbox" checked={selectedIds.has(c.id)} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><span className="text-[var(--color-text)] font-medium truncate block min-w-0">
                               {c.file_name}
                             </span>
                           </div>

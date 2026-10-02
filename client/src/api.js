@@ -131,6 +131,14 @@ export async function updateCandidateWorkflow(candidateId, changes) {
   }).then(handle);
 }
 
+export async function bulkUpdateCandidateWorkflow(candidateIds, pipeline_stage) {
+  return fetch(`${API_BASE}/candidates/bulk-workflow`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ candidate_ids: candidateIds, pipeline_stage }),
+  }).then(handle);
+}
+
 export async function shortlistCandidate(candidateId) {
   return fetch(`${API_BASE}/candidates/${candidateId}/shortlist`, {
     method: "POST",

@@ -68,14 +68,25 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   const allowedStages = new Set(["new", "screening", "shortlisted", "interview", "offer", "rejected"]);
   const stage = typeof req.body.pipeline_stage === "string" ? req.body.pipeline_stage : undefined;
   const notes = typeof req.body.recruiter_notes === "string" ? req.body.recruiter_notes.trim().slice(0, 5000) : undefined;
-  if (!stage && notes === undefined) return res.status(400).json({ error: "stage or notes are required" });
+  const tags = Array.isArray(req.body.tags) ? [...new Set(req.body.tags.filter((tag) => typeof tag === "string").map((tag) => tag.trim().toLowerCase()).filter(Boolean))].slice(0, 20) : undefined;
+  if (!stage && notes === undefined && tags === undefined) return res.status(400).json({ error: "stage, notes, or tags are required" });
   if (stage && !allowedStages.has(stage)) return res.status(400).json({ error: "invalid pipeline stage" });
   const update = {};
   if (stage) update.pipeline_stage = stage;
   if (notes !== undefined) update.recruiter_notes = notes;
+  if (tags !== undefined) update.tags = tags;
   const { data, error } = await supabase.from("candidates").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
   res.json(data);
+});
+
+router.post("/candidates/bulk-workflow", async (req, res) => {
+  const ids = Array.isArray(req.body.candidate_ids) ? req.body.candidate_ids.slice(0, 100) : [];
+  const stage = typeof req.body.pipeline_stage === "string" ? req.body.pipeline_stage : "";
+  if (!ids.length || !["new", "screening", "shortlisted", "interview", "offer", "rejected"].includes(stage)) return res.status(400).json({ error: "candidate_ids and a valid pipeline_stage are required" });
+  const { data, error } = await supabase.from("candidates").update({ pipeline_stage: stage }).in("id", ids).eq("org_id", req.orgId).select("id, pipeline_stage");
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
 router.post("/candidates/:id/shortlist", shortlistLimiter, async (req, res) => {
