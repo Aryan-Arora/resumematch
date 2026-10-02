@@ -64,6 +64,20 @@ router.patch("/candidates/:id/star", async (req, res) => {
   res.json(data);
 });
 
+router.patch("/candidates/:id/workflow", async (req, res) => {
+  const allowedStages = new Set(["new", "screening", "shortlisted", "interview", "offer", "rejected"]);
+  const stage = typeof req.body.pipeline_stage === "string" ? req.body.pipeline_stage : undefined;
+  const notes = typeof req.body.recruiter_notes === "string" ? req.body.recruiter_notes.trim().slice(0, 5000) : undefined;
+  if (!stage && notes === undefined) return res.status(400).json({ error: "stage or notes are required" });
+  if (stage && !allowedStages.has(stage)) return res.status(400).json({ error: "invalid pipeline stage" });
+  const update = {};
+  if (stage) update.pipeline_stage = stage;
+  if (notes !== undefined) update.recruiter_notes = notes;
+  const { data, error } = await supabase.from("candidates").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
+  if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  res.json(data);
+});
+
 router.post("/candidates/:id/shortlist", shortlistLimiter, async (req, res) => {
   const { data: candidate, error: fetchError } = await supabase
     .from("candidates")

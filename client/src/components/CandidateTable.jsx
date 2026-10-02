@@ -8,6 +8,7 @@ import {
   viewComplianceNotice,
   setCandidateStarred,
   shortlistCandidate,
+  updateCandidateWorkflow,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -71,6 +72,7 @@ export default function CandidateTable({ job, onAddMore }) {
   const [semanticWeight, setSemanticWeight] = useState(60);
   const [shortlistingId, setShortlistingId] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [savingWorkflowId, setSavingWorkflowId] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -125,6 +127,19 @@ export default function CandidateTable({ job, onAddMore }) {
       setActionError(err.message);
     } finally {
       setShortlistingId(null);
+    }
+  }
+
+  async function updateWorkflow(id, changes) {
+    setSavingWorkflowId(id);
+    setActionError(null);
+    try {
+      const updated = await updateCandidateWorkflow(id, changes);
+      setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)));
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setSavingWorkflowId(null);
     }
   }
 
@@ -373,6 +388,16 @@ export default function CandidateTable({ job, onAddMore }) {
                                   <div className="space-y-1.5">
                                     {(c.eligibility_reasons || []).map((reason, index) => <p key={`${reason.text}-${index}`} className={`text-sm ${reason.type === "failed" ? "text-[var(--color-danger)]" : reason.type === "passed" ? "text-[var(--color-success)]" : "text-[var(--color-text-muted)]"}`}>{reason.type === "passed" ? "✓" : reason.type === "failed" ? "×" : "?"} {reason.text}</p>)}
                                     {(c.parse_warnings || []).map((warning) => <p key={warning} className="text-sm text-[var(--color-text-muted)]">⚠ {warning}</p>)}
+                                  </div>
+                                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                    <label className="text-xs text-[var(--color-text-muted)]">Pipeline stage
+                                      <select value={c.pipeline_stage || "new"} disabled={savingWorkflowId === c.id} onChange={(e) => updateWorkflow(c.id, { pipeline_stage: e.target.value })} className="mt-1 w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]">
+                                        {[["new","New"],["screening","Screening"],["shortlisted","Shortlisted"],["interview","Interview"],["offer","Offer"],["rejected","Rejected"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                                      </select>
+                                    </label>
+                                    <label className="text-xs text-[var(--color-text-muted)]">Recruiter note
+                                      <textarea defaultValue={c.recruiter_notes || ""} onBlur={(e) => e.target.value !== (c.recruiter_notes || "") && updateWorkflow(c.id, { recruiter_notes: e.target.value })} placeholder="Add a review note..." className="mt-1 w-full min-h-10 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]" />
+                                    </label>
                                   </div>
                                 </div>
                                 <div>

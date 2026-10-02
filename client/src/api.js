@@ -123,6 +123,14 @@ export async function setCandidateStarred(candidateId, starred) {
   }).then(handle);
 }
 
+export async function updateCandidateWorkflow(candidateId, changes) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/workflow`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify(changes),
+  }).then(handle);
+}
+
 export async function shortlistCandidate(candidateId) {
   return fetch(`${API_BASE}/candidates/${candidateId}/shortlist`, {
     method: "POST",
