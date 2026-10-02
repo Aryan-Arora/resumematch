@@ -77,7 +77,24 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   if (tags !== undefined) update.tags = tags;
   const { data, error } = await supabase.from("candidates").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  await supabase.from("candidate_activity").insert({ candidate_id: data.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "workflow_updated", event_data: update });
   res.json(data);
+});
+
+router.patch("/candidates/:id/feedback", async (req, res) => {
+  const allowed = new Set(["accurate", "inaccurate", "unclear"]);
+  if (!allowed.has(req.body.match_feedback)) return res.status(400).json({ error: "invalid feedback value" });
+  const note = typeof req.body.match_feedback_note === "string" ? req.body.match_feedback_note.trim().slice(0, 2000) : "";
+  const { data, error } = await supabase.from("candidates").update({ match_feedback: req.body.match_feedback, match_feedback_note: note }).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
+  if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  await supabase.from("candidate_activity").insert({ candidate_id: data.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "match_feedback", event_data: { feedback: req.body.match_feedback, note } });
+  res.json(data);
+});
+
+router.get("/candidates/:id/activity", async (req, res) => {
+  const { data, error } = await supabase.from("candidate_activity").select("*").eq("candidate_id", req.params.id).eq("org_id", req.orgId).order("created_at", { ascending: false }).limit(100);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
 router.post("/candidates/bulk-workflow", async (req, res) => {

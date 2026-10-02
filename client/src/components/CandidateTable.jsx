@@ -10,6 +10,7 @@ import {
   shortlistCandidate,
   updateCandidateWorkflow,
   bulkUpdateCandidateWorkflow,
+  updateCandidateFeedback,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -154,6 +155,13 @@ export default function CandidateTable({ job, onAddMore }) {
       const changes = new Map(updated.map((item) => [item.id, item.pipeline_stage]));
       setCandidates((prev) => prev.map((c) => changes.has(c.id) ? { ...c, pipeline_stage: changes.get(c.id) } : c));
       setSelectedIds(new Set());
+    } catch (err) { setActionError(err.message); }
+  }
+
+  async function saveFeedback(id, value) {
+    try {
+      const updated = await updateCandidateFeedback(id, value);
+      setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, ...updated } : c));
     } catch (err) { setActionError(err.message); }
   }
 
@@ -420,6 +428,9 @@ export default function CandidateTable({ job, onAddMore }) {
                                     </label>
                                   </div>
                                   {c.pipeline_stage === "interview" && job.interview_url && <a href={job.interview_url} target="_blank" rel="noreferrer" className="inline-flex mt-3 text-sm text-[var(--color-accent)] hover:underline">Open interview scheduling link →</a>}
+                                  <label className="inline-flex items-center gap-2 mt-3 text-xs text-[var(--color-text-muted)]">Was this match accurate?
+                                    <select value={c.match_feedback || ""} onChange={(e) => e.target.value && saveFeedback(c.id, e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]"><option value="">Unreviewed</option><option value="accurate">Accurate</option><option value="inaccurate">Inaccurate</option><option value="unclear">Unclear</option></select>
+                                  </label>
                                 </div>
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">
