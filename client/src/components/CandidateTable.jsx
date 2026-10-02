@@ -419,6 +419,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                       <textarea defaultValue={c.recruiter_notes || ""} onBlur={(e) => e.target.value !== (c.recruiter_notes || "") && updateWorkflow(c.id, { recruiter_notes: e.target.value })} placeholder="Add a review note..." className="mt-1 w-full min-h-10 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]" />
                                     </label>
                                   </div>
+                                  {c.pipeline_stage === "interview" && job.interview_url && <a href={job.interview_url} target="_blank" rel="noreferrer" className="inline-flex mt-3 text-sm text-[var(--color-accent)] hover:underline">Open interview scheduling link →</a>}
                                 </div>
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">

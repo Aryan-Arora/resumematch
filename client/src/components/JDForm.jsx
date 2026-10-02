@@ -24,6 +24,7 @@ export default function JDForm({ onJobCreated }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [domain, setDomain] = useState("");
+  const [interviewUrl, setInterviewUrl] = useState("");
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,7 +38,7 @@ export default function JDForm({ onJobCreated }) {
     setError(null);
     setLoading(true);
     try {
-      const job = await createJob(title, description, domain);
+      const job = await createJob(title, description, domain, interviewUrl);
       onJobCreated(job);
     } catch (err) {
       setError(err.message);
@@ -54,6 +55,11 @@ export default function JDForm({ onJobCreated }) {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
+          </div>
+          <div>
+            <label className="block font-heading text-sm font-medium text-[var(--color-text-muted)] mb-1.5">Interview scheduling link <span className="font-normal text-xs text-[var(--color-text-faint)]">(optional)</span></label>
+            <input className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" value={interviewUrl} onChange={(e) => setInterviewUrl(e.target.value)} placeholder="https://calendly.com/your-team/interview" type="url" />
+            <p className="text-xs text-[var(--color-text-faint)] mt-1">Use a Calendly, Google Calendar appointment, or other HTTPS booking link.</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-accent)] font-semibold">Step 1 of 2</p>

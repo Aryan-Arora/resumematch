@@ -103,6 +103,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   const title = typeof req.body.title === "string" ? req.body.title.trim() : "";
   const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
   const domain = typeof req.body.domain === "string" ? req.body.domain.trim() : "";
+  const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : "";
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
   }
@@ -112,6 +113,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   if (description.length > 5000) {
     return res.status(400).json({ error: "Description is too long (max 5,000 characters)." });
   }
+  if (interviewUrl && !/^https:\/\//i.test(interviewUrl)) return res.status(400).json({ error: "Interview link must use https://" });
 
   const jdEmbedding = await getEmbedding(description);
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
@@ -152,6 +154,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
       jd_skills: jdSkills,
       jd_domain: jdDomain,
       required_filters: extractRequiredFilters(description),
+      interview_url: interviewUrl,
       org_id: req.orgId,
     })
     .select()

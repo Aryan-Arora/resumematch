@@ -74,11 +74,11 @@ export async function getAnalytics() {
   return fetch(`${API_BASE}/analytics`, { headers: await authHeaders() }).then(handle);
 }
 
-export async function createJob(title, description, domain) {
+export async function createJob(title, description, domain, interviewUrl) {
   return fetch(`${API_BASE}/jobs`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-    body: JSON.stringify({ title, description, domain: domain || undefined }),
+    body: JSON.stringify({ title, description, domain: domain || undefined, interview_url: interviewUrl || undefined }),
   }).then(handle);
 }
 
