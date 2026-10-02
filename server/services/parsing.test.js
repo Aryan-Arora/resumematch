@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractEmail } from "./parsing.js";
+import { extractEmail, normalizeResumeText } from "./parsing.js";
 
 describe("extractEmail", () => {
   it("finds an email address in resume text", () => {
@@ -14,5 +14,11 @@ describe("extractEmail", () => {
 
   it("returns null when no email is present", () => {
     expect(extractEmail("Jordan Lee, Senior Engineer, 8 years experience")).toBeNull();
+  });
+});
+
+describe("normalizeResumeText", () => {
+  it("removes layout whitespace while preserving section lines", () => {
+    expect(normalizeResumeText("  Jordan  Lee\r\n\r\nSkills:\tJavaScript  ")).toBe("Jordan Lee\nSkills: JavaScript");
   });
 });
