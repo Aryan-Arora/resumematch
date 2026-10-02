@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
-import { sendShortlistEmail } from "../services/mailer.js";
+import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
 import { shortlistLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
@@ -148,6 +148,20 @@ router.post("/candidates/:id/shortlist", shortlistLimiter, async (req, res) => {
     .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+router.post("/candidates/:id/email", shortlistLimiter, async (req, res) => {
+  const type = ["shortlist", "interview", "rejection"].includes(req.body.type) ? req.body.type : "";
+  if (!type) return res.status(400).json({ error: "email type must be shortlist, interview, or rejection" });
+  const { data: candidate, error } = await supabase.from("candidates").select("*, jobs(title, interview_url, email_templates), organizations(name)").eq("id", req.params.id).eq("org_id", req.orgId).single();
+  if (error || !candidate) return res.status(404).json({ error: "candidate not found" });
+  if (!candidate.email) return res.status(400).json({ error: "no email address was found on this candidate's resume" });
+  const candidateName = (candidate.file_name || "").replace(/\.(pdf|docx)$/i, "").replace(/[_-]+/g, " ").trim() || "there";
+  try {
+    await sendCandidateEmail({ to: candidate.email, candidateName, jobTitle: candidate.jobs?.title || "the role", orgName: candidate.organizations?.name, type, template: candidate.jobs?.email_templates?.[type], interviewUrl: candidate.jobs?.interview_url });
+  } catch (err) { return res.status(err.status || 500).json({ error: err.message }); }
+  await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "email_sent", event_data: { type } });
+  res.json({ sent: true, type });
 });
 
 router.delete("/candidates/:id", async (req, res) => {

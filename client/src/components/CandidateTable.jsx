@@ -11,6 +11,7 @@ import {
   updateCandidateWorkflow,
   bulkUpdateCandidateWorkflow,
   updateCandidateFeedback,
+  sendCandidateEmail,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -163,6 +164,11 @@ export default function CandidateTable({ job, onAddMore }) {
       const updated = await updateCandidateFeedback(id, value);
       setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, ...updated } : c));
     } catch (err) { setActionError(err.message); }
+  }
+
+  async function emailCandidate(id, type) {
+    setActionError(null);
+    try { await sendCandidateEmail(id, type); } catch (err) { setActionError(err.message); }
   }
 
   const skillWeight = 100 - semanticWeight;
@@ -431,6 +437,9 @@ export default function CandidateTable({ job, onAddMore }) {
                                   <label className="inline-flex items-center gap-2 mt-3 text-xs text-[var(--color-text-muted)]">Was this match accurate?
                                     <select value={c.match_feedback || ""} onChange={(e) => e.target.value && saveFeedback(c.id, e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]"><option value="">Unreviewed</option><option value="accurate">Accurate</option><option value="inaccurate">Inaccurate</option><option value="unclear">Unclear</option></select>
                                   </label>
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    {c.email && <><button onClick={() => emailCandidate(c.id, "shortlist")} className="text-xs text-[var(--color-accent)] hover:underline">Send shortlist email</button><button onClick={() => emailCandidate(c.id, "interview")} className="text-xs text-[var(--color-accent)] hover:underline">Send interview invite</button><button onClick={() => emailCandidate(c.id, "rejection")} className="text-xs text-[var(--color-danger)] hover:underline">Send rejection email</button></>}
+                                  </div>
                                 </div>
                                 <div>
                                   <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-accent)] mb-2.5">

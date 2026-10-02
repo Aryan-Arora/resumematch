@@ -147,6 +147,10 @@ export async function getCandidateActivity(candidateId) {
   return fetch(`${API_BASE}/candidates/${candidateId}/activity`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function sendCandidateEmail(candidateId, type) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/email`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ type }) }).then(handle);
+}
+
 export async function shortlistCandidate(candidateId) {
   return fetch(`${API_BASE}/candidates/${candidateId}/shortlist`, {
     method: "POST",

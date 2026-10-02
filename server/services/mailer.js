@@ -9,20 +9,28 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM = process.env.MAIL_FROM || "ResumeMatch <onboarding@resend.dev>";
 
 export async function sendShortlistEmail({ to, candidateName, jobTitle, orgName }) {
+  return sendCandidateEmail({ to, candidateName, jobTitle, orgName, type: "shortlist" });
+}
+
+const DEFAULT_TEMPLATES = {
+  shortlist: "Hi {{candidateName}},\n\nGood news — you've been shortlisted for {{jobTitle}} at {{orgName}}. We'll be in touch shortly with next steps.",
+  rejection: "Hi {{candidateName}},\n\nThank you for your interest in {{jobTitle}}. We won't be moving forward at this time, but we appreciate your time.",
+  interview: "Hi {{candidateName}},\n\nWe'd like to invite you to interview for {{jobTitle}} at {{orgName}}. Schedule a time here: {{interviewUrl}}",
+};
+
+export async function sendCandidateEmail({ to, candidateName, jobTitle, orgName, type, template, interviewUrl }) {
   if (!resend) {
     throw Object.assign(new Error("Email is not configured (RESEND_API_KEY unset)"), { status: 503 });
   }
 
+  const values = { candidateName, jobTitle, orgName: orgName || "our team", interviewUrl: interviewUrl || "" };
+  const body = (template || DEFAULT_TEMPLATES[type] || DEFAULT_TEMPLATES.shortlist).replace(/\{\{(candidateName|jobTitle|orgName|interviewUrl)\}\}/g, (_, key) => values[key] || "");
+  const subject = type === "interview" ? `Interview invitation — ${jobTitle}` : type === "rejection" ? `Your application — ${jobTitle}` : `You've been shortlisted — ${jobTitle}`;
   const { error } = await resend.emails.send({
     from: FROM,
     to,
-    subject: `You've been shortlisted for the physical round — ${jobTitle}`,
-    html: `
-      <p>Hi ${candidateName},</p>
-      <p>Good news — you've been shortlisted for the physical round of the <strong>${jobTitle}</strong> position${orgName ? ` at ${orgName}` : ""}.</p>
-      <p>We'll be in touch shortly with the next steps.</p>
-      <p>Congratulations, and thank you for your patience throughout the screening process.</p>
-    `,
+    subject,
+    text: body,
   });
 
   if (error) {
