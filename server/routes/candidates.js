@@ -69,12 +69,16 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   const stage = typeof req.body.pipeline_stage === "string" ? req.body.pipeline_stage : undefined;
   const notes = typeof req.body.recruiter_notes === "string" ? req.body.recruiter_notes.trim().slice(0, 5000) : undefined;
   const tags = Array.isArray(req.body.tags) ? [...new Set(req.body.tags.filter((tag) => typeof tag === "string").map((tag) => tag.trim().toLowerCase()).filter(Boolean))].slice(0, 20) : undefined;
-  if (!stage && notes === undefined && tags === undefined) return res.status(400).json({ error: "stage, notes, or tags are required" });
+  const reminderAt = req.body.reminder_at === null || typeof req.body.reminder_at === "string" ? req.body.reminder_at : undefined;
+  const assignedTo = req.body.assigned_to === null || typeof req.body.assigned_to === "string" ? req.body.assigned_to : undefined;
+  if (!stage && notes === undefined && tags === undefined && reminderAt === undefined && assignedTo === undefined) return res.status(400).json({ error: "workflow change is required" });
   if (stage && !allowedStages.has(stage)) return res.status(400).json({ error: "invalid pipeline stage" });
   const update = {};
   if (stage) update.pipeline_stage = stage;
   if (notes !== undefined) update.recruiter_notes = notes;
   if (tags !== undefined) update.tags = tags;
+  if (reminderAt !== undefined) update.reminder_at = reminderAt || null;
+  if (assignedTo !== undefined) update.assigned_to = assignedTo || null;
   const { data, error } = await supabase.from("candidates").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
   await supabase.from("candidate_activity").insert({ candidate_id: data.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "workflow_updated", event_data: update });
