@@ -78,6 +78,7 @@ export default function CandidateTable({ job, onAddMore }) {
   const [search, setSearch] = useState("");
   const [eligibilityFilter, setEligibilityFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [compareIds, setCompareIds] = useState(new Set());
   const [savingWorkflowId, setSavingWorkflowId] = useState(null);
 
   const load = useCallback(async () => {
@@ -157,6 +158,15 @@ export default function CandidateTable({ job, onAddMore }) {
       setCandidates((prev) => prev.map((c) => changes.has(c.id) ? { ...c, pipeline_stage: changes.get(c.id) } : c));
       setSelectedIds(new Set());
     } catch (err) { setActionError(err.message); }
+  }
+
+  function toggleCompare(id) {
+    setCompareIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 4) next.add(id);
+      return next;
+    });
   }
 
   async function saveFeedback(id, value) {
@@ -261,6 +271,7 @@ export default function CandidateTable({ job, onAddMore }) {
             <select value={eligibilityFilter} onChange={(e) => setEligibilityFilter(e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]"><option value="all">All review states</option><option value="eligible">Eligible</option><option value="needs_review">Needs review</option><option value="ineligible">Gate failed</option></select>
           </div>
           {selectedIds.size > 0 && <div className="mb-4 flex flex-wrap items-center gap-2 text-sm"><span className="text-[var(--color-text-muted)]">{selectedIds.size} selected</span>{[["screening","Move to screening"],["shortlisted","Shortlist"],["rejected","Reject"]].map(([stage, label]) => <button key={stage} onClick={() => bulkStage(stage)} className="glass-panel px-3 py-1.5 text-[var(--color-text)]">{label}</button>)}</div>}
+          {compareIds.size > 0 && <div className="clay-card mb-4 p-4 overflow-x-auto"><div className="flex items-center justify-between mb-3"><h3 className="font-heading text-sm font-semibold text-[var(--color-text)]">Candidate comparison ({compareIds.size}/4)</h3><button onClick={() => setCompareIds(new Set())} className="text-xs text-[var(--color-accent)] hover:underline">Clear</button></div><table className="w-full min-w-[620px] text-sm"><tbody><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Candidate</th>{[...compareIds].map((id) => <td key={id} className="py-2 px-3 font-medium text-[var(--color-text)]">{candidates.find((c) => c.id === id)?.file_name}</td>)}</tr><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Score</th>{[...compareIds].map((id) => { const c = weightedCandidates.find((item) => item.id === id); return <td key={id} className="py-2 px-3 text-[var(--color-text)]">{c?.weighted_score == null ? "—" : `${Math.round(c.weighted_score * 100)}%`}</td>; })}</tr><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Eligibility</th>{[...compareIds].map((id) => <td key={id} className="py-2 px-3 text-[var(--color-text)]">{candidates.find((c) => c.id === id)?.eligibility_status || "Needs review"}</td>)}</tr><tr><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Matched / missing</th>{[...compareIds].map((id) => { const c = candidates.find((item) => item.id === id); return <td key={id} className="py-2 px-3 text-[var(--color-text-muted)]">{c?.matched_skills?.length || 0} / {c?.missing_skills?.length || 0}</td>; })}</tr></tbody></table></div>}
           {filteredCandidates.length === 0 ? (
             <p className="clay-card text-[var(--color-text-muted)] px-5 py-8 text-center text-sm">
               No candidates match the current filters.
@@ -293,7 +304,7 @@ export default function CandidateTable({ job, onAddMore }) {
                         <td className="py-3 px-2 sm:px-5 min-w-0">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <Avatar name={c.file_name} size={36} className="hidden sm:flex" />
-                            <input type="checkbox" checked={selectedIds.has(c.id)} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><span className="text-[var(--color-text)] font-medium truncate block min-w-0">
+                            <input type="checkbox" checked={selectedIds.has(c.id)} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><button type="button" onClick={(e) => { e.stopPropagation(); toggleCompare(c.id); }} title="Compare candidate" className={`text-[10px] rounded border px-1.5 py-0.5 ${compareIds.has(c.id) ? "border-[var(--color-accent)] text-[var(--color-accent)]" : "border-[var(--color-border)] text-[var(--color-text-faint)]"}`}>Compare</button><span className="text-[var(--color-text)] font-medium truncate block min-w-0">
                               {c.file_name}
                             </span>
                           </div>
