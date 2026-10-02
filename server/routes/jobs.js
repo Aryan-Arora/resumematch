@@ -14,6 +14,7 @@ import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { enqueue } from "../services/uploadQueue.js";
 import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
 import { extractRequiredFilters, evaluateEligibility } from "../services/eligibility.js";
+import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 
 function domainTaxonomy(job) {
@@ -181,6 +182,12 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
       parsed = await parseDocx(buffer);
     } else {
       parsed = { text: "", unparseable: true };
+    }
+
+    if (shouldUseOcr(parsed)) {
+      const ocr = await ocrResume(buffer, { fileName });
+      if (ocr.available && ocr.text) parsed = { ...ocr, unparseable: false, needsOcr: true };
+      else parsed = { ...parsed, warnings: [...(parsed.warnings || []), ...(ocr.warnings || [])], needsOcr: true };
     }
 
     if (parsed.unparseable) {
