@@ -21,6 +21,14 @@ export function evaluateEligibility(filters, resumeText) {
 
   const reasons = [];
   let hasUnclear = false;
+  for (const requirement of filters?.must_have || []) {
+    const present = text.toLowerCase().includes(String(requirement).toLowerCase());
+    reasons.push({ type: present ? "passed" : "unclear", text: `${present ? "Must-have evidence found" : "Verify must-have requirement"}: ${requirement}` });
+    if (!present) hasUnclear = true;
+  }
+  for (const disqualifier of filters?.disqualifiers || []) {
+    if (text.toLowerCase().includes(String(disqualifier).toLowerCase())) return { status: "ineligible", reasons: [{ type: "failed", text: `Disqualifier detected: ${disqualifier}` }] };
+  }
   for (const requirement of filters?.certifications || []) {
     const tokens = requirement.toLowerCase().split(/[^a-z0-9+#]+/).filter((token) => token.length > 2);
     if (tokens.length && tokens.every((token) => text.toLowerCase().includes(token))) {

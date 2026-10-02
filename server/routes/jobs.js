@@ -104,6 +104,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
   const domain = typeof req.body.domain === "string" ? req.body.domain.trim() : "";
   const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : "";
+  const requirementConfig = req.body.requirement_config && typeof req.body.requirement_config === "object" ? req.body.requirement_config : {};
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
   }
@@ -155,6 +156,11 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
       jd_domain: jdDomain,
       required_filters: extractRequiredFilters(description),
       interview_url: interviewUrl,
+      requirement_config: {
+        must_have: Array.isArray(requirementConfig.must_have) ? requirementConfig.must_have.slice(0, 30) : [],
+        preferred: Array.isArray(requirementConfig.preferred) ? requirementConfig.preferred.slice(0, 30) : [],
+        disqualifiers: Array.isArray(requirementConfig.disqualifiers) ? requirementConfig.disqualifiers.slice(0, 30) : [],
+      },
       org_id: req.orgId,
     })
     .select()
@@ -221,7 +227,7 @@ async function processCandidate(job, candidateId, storagePath, fileName, skillEm
         ? (matched.length + impliedSkills.length) / job.jd_skills.length
         : 0;
     const finalScore = computeFinalScore(semanticScore, skillScore);
-    const eligibility = evaluateEligibility(job.required_filters, parsed.text);
+    const eligibility = evaluateEligibility({ ...job.required_filters, ...(job.requirement_config || {}) }, parsed.text);
 
     const { error } = await supabase
       .from("candidates")

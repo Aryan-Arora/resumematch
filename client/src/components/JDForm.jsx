@@ -25,6 +25,9 @@ export default function JDForm({ onJobCreated }) {
   const [description, setDescription] = useState("");
   const [domain, setDomain] = useState("");
   const [interviewUrl, setInterviewUrl] = useState("");
+  const [mustHave, setMustHave] = useState("");
+  const [preferred, setPreferred] = useState("");
+  const [disqualifiers, setDisqualifiers] = useState("");
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,7 +41,8 @@ export default function JDForm({ onJobCreated }) {
     setError(null);
     setLoading(true);
     try {
-      const job = await createJob(title, description, domain, interviewUrl);
+      const lines = (value) => value.split("\n").map((item) => item.trim()).filter(Boolean);
+      const job = await createJob(title, description, domain, interviewUrl, { must_have: lines(mustHave), preferred: lines(preferred), disqualifiers: lines(disqualifiers) });
       onJobCreated(job);
     } catch (err) {
       setError(err.message);
@@ -60,6 +64,9 @@ export default function JDForm({ onJobCreated }) {
             <label className="block font-heading text-sm font-medium text-[var(--color-text-muted)] mb-1.5">Interview scheduling link <span className="font-normal text-xs text-[var(--color-text-faint)]">(optional)</span></label>
             <input className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" value={interviewUrl} onChange={(e) => setInterviewUrl(e.target.value)} placeholder="https://calendly.com/your-team/interview" type="url" />
             <p className="text-xs text-[var(--color-text-faint)] mt-1">Use a Calendly, Google Calendar appointment, or other HTTPS booking link.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[['Must-have requirements', mustHave, setMustHave, 'One requirement per line'], ['Preferred requirements', preferred, setPreferred, 'Nice to have'], ['Disqualifiers', disqualifiers, setDisqualifiers, 'One automatic review flag per line']].map(([label, value, setter, placeholder]) => <label key={label} className="text-sm font-medium text-[var(--color-text-muted)]">{label}<textarea value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} className="mt-1.5 w-full min-h-24 bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-accent)] font-semibold">Step 1 of 2</p>
