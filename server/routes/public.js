@@ -11,6 +11,7 @@ import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
+import { supabase } from "../supabaseClient.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const taxonomy = JSON.parse(
@@ -21,6 +22,17 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB per file
 const MAX_DEMO_RESUMES = 3;
 
 const router = Router();
+
+// Anonymous usage counter for the public demo: no JD text, resumes or IPs are
+// stored. Fire-and-forget so a missing table or DB blip never fails a demo run.
+function logDemoEvent(event, domain, resumeCount) {
+  supabase
+    .from("demo_events")
+    .insert({ event, domain, resume_count: resumeCount })
+    .then(({ error }) => {
+      if (error) console.warn("demo_events insert failed:", error.message);
+    });
+}
 
 // Unauthenticated and runs an embedding model — the one route in this app
 // with no logged-in user behind it to hold accountable, so it's the one
@@ -113,6 +125,7 @@ router.post("/public/classify", demoLimiter, async (req, res) => {
 
   try {
     const { domain, skills } = await classifyJobDescription(description, getSharedSkillEmbeddingCache());
+    logDemoEvent("classify", domain, 0);
     res.json({ domain, skills, curatedDomains: getDomainList().filter((d) => d !== "general") });
   } catch (err) {
     console.error(err);
@@ -162,6 +175,7 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
       );
     }
 
+    logDemoEvent("match", domain, candidates.length);
     res.json({
       domain,
       skills,
