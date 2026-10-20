@@ -5,6 +5,18 @@ import { shortlistLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
+async function isOrganizationMember(userId, orgId) {
+  if (!userId || typeof userId !== "string") return false;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
 router.get("/candidates/starred", async (req, res) => {
   const { data, error } = await supabase
     .from("candidates")
@@ -73,6 +85,16 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   const assignedTo = req.body.assigned_to === null || typeof req.body.assigned_to === "string" ? req.body.assigned_to : undefined;
   if (!stage && notes === undefined && tags === undefined && reminderAt === undefined && assignedTo === undefined) return res.status(400).json({ error: "workflow change is required" });
   if (stage && !allowedStages.has(stage)) return res.status(400).json({ error: "invalid pipeline stage" });
+  if (assignedTo) {
+    try {
+      if (!(await isOrganizationMember(assignedTo, req.orgId))) {
+        return res.status(400).json({ error: "assigned_to must be an active member of this organization" });
+      }
+    } catch (error) {
+      console.error("Failed to validate candidate assignee", error);
+      return res.status(500).json({ error: "Could not validate candidate assignee" });
+    }
+  }
   const update = {};
   if (stage) update.pipeline_stage = stage;
   if (notes !== undefined) update.recruiter_notes = notes;
