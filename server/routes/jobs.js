@@ -105,6 +105,7 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   const domain = typeof req.body.domain === "string" ? req.body.domain.trim() : "";
   const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : "";
   const requirementConfig = req.body.requirement_config && typeof req.body.requirement_config === "object" ? req.body.requirement_config : {};
+  const emailTemplates = req.body.email_templates && typeof req.body.email_templates === "object" ? req.body.email_templates : {};
   if (!title || !description) {
     return res.status(400).json({ error: "title and description are required" });
   }
@@ -156,6 +157,11 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
       jd_domain: jdDomain,
       required_filters: extractRequiredFilters(description),
       interview_url: interviewUrl,
+      email_templates: {
+        shortlist: typeof emailTemplates.shortlist === "string" ? emailTemplates.shortlist.slice(0, 5000) : "",
+        interview: typeof emailTemplates.interview === "string" ? emailTemplates.interview.slice(0, 5000) : "",
+        rejection: typeof emailTemplates.rejection === "string" ? emailTemplates.rejection.slice(0, 5000) : "",
+      },
       requirement_config: {
         must_have: Array.isArray(requirementConfig.must_have) ? requirementConfig.must_have.slice(0, 30) : [],
         preferred: Array.isArray(requirementConfig.preferred) ? requirementConfig.preferred.slice(0, 30) : [],

@@ -28,6 +28,7 @@ export default function JDForm({ onJobCreated }) {
   const [mustHave, setMustHave] = useState("");
   const [preferred, setPreferred] = useState("");
   const [disqualifiers, setDisqualifiers] = useState("");
+  const [emailTemplates, setEmailTemplates] = useState({ shortlist: "", interview: "", rejection: "" });
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,7 +43,7 @@ export default function JDForm({ onJobCreated }) {
     setLoading(true);
     try {
       const lines = (value) => value.split("\n").map((item) => item.trim()).filter(Boolean);
-      const job = await createJob(title, description, domain, interviewUrl, { must_have: lines(mustHave), preferred: lines(preferred), disqualifiers: lines(disqualifiers) });
+      const job = await createJob(title, description, domain, interviewUrl, { must_have: lines(mustHave), preferred: lines(preferred), disqualifiers: lines(disqualifiers) }, emailTemplates);
       onJobCreated(job);
     } catch (err) {
       setError(err.message);
@@ -120,6 +121,13 @@ export default function JDForm({ onJobCreated }) {
               ))}
             </select>
           </div>
+          <details className="rounded-xl border border-[var(--color-border)]/70 bg-[var(--color-surface-alt)]/50 p-4">
+            <summary className="cursor-pointer text-sm font-medium text-[var(--color-text)]">Customize recruiter email templates <span className="font-normal text-xs text-[var(--color-text-faint)]">(optional)</span></summary>
+            <p className="text-xs text-[var(--color-text-faint)] mt-2">Leave blank to use ResumeMatch defaults. Use candidateName, jobTitle, and orgName placeholders where needed.</p>
+            <div className="grid gap-3 mt-3">
+              {[['shortlist', 'Shortlist message'], ['interview', 'Interview invite'], ['rejection', 'Rejection message']].map(([key, label]) => <label key={key} className="text-xs text-[var(--color-text-muted)]">{label}<textarea value={emailTemplates[key]} onChange={(e) => setEmailTemplates((prev) => ({ ...prev, [key]: e.target.value }))} maxLength={5000} placeholder="Write a concise, human message..." className="mt-1 w-full min-h-20 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
+            </div>
+          </details>
           {error && (
             <p className="text-[var(--color-danger)] text-sm bg-[var(--color-danger-soft)]/40 border border-[var(--color-danger)]/20 rounded-lg px-3 py-2">
               {error}
