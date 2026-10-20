@@ -15,6 +15,7 @@ import { enqueue } from "../services/uploadQueue.js";
 import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
 import { extractRequiredFilters, evaluateEligibility } from "../services/eligibility.js";
 import { ocrResume, shouldUseOcr } from "../services/ocr.js";
+import { hasExpectedFileSignature } from "../services/fileValidation.js";
 import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 
 function domainTaxonomy(job) {
@@ -35,16 +36,6 @@ const ALLOWED_RESUME_CONTENT_TYPES = {
   ".pdf": "application/pdf",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
-
-function hasExpectedFileSignature(buffer, ext) {
-  if (!Buffer.isBuffer(buffer)) return false;
-  if (ext === ".pdf") return buffer.subarray(0, 5).toString("ascii") === "%PDF-";
-  // DOCX is an OOXML ZIP container. Checking the ZIP local-file signature
-  // prevents arbitrary bytes with a .docx name from being persisted while
-  // still accepting normal Office documents.
-  if (ext === ".docx") return buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b && buffer[2] === 0x03 && buffer[3] === 0x04;
-  return false;
-}
 
 // Only .pdf/.docx get past this — without it, any file type (including
 // HTML/SVG) could be uploaded to Storage and later served back via a signed

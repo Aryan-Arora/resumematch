@@ -13,6 +13,7 @@ import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 import { supabase } from "../supabaseClient.js";
+import { hasExpectedFileSignature } from "../services/fileValidation.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const taxonomy = JSON.parse(
@@ -185,6 +186,12 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
     const files = req.files || [];
     const candidates = [];
     for (const file of files) {
+      const ext = extname(file.originalname).toLowerCase();
+      if (!hasExpectedFileSignature(file.buffer, ext)) {
+        return res.status(400).json({
+          error: `${file.originalname}: ${ext === ".pdf" ? "file is not a valid PDF" : "file is not a valid DOCX document"}.`,
+        });
+      }
       candidates.push(
         await scoreResumeBuffer(file.buffer, file.originalname, jdEmbedding, domain, skills, skillEmbeddingCache)
       );
