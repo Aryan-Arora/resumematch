@@ -3,6 +3,7 @@ import {
   getCandidates,
   deleteCandidate,
   downloadExport,
+  downloadActivityExport,
   getSkillTaxonomy,
   viewResume,
   viewComplianceNotice,
@@ -259,6 +260,13 @@ export default function CandidateTable({ job, onAddMore }) {
             className="clay-button whitespace-nowrap bg-[var(--color-cta-bg)] hover:opacity-90 text-[var(--color-cta-text)] font-heading font-medium text-sm px-3.5 py-2 rounded-xl transition"
           >
             Export CSV
+          </button>
+          <button
+            onClick={() => downloadActivityExport(job.id, job.title)}
+            title="Download a timestamped audit trail for this role"
+            className="glass-panel whitespace-nowrap text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 hover:bg-[var(--color-surface-alt)] transition"
+          >
+            Audit Log
           </button>
         </div>
       </div>

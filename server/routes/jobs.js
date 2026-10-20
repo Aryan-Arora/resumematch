@@ -450,6 +450,54 @@ router.get("/jobs/:id/export", async (req, res) => {
   res.send(csv);
 });
 
+router.get("/jobs/:id/activity-export", async (req, res) => {
+  const { data: job, error: jobError } = await supabase
+    .from("jobs")
+    .select("id, title")
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .single();
+  if (jobError || !job) return res.status(404).json({ error: "job not found" });
+
+  const { data: candidates, error: candidateError } = await supabase
+    .from("candidates")
+    .select("id, file_name")
+    .eq("job_id", job.id)
+    .eq("org_id", req.orgId);
+  if (candidateError) return res.status(500).json({ error: candidateError.message });
+
+  const ids = (candidates || []).map((candidate) => candidate.id);
+  const activities = ids.length
+    ? await supabase
+        .from("candidate_activity")
+        .select("candidate_id, actor_id, event_type, event_data, created_at")
+        .eq("org_id", req.orgId)
+        .in("candidate_id", ids)
+        .order("created_at", { ascending: false })
+    : { data: [], error: null };
+  if (activities.error) return res.status(500).json({ error: activities.error.message });
+
+  const candidateNames = new Map((candidates || []).map((candidate) => [candidate.id, candidate.file_name]));
+  const header = ["timestamp", "candidate", "event_type", "actor_id", "event_data"];
+  const escape = (value) => {
+    let text = String(value ?? "");
+    if (/^[=+\-@]/.test(text)) text = `'${text}`;
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+  const rows = (activities.data || []).map((event) => [
+    event.created_at,
+    candidateNames.get(event.candidate_id) || event.candidate_id,
+    event.event_type,
+    event.actor_id || "system",
+    JSON.stringify(event.event_data || {}),
+  ].map(escape).join(","));
+
+  const safeTitle = (job.title || job.id).replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-activity.csv"`);
+  res.send([header.map(escape).join(","), ...rows].join("\n"));
+});
+
 router.delete("/jobs/:id", async (req, res) => {
   const jobId = req.params.id;
 

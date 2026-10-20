@@ -185,6 +185,20 @@ export async function downloadExport(jobId, jobTitle) {
   URL.revokeObjectURL(url);
 }
 
+export async function downloadActivityExport(jobId, jobTitle) {
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/activity-export`, { headers: await authHeaders() });
+  if (!res.ok) throw new Error(`Activity export failed with status ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(jobTitle || jobId).replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-activity.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function viewComplianceNotice(jobId, semanticWeight) {
   const res = await fetch(`${API_BASE}/jobs/${jobId}/compliance-notice?semanticWeight=${semanticWeight}`, {
     headers: await authHeaders(),

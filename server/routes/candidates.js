@@ -36,7 +36,7 @@ router.get("/candidates/:id", async (req, res) => {
 router.get("/candidates/:id/resume", async (req, res) => {
   const { data: candidate, error: fetchError } = await supabase
     .from("candidates")
-    .select("file_path")
+    .select("file_path, file_name")
     .eq("id", req.params.id)
     .eq("org_id", req.orgId)
     .single();
@@ -107,6 +107,15 @@ router.post("/candidates/bulk-workflow", async (req, res) => {
   if (!ids.length || !["new", "screening", "shortlisted", "interview", "offer", "rejected"].includes(stage)) return res.status(400).json({ error: "candidate_ids and a valid pipeline_stage are required" });
   const { data, error } = await supabase.from("candidates").update({ pipeline_stage: stage }).in("id", ids).eq("org_id", req.orgId).select("id, pipeline_stage");
   if (error) return res.status(500).json({ error: error.message });
+  if (data?.length) {
+    await supabase.from("candidate_activity").insert(data.map((candidate) => ({
+      candidate_id: candidate.id,
+      org_id: req.orgId,
+      actor_id: req.userId || null,
+      event_type: "bulk_workflow_updated",
+      event_data: { pipeline_stage: stage },
+    })));
+  }
   res.json(data || []);
 });
 
