@@ -48,6 +48,15 @@ const demoLimiter = rateLimit({
 const publicUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_DEMO_RESUMES },
+  fileFilter(req, file, cb) {
+    const ext = extname(file.originalname).toLowerCase();
+    if (![".pdf", ".docx"].includes(ext)) {
+      const error = new Error("Only .pdf and .docx resumes are accepted.");
+      error.status = 400;
+      return cb(error);
+    }
+    cb(null, true);
+  },
 });
 
 async function classifyJobDescription(description, skillEmbeddingCache) {

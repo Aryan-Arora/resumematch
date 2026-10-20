@@ -25,6 +25,20 @@ if (process.env.SENTRY_DSN) {
 
 const app = express();
 
+// API responses never render HTML. These headers reduce browser-side attack
+// surface when signed resume URLs or error responses are opened directly.
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (req.secure || req.headers["x-forwarded-proto"] === "https") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
+
 // Fly.io sits directly in front of this app as a single proxy hop and sets
 // X-Forwarded-For with the real client IP. Trusting exactly one hop (not an
 // unbounded number) lets express-rate-limit read the real IP for the public
