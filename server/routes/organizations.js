@@ -41,7 +41,7 @@ router.get("/organizations/me", async (req, res) => {
 // authenticated organisation and excludes resume binaries/storage paths; it
 // contains the structured data recruiters can review, correct, or hand to a
 // data-subject request workflow.
-router.get("/organizations/export", async (req, res) => {
+router.get("/organizations/export", orgActionLimiter, async (req, res) => {
   const [jobsResult, candidatesResult, activityResult] = await Promise.all([
     supabase
       .from("jobs")
