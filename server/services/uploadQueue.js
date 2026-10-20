@@ -4,10 +4,15 @@
 // slower on this WASM/CPU backend (see semanticSkillMatch.js notes).
 const queue = [];
 let running = false;
+export const MAX_PENDING_TASKS = 500;
 
 export function enqueue(task) {
   queue.push(task);
   drain();
+}
+
+export function getQueueDepth() {
+  return queue.length + (running ? 1 : 0);
 }
 
 async function drain() {

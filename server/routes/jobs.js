@@ -11,7 +11,7 @@ import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCa
 import { computeFinalScore } from "../services/scoring.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
-import { enqueue } from "../services/uploadQueue.js";
+import { enqueue, getQueueDepth, MAX_PENDING_TASKS } from "../services/uploadQueue.js";
 import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
 import { extractRequiredFilters, evaluateEligibility } from "../services/eligibility.js";
 import { ocrResume, shouldUseOcr } from "../services/ocr.js";
@@ -314,6 +314,12 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
   const files = req.files;
   if (!files || files.length === 0) {
     return res.status(400).json({ error: "at least one resume file is required" });
+  }
+  if (getQueueDepth() + files.length > MAX_PENDING_TASKS) {
+    return res.status(429).json({
+      error: "Resume processing is busy right now. Please wait for the current queue to clear and try again.",
+      queue_depth: getQueueDepth(),
+    });
   }
 
   const { data: job, error: jobError } = await supabase

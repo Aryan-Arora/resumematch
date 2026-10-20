@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { enqueue } from "./uploadQueue.js";
+import { enqueue, getQueueDepth } from "./uploadQueue.js";
 
 function waitFor(conditionFn, { timeout = 2000, interval = 10 } = {}) {
   return new Promise((resolve, reject) => {
@@ -38,6 +38,7 @@ describe("uploadQueue", () => {
 
     expect(maxActive).toBe(1);
     expect(order).toEqual(["start:a", "end:a", "start:b", "end:b", "start:c", "end:c"]);
+    expect(getQueueDepth()).toBe(0);
   });
 
   it("continues processing later tasks after an earlier task throws", async () => {
