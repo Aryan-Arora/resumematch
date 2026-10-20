@@ -65,7 +65,19 @@ app.get("/api/health", (req, res) => res.json({ ok: true, service: "resumematch-
 
 app.get("/api/health/ready", async (req, res) => {
   const startedAt = Date.now();
-  const { error } = await supabase.from("organizations").select("id").limit(1);
+  const dbCheck = supabase.from("organizations").select("id").limit(1);
+  const timeout = new Promise((resolve) => setTimeout(() => resolve({ timeout: true }), 3000));
+  const result = await Promise.race([dbCheck, timeout]);
+  if (result.timeout) {
+    return res.status(503).json({
+      ok: false,
+      service: "resumematch-api",
+      checks: { database: "timeout" },
+      latency_ms: Date.now() - startedAt,
+      request_id: req.requestId,
+    });
+  }
+  const { error } = result;
   if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down" }, request_id: req.requestId });
   res.json({ ok: true, service: "resumematch-api", checks: { database: "up" }, latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
 });
