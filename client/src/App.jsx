@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import Sidebar from "./components/Sidebar";
-import JDForm from "./components/JDForm";
-import BulkUpload from "./components/BulkUpload";
-import CandidateTable from "./components/CandidateTable";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import Analytics from "./pages/Analytics";
-import StarredCandidates from "./pages/StarredCandidates";
+const JDForm = lazy(() => import("./components/JDForm"));
+const BulkUpload = lazy(() => import("./components/BulkUpload"));
+const CandidateTable = lazy(() => import("./components/CandidateTable"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Projects = lazy(() => import("./pages/Projects"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const StarredCandidates = lazy(() => import("./pages/StarredCandidates"));
 
 export default function App() {
   const [view, setView] = useState("dashboard");
@@ -32,24 +32,26 @@ export default function App() {
     <div className="min-h-screen bg-[var(--color-bg)] transition-colors">
       <Sidebar current={sidebarActive} onNavigate={navigate} />
       <main className="pt-14 md:pt-0 md:ml-[260px]">
-        {view === "dashboard" && <Dashboard onOpenJob={openJob} onNavigate={navigate} />}
-        {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
-        {view === "analytics" && <Analytics />}
-        {view === "starred" && <StarredCandidates />}
-        {view === "upload-jd" && (
+        <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center text-sm text-[var(--color-text-muted)]">Loading workspace…</div>}>
+          {view === "dashboard" && <Dashboard onOpenJob={openJob} onNavigate={navigate} />}
+          {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
+          {view === "analytics" && <Analytics />}
+          {view === "starred" && <StarredCandidates />}
+          {view === "upload-jd" && (
           <JDForm
             onJobCreated={(job) => {
               setCurrentJob(job);
               setView("upload-bulk");
             }}
           />
-        )}
-        {view === "upload-bulk" && currentJob && (
+          )}
+          {view === "upload-bulk" && currentJob && (
           <BulkUpload job={currentJob} onUploaded={() => setView("job")} />
-        )}
-        {view === "job" && currentJob && (
+          )}
+          {view === "job" && currentJob && (
           <CandidateTable job={currentJob} onAddMore={() => setView("upload-bulk")} />
-        )}
+          )}
+        </Suspense>
       </main>
     </div>
   );
