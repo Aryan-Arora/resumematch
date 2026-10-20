@@ -50,7 +50,20 @@ export default function BlogPost({ slug }) {
     dateModified: post.date,
     author: { "@type": "Organization", name: "ResumeMatch", url: "https://resumematch.co.in/" },
     publisher: { "@type": "Organization", name: "ResumeMatch", url: "https://resumematch.co.in/" },
-    mainEntityOfPage: `https://resumematch.co.in/blog/${slug}`,
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://resumematch.co.in/blog/${slug}` },
+    url: `https://resumematch.co.in/blog/${slug}`,
+    image: "https://resumematch.co.in/og-image.png",
+    inLanguage: "en",
+  } : null);
+
+  useJsonLd(post ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://resumematch.co.in/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://resumematch.co.in/blog" },
+      { "@type": "ListItem", position: 3, name: post.title, item: `https://resumematch.co.in/blog/${slug}` },
+    ],
   } : null);
 
   if (!post) {

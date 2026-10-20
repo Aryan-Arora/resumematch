@@ -20,7 +20,7 @@ import ResourcePage from './components/ResourcePage.jsx'
 // library for a handful of pages. "/" is the marketing home page; the
 // interactive try-it-first demo lives at "/demo"; the actual app lives
 // behind /login.
-const path = window.location.pathname
+const path = window.location.pathname.replace(/\/+$/, '') || '/'
 const blogSlug = path.startsWith('/blog/') ? path.slice('/blog/'.length) : null
 const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters'])
 

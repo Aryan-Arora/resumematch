@@ -10,7 +10,7 @@ const RESUME_PARSER = {
 export default function ResourcePage({ type = "parser" }) {
   const parser = type === "parser";
   const meta = parser ? RESUME_PARSER : {
-    title: "ResumeMatch Documentation",
+    title: "Documentation: Resume Parsing, Matching and Privacy",
     description: "Product documentation for ResumeMatch resume parsing, explainable matching, supported files, privacy, and screening workflows.",
   };
 

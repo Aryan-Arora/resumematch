@@ -150,7 +150,7 @@ export default function Home() {
   useSEO({
     title: "Explainable AI Resume Screening for Recruiters",
     description:
-      "Free AI resume screening software with explainable candidate matching. Paste a job description, upload resumes, and get a ranked shortlist with matched, missing, and implied skills — not a black-box score. An ATS alternative for recruiters, HR teams, and agencies, for tech and non-tech roles alike.",
+      "Free explainable AI resume screening: paste a job description, upload resumes, and get a ranked shortlist with matched, missing, and implied skills.",
     path: "/",
   });
 

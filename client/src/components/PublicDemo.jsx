@@ -57,7 +57,7 @@ export default function PublicDemo() {
   useSEO({
     title: "Try the Free Demo — Explainable Resume Matching",
     description:
-      "Paste any job description and see an instant, explainable candidate match — no signup required. Works for skilled trades, healthcare, sales, and every other role, not just tech.",
+      "Paste any job description and get an instant, explainable candidate match, no signup needed. Works for trades, healthcare, sales and every other role.",
     path: "/demo",
   });
 

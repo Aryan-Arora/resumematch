@@ -245,7 +245,7 @@ export default function LegalPage({ page }) {
     title: isPrivacy ? "Privacy Policy" : "Terms of Service",
     description: isPrivacy
       ? "How ResumeMatch collects, uses, and protects your account and candidate data."
-      : "The terms governing your use of ResumeMatch.",
+      : "The terms governing your use of ResumeMatch, including accounts, acceptable use, candidate data and liability.",
     path: isPrivacy ? "/privacy" : "/terms",
   });
 

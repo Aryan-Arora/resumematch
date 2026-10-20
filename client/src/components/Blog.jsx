@@ -15,7 +15,7 @@ export default function Blog() {
   useSEO({
     title: "Blog",
     description:
-      "How AI resume screening actually works, free resume screening software tradeoffs, explainable AI hiring, and building a shortlist you can defend — notes from the team building ResumeMatch.",
+      "How AI resume screening works, free screening software tradeoffs, explainable AI hiring, and building a shortlist you can defend.",
     path: "/blog",
   });
 
