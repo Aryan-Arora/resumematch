@@ -205,6 +205,11 @@ async function downloadFromStorage(storagePath) {
 // losing the resume along with the in-memory request that received it.
 export async function processCandidate(job, candidateId, storagePath, fileName, skillEmbeddingCache) {
   try {
+    const { data: attemptRow, error: attemptReadError } = await supabase.from("candidates").select("parse_attempts").eq("id", candidateId).eq("org_id", job.org_id).single();
+    if (attemptReadError || !attemptRow) throw new Error("candidate no longer exists");
+    const parseAttempts = Number(attemptRow.parse_attempts || 0) + 1;
+    const { error: attemptUpdateError } = await supabase.from("candidates").update({ parse_attempts: parseAttempts }).eq("id", candidateId).eq("org_id", job.org_id);
+    if (attemptUpdateError) throw attemptUpdateError;
     const ext = extname(fileName).toLowerCase();
     const buffer = await downloadFromStorage(storagePath);
     let parsed;
@@ -417,13 +422,14 @@ router.get("/jobs/:id/candidates/status", async (req, res) => {
 router.post("/candidates/:id/reprocess", async (req, res) => {
   const { data: candidate, error: candidateError } = await supabase
     .from("candidates")
-    .select("id, job_id, file_path, file_name, status")
+    .select("id, job_id, file_path, file_name, status, parse_attempts")
     .eq("id", req.params.id)
     .eq("org_id", req.orgId)
     .single();
   if (candidateError || !candidate) return res.status(404).json({ error: "candidate not found" });
   if (!candidate.file_path) return res.status(400).json({ error: "this candidate has no stored resume to reprocess" });
   if (candidate.status === "queued") return res.status(409).json({ error: "candidate is already queued for processing" });
+  if (Number(candidate.parse_attempts || 0) >= 3) return res.status(409).json({ error: "maximum parse attempts reached; upload a corrected resume instead" });
 
   const { data: job, error: jobError } = await supabase.from("jobs").select("*").eq("id", candidate.job_id).eq("org_id", req.orgId).single();
   if (jobError || !job) return res.status(404).json({ error: "job not found" });
