@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractSkills, compareSkills } from "./skillMatch.js";
+import { extractSkills, compareSkills, flattenTaxonomy } from "./skillMatch.js";
 
 const taxonomy = {
   languages: ["Python", "C++", "C#"],
@@ -7,6 +7,9 @@ const taxonomy = {
 };
 
 describe("extractSkills", () => {
+  it("flattens nested domain taxonomies", () => {
+    expect(flattenTaxonomy({ tech: { languages: ["Python"], tools: ["Docker"] } })).toEqual(["Python", "Docker"]);
+  });
   it("matches whole-word skill mentions case-insensitively", () => {
     expect(extractSkills("Experienced in python and CI/CD pipelines.", taxonomy)).toEqual([
       "Python",

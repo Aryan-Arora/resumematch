@@ -1,7 +1,12 @@
 import { findImpliedRequirements } from "./semanticSkillMatch.js";
 
 export function flattenTaxonomy(taxonomy) {
-  return Object.values(taxonomy).flat();
+  const values = Array.isArray(taxonomy) ? taxonomy : Object.values(taxonomy || {});
+  return values.flatMap((value) => {
+    if (typeof value === "string") return [value];
+    if (Array.isArray(value) || (value && typeof value === "object")) return flattenTaxonomy(value);
+    return [];
+  });
 }
 
 function escapeRegex(str) {
