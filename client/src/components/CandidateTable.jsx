@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
 import {
   getCandidates,
   deleteCandidate,
+  reprocessCandidate,
   downloadExport,
   downloadActivityExport,
   getSkillTaxonomy,
@@ -113,6 +114,19 @@ export default function CandidateTable({ job, onAddMore }) {
     if (!confirmed) return;
     await deleteCandidate(id);
     setCandidates((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  async function handleReprocess(candidate) {
+    setActionError(null);
+    setSavingWorkflowId(candidate.id);
+    try {
+      await reprocessCandidate(candidate.id);
+      setCandidates((prev) => prev.map((item) => item.id === candidate.id ? { ...item, status: "queued", unparseable: false, error_message: null } : item));
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setSavingWorkflowId(null);
+    }
   }
 
   async function handleToggleStar(id, starred) {
@@ -418,6 +432,19 @@ export default function CandidateTable({ job, onAddMore }) {
                                 className="text-[var(--color-accent)] transition"
                               >
                                 <span className="material-symbols-outlined text-[18px]">visibility</span>
+                              </button>
+                            )}
+                            {(c.unparseable || c.status === "failed") && c.file_path && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReprocess(c);
+                                }}
+                                disabled={savingWorkflowId === c.id}
+                                title="Retry parsing and OCR"
+                                className="text-[var(--color-warning,#b7791f)] hover:text-[var(--color-accent)] transition disabled:opacity-50"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">refresh</span>
                               </button>
                             )}
                             <button

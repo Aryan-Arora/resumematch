@@ -180,7 +180,7 @@ async function downloadFromStorage(storagePath) {
 // storage *before* this is ever queued (see the upload route below), so a
 // server restart mid-processing can always re-download and retry instead of
 // losing the resume along with the in-memory request that received it.
-async function processCandidate(job, candidateId, storagePath, fileName, skillEmbeddingCache) {
+export async function processCandidate(job, candidateId, storagePath, fileName, skillEmbeddingCache) {
   try {
     const ext = extname(fileName).toLowerCase();
     const buffer = await downloadFromStorage(storagePath);
@@ -371,6 +371,34 @@ router.get("/jobs/:id/candidates/status", async (req, res) => {
     .eq("org_id", req.orgId);
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+router.post("/candidates/:id/reprocess", async (req, res) => {
+  const { data: candidate, error: candidateError } = await supabase
+    .from("candidates")
+    .select("id, job_id, file_path, file_name, status")
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .single();
+  if (candidateError || !candidate) return res.status(404).json({ error: "candidate not found" });
+  if (!candidate.file_path) return res.status(400).json({ error: "this candidate has no stored resume to reprocess" });
+  if (candidate.status === "queued") return res.status(409).json({ error: "candidate is already queued for processing" });
+
+  const { data: job, error: jobError } = await supabase.from("jobs").select("*").eq("id", candidate.job_id).eq("org_id", req.orgId).single();
+  if (jobError || !job) return res.status(404).json({ error: "job not found" });
+
+  const { data: updated, error: updateError } = await supabase
+    .from("candidates")
+    .update({ status: "queued", unparseable: false, error_message: null, parse_warnings: [], review_status: "needs_review" })
+    .eq("id", candidate.id)
+    .eq("org_id", req.orgId)
+    .select("id, status")
+    .single();
+  if (updateError) return res.status(500).json({ error: updateError.message });
+
+  await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "reprocessing_requested", event_data: { previous_status: candidate.status } });
+  enqueue(() => processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, getSharedSkillEmbeddingCache()));
+  res.status(202).json(updated);
 });
 
 router.get("/jobs/:id/candidates", async (req, res) => {

@@ -171,6 +171,10 @@ export async function deleteCandidate(candidateId) {
   });
 }
 
+export async function reprocessCandidate(candidateId) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/reprocess`, { method: "POST", headers: await authHeaders() }).then(handle);
+}
+
 export async function downloadExport(jobId, jobTitle) {
   const res = await fetch(`${API_BASE}/jobs/${jobId}/export`, { headers: await authHeaders() });
   if (!res.ok) throw new Error(`Export failed with status ${res.status}`);
