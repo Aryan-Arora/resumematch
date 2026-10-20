@@ -31,6 +31,20 @@ export async function getMyOrganization() {
   return fetch(`${API_BASE}/organizations/me`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function downloadOrganizationExport() {
+  const res = await fetch(`${API_BASE}/organizations/export`, { headers: await authHeaders() });
+  if (!res.ok) return handle(res);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `resumematch-organization-export-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function getOrganizationMembers() {
   return fetch(`${API_BASE}/organizations/members`, { headers: await authHeaders() }).then(handle);
 }

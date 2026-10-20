@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTheme, toggleTheme } from "../theme";
 import { useSession, signOut } from "../auth";
-import { getMyOrganization } from "../api";
+import { downloadOrganizationExport, getMyOrganization } from "../api";
 import Logo from "./Logo";
 
 const NAV_ITEMS = [
@@ -17,6 +17,7 @@ export default function Sidebar({ current, onNavigate }) {
   const [organization, setOrganization] = useState(null);
   const [showCode, setShowCode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const session = useSession();
 
   useEffect(() => {
@@ -28,6 +29,17 @@ export default function Sidebar({ current, onNavigate }) {
 
   function handleToggle() {
     setThemeState(toggleTheme());
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadOrganizationExport();
+    } catch (error) {
+      window.alert(error.message || "Could not create the organization export.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   function handleNavigate(key) {
@@ -127,6 +139,17 @@ export default function Sidebar({ current, onNavigate }) {
           })}
         </nav>
         <div className="px-3 space-y-2">
+          {organization && (
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              title="Download a privacy and audit export for this organization"
+              className="w-full flex items-center justify-center gap-2 border border-[var(--color-border)] text-[var(--color-text-muted)] font-heading text-xs font-medium py-2.5 rounded-xl hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] transition disabled:opacity-60"
+            >
+              <span className="material-symbols-outlined text-[17px]">download</span>
+              {exporting ? "Preparing export…" : "Export organization data"}
+            </button>
+          )}
           <button
             onClick={() => handleNavigate("upload")}
             className="clay-button w-full flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-accent-contrast)] font-heading text-sm font-medium py-3 rounded-2xl hover:opacity-90 transition"
