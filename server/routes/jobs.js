@@ -578,11 +578,12 @@ router.delete("/jobs/:id", async (req, res) => {
 
   const { data: job } = await supabase
     .from("jobs")
-    .select("id, title")
+    .select("id, title, organizations!inner(created_by)")
     .eq("id", jobId)
     .eq("org_id", req.orgId)
     .single();
   if (!job) return res.status(404).json({ error: "job not found" });
+  if (job.organizations?.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can delete a job" });
 
   await deleteJobCascade(job);
 
