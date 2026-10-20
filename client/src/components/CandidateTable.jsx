@@ -501,6 +501,11 @@ export default function CandidateTable({ job, onAddMore }) {
                                     <select value={c.match_feedback || ""} onChange={(e) => e.target.value && saveFeedback(c.id, e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]"><option value="">Unreviewed</option><option value="accurate">Accurate</option><option value="inaccurate">Inaccurate</option><option value="unclear">Unclear</option></select>
                                   </label>
                                   <div className="flex flex-wrap gap-2 mt-3">
+                                    {(c.phone || c.linkedin_url || c.portfolio_url) && <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-muted)] basis-full">
+                                      {c.phone && <a href={`tel:${c.phone}`} className="hover:text-[var(--color-accent)]">☎ {c.phone}</a>}
+                                      {c.linkedin_url && <a href={c.linkedin_url} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] hover:underline">LinkedIn ↗</a>}
+                                      {c.portfolio_url && <a href={c.portfolio_url} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] hover:underline">Portfolio ↗</a>}
+                                    </div>}
                                     {c.email && <><button onClick={() => emailCandidate(c.id, "shortlist")} className="text-xs text-[var(--color-accent)] hover:underline">Send shortlist email</button><button onClick={() => emailCandidate(c.id, "interview")} className="text-xs text-[var(--color-accent)] hover:underline">Send interview invite</button><button onClick={() => emailCandidate(c.id, "rejection")} className="text-xs text-[var(--color-danger)] hover:underline">Send rejection email</button></>}
                                   </div>
                                 </div>

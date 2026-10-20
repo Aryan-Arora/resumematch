@@ -2,6 +2,9 @@ import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+const PHONE_RE = /(?:\+?\d[\d\s().-]{7,}\d)/g;
+const LINKEDIN_RE = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(?:in|pub)\/[a-zA-Z0-9._-]+/i;
+const URL_RE = /https?:\/\/[^\s<>()]+/gi;
 
 // Resumes list a personal contact email once near the top, but skill lines
 // like "email marketing" or a footer copyright address can also match a
@@ -10,6 +13,19 @@ const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 export function extractEmail(text) {
   const match = text.match(EMAIL_RE);
   return match ? match[0] : null;
+}
+
+export function extractContactDetails(text) {
+  const value = String(text || "");
+  const phoneCandidates = value.match(PHONE_RE) || [];
+  const phone = phoneCandidates
+    .map((candidate) => candidate.replace(/\s+/g, " ").trim())
+    .find((candidate) => candidate.replace(/\D/g, "").length >= 8 && candidate.replace(/\D/g, "").length <= 15) || null;
+  const linkedinMatch = value.match(LINKEDIN_RE);
+  const linkedinUrl = linkedinMatch ? `https://${linkedinMatch[0].replace(/^https?:\/\//i, "").replace(/^www\./i, "www.")}` : null;
+  const urls = (value.match(URL_RE) || []).map((url) => url.replace(/[),.;]+$/, ""));
+  const portfolioUrl = urls.find((url) => !/linkedin\.com\//i.test(url) && !/mailto:/i.test(url)) || null;
+  return { phone, linkedinUrl, portfolioUrl };
 }
 
 export function normalizeResumeText(value) {

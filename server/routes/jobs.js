@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, extname } from "path";
 import { supabase } from "../supabaseClient.js";
-import { parsePdf, parseDocx, extractEmail } from "../services/parsing.js";
+import { parsePdf, parseDocx, extractEmail, extractContactDetails } from "../services/parsing.js";
 import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
@@ -228,12 +228,16 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
         : 0;
     const finalScore = computeFinalScore(semanticScore, skillScore);
     const eligibility = evaluateEligibility({ ...job.required_filters, ...(job.requirement_config || {}) }, parsed.text);
+    const contact = extractContactDetails(parsed.text);
 
     const { error } = await supabase
       .from("candidates")
       .update({
         resume_text: parsed.text,
         email: extractEmail(parsed.text),
+        phone: contact.phone,
+        linkedin_url: contact.linkedinUrl,
+        portfolio_url: contact.portfolioUrl,
         resume_embedding: resumeEmbedding,
         matched_skills: matched,
         missing_skills: stillMissing,
