@@ -1,4 +1,5 @@
 import express from "express";
+import { randomUUID } from "node:crypto";
 import cors from "cors";
 import dotenv from "dotenv";
 import multer from "multer";
@@ -29,6 +30,10 @@ const app = express();
 // surface when signed resume URLs or error responses are opened directly.
 app.disable("x-powered-by");
 app.use((req, res, next) => {
+  const incomingRequestId = req.header("x-request-id");
+  const requestId = incomingRequestId && /^[a-zA-Z0-9._:-]{1,128}$/.test(incomingRequestId) ? incomingRequestId : randomUUID();
+  req.requestId = requestId;
+  res.setHeader("X-Request-Id", requestId);
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
@@ -91,9 +96,9 @@ app.use((err, req, res, next) => {
   if (err.status) {
     return res.status(err.status).json({ error: err.message });
   }
-  console.error(err);
+  console.error(`[${req.requestId || "unknown"}]`, err);
   if (process.env.SENTRY_DSN) Sentry.captureException(err);
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ error: "Internal server error", request_id: req.requestId });
 });
 
 const port = process.env.PORT || 4000;
