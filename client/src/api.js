@@ -29,6 +29,10 @@ export async function getMyOrganization() {
   return fetch(`${API_BASE}/organizations/me`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function getOrganizationMembers() {
+  return fetch(`${API_BASE}/organizations/members`, { headers: await authHeaders() }).then(handle);
+}
+
 export async function createOrganization(name) {
   return fetch(`${API_BASE}/organizations`, {
     method: "POST",

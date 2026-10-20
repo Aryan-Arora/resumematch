@@ -12,6 +12,7 @@ import {
   bulkUpdateCandidateWorkflow,
   updateCandidateFeedback,
   sendCandidateEmail,
+  getOrganizationMembers,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -81,16 +82,19 @@ export default function CandidateTable({ job, onAddMore }) {
   const [compareIds, setCompareIds] = useState(new Set());
   const [viewMode, setViewMode] = useState("table");
   const [savingWorkflowId, setSavingWorkflowId] = useState(null);
+  const [members, setMembers] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [candidateData, taxonomyData] = await Promise.all([
+      const [candidateData, taxonomyData, memberData] = await Promise.all([
         getCandidates(job.id),
         getSkillTaxonomy(job.jd_domain),
+        getOrganizationMembers(),
       ]);
       setCandidates(candidateData);
       setTaxonomy(taxonomyData);
+      setMembers(memberData);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -452,6 +456,9 @@ export default function CandidateTable({ job, onAddMore }) {
                                   </div>
                                   <label className="block mt-3 text-xs text-[var(--color-text-muted)]">Follow-up reminder
                                     <input type="datetime-local" value={c.reminder_at ? new Date(c.reminder_at).toISOString().slice(0, 16) : ""} onChange={(e) => updateWorkflow(c.id, { reminder_at: e.target.value ? new Date(e.target.value).toISOString() : null })} className="mt-1 w-full sm:w-64 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]" />
+                                  </label>
+                                  <label className="block mt-3 text-xs text-[var(--color-text-muted)]">Assigned recruiter
+                                    <select value={c.assigned_to || ""} onChange={(e) => updateWorkflow(c.id, { assigned_to: e.target.value || null })} className="mt-1 w-full sm:w-64 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]"><option value="">Unassigned</option>{members.map((member) => <option key={member.id} value={member.id}>{member.email}</option>)}</select>
                                   </label>
                                   {c.reminder_at && <p className="text-xs text-[var(--color-text-faint)] mt-1">Reminder set for {new Date(c.reminder_at).toLocaleString()}</p>}
                                   {c.pipeline_stage === "interview" && job.interview_url && <a href={job.interview_url} target="_blank" rel="noreferrer" className="inline-flex mt-3 text-sm text-[var(--color-accent)] hover:underline">Open interview scheduling link →</a>}

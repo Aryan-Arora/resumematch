@@ -37,6 +37,17 @@ router.get("/organizations/me", async (req, res) => {
   res.json({ organization: data });
 });
 
+router.get("/organizations/members", async (req, res) => {
+  const { data: profiles, error } = await supabase.from("profiles").select("id").eq("org_id", req.orgId);
+  if (error) return res.status(500).json({ error: error.message });
+  const users = [];
+  for (const profile of profiles || []) {
+    const { data } = await supabase.auth.admin.getUserById(profile.id);
+    if (data?.user) users.push({ id: data.user.id, email: data.user.email });
+  }
+  res.json(users);
+});
+
 router.post("/organizations", orgActionLimiter, async (req, res) => {
   const { name } = req.body || {};
   if (!name || !name.trim()) {
