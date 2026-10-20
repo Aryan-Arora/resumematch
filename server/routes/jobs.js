@@ -427,7 +427,7 @@ router.get("/jobs/:id/candidates/status", async (req, res) => {
   res.json(data);
 });
 
-router.post("/candidates/:id/reprocess", async (req, res) => {
+router.post("/candidates/:id/reprocess", jobWriteLimiter, async (req, res) => {
   const { data: candidate, error: candidateError } = await supabase
     .from("candidates")
     .select("id, job_id, file_path, file_name, status, parse_attempts")
