@@ -102,7 +102,13 @@ app.use((err, req, res, next) => {
     return res.status(err.status).json({ error: err.message });
   }
   console.error(`[${req.requestId || "unknown"}]`, err);
-  if (process.env.SENTRY_DSN) Sentry.captureException(err);
+  if (process.env.SENTRY_DSN) {
+    Sentry.withScope((scope) => {
+      scope.setTag("request_id", req.requestId || "unknown");
+      scope.setTag("route", req.route?.path || req.path || "unknown");
+      Sentry.captureException(err);
+    });
+  }
   res.status(500).json({ error: "Internal server error", request_id: req.requestId });
 });
 
