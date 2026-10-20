@@ -235,12 +235,26 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
     const finalScore = computeFinalScore(semanticScore, skillScore);
     const eligibility = evaluateEligibility({ ...job.required_filters, ...(job.requirement_config || {}) }, parsed.text);
     const contact = extractContactDetails(parsed.text);
+    const extractedEmail = extractEmail(parsed.text);
+    let parseWarnings = [...(parsed.warnings || [])];
+    if (extractedEmail) {
+      const { data: duplicate } = await supabase
+        .from("candidates")
+        .select("id, file_name")
+        .eq("org_id", job.org_id)
+        .eq("job_id", job.id)
+        .eq("email", extractedEmail)
+        .neq("id", candidateId)
+        .limit(1)
+        .maybeSingle();
+      if (duplicate) parseWarnings.push(`Possible duplicate of ${duplicate.file_name || "another candidate"}; verify before contacting.`);
+    }
 
     const { error } = await supabase
       .from("candidates")
       .update({
         resume_text: parsed.text,
-        email: extractEmail(parsed.text),
+        email: extractedEmail,
         phone: contact.phone,
         linkedin_url: contact.linkedinUrl,
         portfolio_url: contact.portfolioUrl,
@@ -255,7 +269,7 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
         unparseable: false,
         parse_method: parsed.method,
         parse_confidence: parsed.confidence,
-        parse_warnings: parsed.warnings,
+        parse_warnings: parseWarnings,
         eligibility_status: eligibility.status,
         eligibility_reasons: eligibility.reasons,
         review_status: "needs_review",
