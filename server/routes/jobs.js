@@ -36,6 +36,16 @@ const ALLOWED_RESUME_CONTENT_TYPES = {
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
+function hasExpectedFileSignature(buffer, ext) {
+  if (!Buffer.isBuffer(buffer)) return false;
+  if (ext === ".pdf") return buffer.subarray(0, 5).toString("ascii") === "%PDF-";
+  // DOCX is an OOXML ZIP container. Checking the ZIP local-file signature
+  // prevents arbitrary bytes with a .docx name from being persisted while
+  // still accepting normal Office documents.
+  if (ext === ".docx") return buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b && buffer[2] === 0x03 && buffer[3] === 0x04;
+  return false;
+}
+
 // Only .pdf/.docx get past this — without it, any file type (including
 // HTML/SVG) could be uploaded to Storage and later served back via a signed
 // URL with an attacker-controlled Content-Type, which is a stored-content
@@ -333,6 +343,13 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
   const failures = [];
   for (const file of files) {
     const ext = extname(file.originalname).toLowerCase();
+    if (!hasExpectedFileSignature(file.buffer, ext)) {
+      failures.push({
+        file_name: file.originalname,
+        error: ext === ".pdf" ? "File is not a valid PDF." : "File is not a valid DOCX document.",
+      });
+      continue;
+    }
     // The storage key only ever contains a sanitized basename — never the
     // raw, attacker-controlled original filename — so nothing in it can
     // affect the object's path. Content-Type comes from the verified
