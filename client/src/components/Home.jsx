@@ -4,6 +4,7 @@ import { useSEO, useJsonLd } from "../lib/seo";
 import { trackEvent } from "../lib/analytics";
 import Logo from "./Logo";
 import StreamlinedJourney from "./StreamlinedJourney";
+import { FooterProductLinks } from "./SiteFooter";
 
 // Fires `data-visible` once when the element enters the viewport — the
 // scroll-reveal recipe never re-animates on scroll-by.
@@ -465,6 +466,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <FooterProductLinks />
       </footer>
     </div>
   );

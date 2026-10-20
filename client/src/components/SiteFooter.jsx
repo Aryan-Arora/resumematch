@@ -1,5 +1,29 @@
 import Logo from "./Logo";
 
+const PRODUCT_LINKS = [
+  { href: "/demo", label: "Try the free demo" },
+  { href: "/free-resume-screening-software", label: "Free resume screening software" },
+  { href: "/explainable-ai-resume-screening", label: "Explainable AI resume screening" },
+  { href: "/ats-alternative-for-recruiters", label: "ATS alternative for recruiters" },
+  { href: "/resume-parser", label: "Resume parser" },
+  { href: "/docs", label: "Documentation" },
+];
+
+export function FooterProductLinks() {
+  return (
+    <nav
+      aria-label="Product"
+      className="max-w-6xl mx-auto mt-8 pt-6 border-t border-[var(--color-border)]/40 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-[var(--color-text-muted)]"
+    >
+      {PRODUCT_LINKS.map((link) => (
+        <a key={link.href} href={link.href} className="hover:text-[var(--color-text)] transition">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export default function SiteFooter() {
   return (
     <footer className="w-full bg-[var(--color-surface-alt)] py-12 px-6 md:px-16">
@@ -41,6 +65,7 @@ export default function SiteFooter() {
           </div>
         </div>
       </div>
+      <FooterProductLinks />
     </footer>
   );
 }
