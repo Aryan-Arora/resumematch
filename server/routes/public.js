@@ -9,6 +9,7 @@ import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from 
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
 import { parsePdf, parseDocx } from "../services/parsing.js";
+import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 import { supabase } from "../supabaseClient.js";
@@ -90,6 +91,11 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
   if (ext === ".pdf") parsed = await parsePdf(buffer);
   else if (ext === ".docx") parsed = await parseDocx(buffer);
   else parsed = { text: "", unparseable: true };
+
+  if (shouldUseOcr(parsed)) {
+    const ocr = await ocrResume(buffer, { fileName });
+    if (ocr.available && ocr.text) parsed = { ...ocr, unparseable: false, needsOcr: true };
+  }
 
   if (parsed.unparseable) {
     return { file_name: fileName, unparseable: true };
