@@ -18,10 +18,7 @@ import { warmModels } from "./services/warmup.js";
 
 dotenv.config();
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
-  console.log("Sentry error monitoring enabled.");
-} else {
+if (!process.env.SENTRY_DSN) {
   console.log("SENTRY_DSN not set — error monitoring disabled (fine for local dev only).");
 }
 
