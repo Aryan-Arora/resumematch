@@ -15,6 +15,7 @@ import {
   updateCandidateFeedback,
   sendCandidateEmail,
   getOrganizationMembers,
+  updateJobSettings,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -85,6 +86,8 @@ export default function CandidateTable({ job, onAddMore }) {
   const [viewMode, setViewMode] = useState("table");
   const [savingWorkflowId, setSavingWorkflowId] = useState(null);
   const [members, setMembers] = useState([]);
+  const [emailTemplates, setEmailTemplates] = useState(job.email_templates || { shortlist: "", interview: "", rejection: "" });
+  const [templateSaved, setTemplateSaved] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -126,6 +129,18 @@ export default function CandidateTable({ job, onAddMore }) {
       setActionError(err.message);
     } finally {
       setSavingWorkflowId(null);
+    }
+  }
+
+  async function saveTemplates() {
+    setActionError(null);
+    try {
+      const updated = await updateJobSettings(job.id, { email_templates: emailTemplates });
+      setEmailTemplates(updated.email_templates || emailTemplates);
+      setTemplateSaved(true);
+      window.setTimeout(() => setTemplateSaved(false), 2500);
+    } catch (err) {
+      setActionError(err.message);
     }
   }
 
@@ -282,6 +297,13 @@ export default function CandidateTable({ job, onAddMore }) {
           >
             Audit Log
           </button>
+          <details className="relative">
+            <summary className="glass-panel cursor-pointer list-none whitespace-nowrap text-[var(--color-text)] font-heading font-medium text-sm px-3.5 py-2 hover:bg-[var(--color-surface-alt)] transition">Email Templates</summary>
+            <div className="absolute right-0 z-20 mt-2 w-80 clay-card p-4 space-y-3">
+              {[['shortlist', 'Shortlist'], ['interview', 'Interview'], ['rejection', 'Rejection']].map(([key, label]) => <label key={key} className="block text-xs text-[var(--color-text-muted)]">{label}<textarea value={emailTemplates[key] || ""} onChange={(e) => setEmailTemplates((prev) => ({ ...prev, [key]: e.target.value }))} maxLength={5000} placeholder="Leave blank for default" className="mt-1 w-full min-h-16 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
+              <button onClick={saveTemplates} className="clay-button w-full bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] text-xs px-3 py-2 rounded-lg">{templateSaved ? "Saved" : "Save templates"}</button>
+            </div>
+          </details>
         </div>
       </div>
 

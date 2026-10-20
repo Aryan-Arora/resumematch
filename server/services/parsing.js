@@ -12,7 +12,7 @@ const URL_RE = /https?:\/\/[^\s<>()]+/gi;
 // skimming the page would land on too.
 export function extractEmail(text) {
   const match = text.match(EMAIL_RE);
-  return match ? match[0] : null;
+  return match ? match[0].trim().toLowerCase() : null;
 }
 
 export function extractContactDetails(text) {

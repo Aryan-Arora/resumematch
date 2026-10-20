@@ -61,7 +61,7 @@ const router = Router();
 router.get("/jobs", async (req, res) => {
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
-    .select("id, title, description, jd_skills, jd_domain, created_at")
+    .select("id, title, description, jd_skills, jd_domain, created_at, interview_url, email_templates")
     .eq("org_id", req.orgId)
     .order("created_at", { ascending: false });
   if (jobsError) return res.status(500).json({ error: jobsError.message });
@@ -93,6 +93,23 @@ router.get("/jobs", async (req, res) => {
   });
 
   res.json(result);
+});
+
+router.patch("/jobs/:id/settings", jobWriteLimiter, async (req, res) => {
+  const templates = req.body.email_templates && typeof req.body.email_templates === "object" ? req.body.email_templates : null;
+  const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : undefined;
+  if (!templates && interviewUrl === undefined) return res.status(400).json({ error: "job settings are required" });
+  if (interviewUrl && !/^https:\/\//i.test(interviewUrl)) return res.status(400).json({ error: "Interview link must use https://" });
+  const update = {};
+  if (interviewUrl !== undefined) update.interview_url = interviewUrl;
+  if (templates) update.email_templates = {
+    shortlist: typeof templates.shortlist === "string" ? templates.shortlist.slice(0, 5000) : "",
+    interview: typeof templates.interview === "string" ? templates.interview.slice(0, 5000) : "",
+    rejection: typeof templates.rejection === "string" ? templates.rejection.slice(0, 5000) : "",
+  };
+  const { data, error } = await supabase.from("jobs").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select("id, interview_url, email_templates").single();
+  if (error || !data) return res.status(404).json({ error: "job not found" });
+  res.json(data);
 });
 
 router.get("/jobs/domains", (req, res) => {

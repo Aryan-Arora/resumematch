@@ -12,6 +12,10 @@ describe("extractEmail", () => {
     expect(extractEmail("Contact: a@example.com or b@example.com")).toBe("a@example.com");
   });
 
+  it("normalizes email casing", () => {
+    expect(extractEmail("Contact: Jordan.LEE@Example.COM")).toBe("jordan.lee@example.com");
+  });
+
   it("returns null when no email is present", () => {
     expect(extractEmail("Jordan Lee, Senior Engineer, 8 years experience")).toBeNull();
   });
