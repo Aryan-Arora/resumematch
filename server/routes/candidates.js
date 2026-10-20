@@ -85,6 +85,9 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   const assignedTo = req.body.assigned_to === null || typeof req.body.assigned_to === "string" ? req.body.assigned_to : undefined;
   if (!stage && notes === undefined && tags === undefined && reminderAt === undefined && assignedTo === undefined) return res.status(400).json({ error: "workflow change is required" });
   if (stage && !allowedStages.has(stage)) return res.status(400).json({ error: "invalid pipeline stage" });
+  if (reminderAt && (Number.isNaN(Date.parse(reminderAt)) || !/^\d{4}-\d{2}-\d{2}T/.test(reminderAt))) {
+    return res.status(400).json({ error: "reminder_at must be an ISO timestamp" });
+  }
   if (assignedTo) {
     try {
       if (!(await isOrganizationMember(assignedTo, req.orgId))) {
