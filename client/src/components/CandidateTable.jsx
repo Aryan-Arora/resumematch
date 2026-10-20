@@ -495,6 +495,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 <div className="sm:col-span-2 rounded-xl border border-[var(--color-border)]/60 bg-[var(--color-surface)]/60 p-4">
                                   <div className="flex items-center justify-between gap-3 mb-2">
                                     <h3 className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Eligibility gates</h3>
+                                    <span className="text-xs text-[var(--color-text-faint)]">Parse attempts {c.parse_attempts || 0}/3</span>
                                     {c.parse_confidence !== null && c.parse_confidence !== undefined && <span className="text-xs text-[var(--color-text-faint)]">Parse confidence {Math.round(Number(c.parse_confidence) * 100)}%</span>}
                                   </div>
                                   <div className="space-y-1.5">
