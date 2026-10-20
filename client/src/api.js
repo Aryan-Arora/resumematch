@@ -20,7 +20,9 @@ async function handle(res) {
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed with status ${res.status}`);
+    const requestId = res.headers.get("x-request-id");
+    const message = body.error || `Request failed with status ${res.status}`;
+    throw new Error(requestId ? `${message} (Reference: ${requestId})` : message);
   }
   return res.json();
 }
