@@ -11,6 +11,7 @@ import analyticsRouter from "./routes/analytics.js";
 import authRouter from "./routes/auth.js";
 import publicRouter from "./routes/public.js";
 import organizationsRouter from "./routes/organizations.js";
+import { supabase } from "./supabaseClient.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 import { warmModels } from "./services/warmup.js";
@@ -64,6 +65,13 @@ app.use(
 app.use(express.json({ limit: "256kb" }));
 
 app.get("/api/health", (req, res) => res.json({ ok: true, service: "resumematch-api", timestamp: new Date().toISOString() }));
+
+app.get("/api/health/ready", async (req, res) => {
+  const startedAt = Date.now();
+  const { error } = await supabase.from("organizations").select("id").limit(1);
+  if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down" }, request_id: req.requestId });
+  res.json({ ok: true, service: "resumematch-api", checks: { database: "up" }, latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
+});
 
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
