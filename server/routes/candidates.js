@@ -135,6 +135,35 @@ router.patch("/candidates/:id/feedback", async (req, res) => {
   res.json(data);
 });
 
+router.patch("/candidates/:id/review", async (req, res) => {
+  const { data, error } = await supabase
+    .from("candidates")
+    .update({ review_status: "reviewed" })
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .select()
+    .single();
+  if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  const event = {
+    candidate_id: data.id,
+    org_id: req.orgId,
+    actor_id: req.userId || null,
+    event_type: "candidate_reviewed",
+    event_data: { review_status: "reviewed" },
+  };
+  await Promise.all([
+    supabase.from("candidate_activity").insert(event),
+    supabase.from("organization_audit_events").insert({
+      org_id: req.orgId,
+      actor_id: req.userId || null,
+      candidate_id: data.id,
+      event_type: "candidate_reviewed",
+      event_data: {},
+    }),
+  ]);
+  res.json(data);
+});
+
 // Recruiters can correct contact extraction without editing the original
 // resume. This is intentionally narrow and organization-scoped so a manual
 // correction cannot alter the model's stored scores or eligibility evidence.

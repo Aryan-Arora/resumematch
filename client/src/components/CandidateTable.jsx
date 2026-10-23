@@ -13,6 +13,7 @@ import {
   updateCandidateWorkflow,
   bulkUpdateCandidateWorkflow,
   updateCandidateFeedback,
+  markCandidateReviewed,
   updateCandidateContact,
   sendCandidateEmail,
   getOrganizationMembers,
@@ -211,6 +212,19 @@ export default function CandidateTable({ job, onAddMore }) {
       const updated = await updateCandidateFeedback(id, value);
       setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, ...updated } : c));
     } catch (err) { setActionError(err.message); }
+  }
+
+  async function markReviewed(id) {
+    setSavingWorkflowId(id);
+    setActionError(null);
+    try {
+      const updated = await markCandidateReviewed(id);
+      setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)));
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setSavingWorkflowId(null);
+    }
   }
 
   async function saveContact(id, fields) {
@@ -565,6 +579,8 @@ export default function CandidateTable({ job, onAddMore }) {
                                   <label className="inline-flex items-center gap-2 mt-3 text-xs text-[var(--color-text-muted)]">Was this match accurate?
                                     <select value={c.match_feedback || ""} onChange={(e) => e.target.value && saveFeedback(c.id, e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]"><option value="">Unreviewed</option><option value="accurate">Accurate</option><option value="inaccurate">Inaccurate</option><option value="unclear">Unclear</option></select>
                                   </label>
+                                  {c.review_status !== "reviewed" && <button onClick={() => markReviewed(c.id)} disabled={savingWorkflowId === c.id} className="block mt-3 text-xs text-[var(--color-accent)] hover:underline disabled:opacity-60">{savingWorkflowId === c.id ? "Saving…" : "Mark candidate reviewed"}</button>}
+                                  {c.review_status === "reviewed" && <p className="block mt-3 text-xs text-[var(--color-success)]">✓ Human review recorded</p>}
                                   <div className="flex flex-wrap gap-2 mt-3">
                                     {(c.phone || c.linkedin_url || c.portfolio_url) && <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-muted)] basis-full">
                                       {c.phone && <a href={`tel:${c.phone}`} className="hover:text-[var(--color-accent)]">☎ {c.phone}</a>}

@@ -197,6 +197,13 @@ export async function updateCandidateFeedback(candidateId, feedback, note = "") 
   return fetch(`${API_BASE}/candidates/${candidateId}/feedback`, { method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ match_feedback: feedback, match_feedback_note: note }) }).then(handle);
 }
 
+export async function markCandidateReviewed(candidateId) {
+  return fetch(`${API_BASE}/candidates/${candidateId}/review`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+  }).then(handle);
+}
+
 export async function updateCandidateContact(candidateId, fields) {
   return fetch(`${API_BASE}/candidates/${candidateId}/contact`, {
     method: "PATCH",
