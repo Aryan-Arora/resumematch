@@ -355,7 +355,8 @@ router.delete("/candidates/:id", async (req, res) => {
   if (auditError) return res.status(503).json({ error: "could not record deletion audit event; candidate was not deleted" });
 
   if (candidate.file_path) {
-    await supabase.storage.from("resumes").remove([candidate.file_path]);
+    const { error: storageError } = await supabase.storage.from("resumes").remove([candidate.file_path]);
+    if (storageError) return res.status(503).json({ error: "resume storage could not be deleted; candidate was not deleted" });
   }
 
   const { error } = await supabase

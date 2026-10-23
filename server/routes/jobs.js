@@ -852,7 +852,13 @@ export async function deleteJobCascade(job) {
 
   if (unstarred.length > 0) {
     const paths = unstarred.map((c) => c.file_path).filter(Boolean);
-    if (paths.length > 0) await supabase.storage.from("resumes").remove(paths);
+    if (paths.length > 0) {
+      const { error: storageError } = await supabase.storage.from("resumes").remove(paths);
+      if (storageError) {
+        console.error(`Retention storage deletion failed for job ${job.id}; skipping deletion.`);
+        return;
+      }
+    }
     const { error: auditError } = await supabase.from("organization_audit_events").insert(
       unstarred.map((candidate) => ({
         org_id: job.org_id,

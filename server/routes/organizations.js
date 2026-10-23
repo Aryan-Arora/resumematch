@@ -157,7 +157,13 @@ router.patch("/organizations/deletion-requests/:id", orgActionLimiter, async (re
   if (error || !data) return res.status(404).json({ error: "pending deletion request not found" });
   if (status === "resolved" && data.candidate_id) {
     const { data: candidate } = await supabase.from("candidates").select("file_path").eq("id", data.candidate_id).eq("org_id", req.orgId).maybeSingle();
-    if (candidate?.file_path) await supabase.storage.from("resumes").remove([candidate.file_path]);
+    if (candidate?.file_path) {
+      const { error: storageError } = await supabase.storage.from("resumes").remove([candidate.file_path]);
+      if (storageError) {
+        await supabase.from("candidate_deletion_requests").update({ status: "pending", resolved_at: null }).eq("id", data.id).eq("org_id", req.orgId);
+        return res.status(503).json({ error: "resume storage could not be deleted; candidate was not deleted" });
+      }
+    }
     const { error: auditError } = await supabase.from("organization_audit_events").insert({
       org_id: req.orgId,
       actor_id: req.userId || null,
