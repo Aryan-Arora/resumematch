@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const StarredCandidates = lazy(() => import("./pages/StarredCandidates"));
+const PrivacyRequests = lazy(() => import("./pages/PrivacyRequests"));
 
 export default function App() {
   const [view, setView] = useState("dashboard");
@@ -37,6 +38,7 @@ export default function App() {
           {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
           {view === "analytics" && <Analytics />}
           {view === "starred" && <StarredCandidates />}
+          {view === "privacy-requests" && <PrivacyRequests />}
           {view === "upload-jd" && (
           <JDForm
             onJobCreated={(job) => {

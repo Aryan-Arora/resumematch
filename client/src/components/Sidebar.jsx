@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { key: "upload", label: "Upload", icon: "cloud_upload" },
   { key: "starred", label: "Starred CVs", icon: "star" },
   { key: "analytics", label: "Analytics", icon: "analytics" },
+  { key: "privacy-requests", label: "Privacy requests", icon: "privacy_tip" },
 ];
 
 export default function Sidebar({ current, onNavigate }) {

@@ -39,6 +39,18 @@ export async function updateOrganizationSettings(settings) {
   }).then(handle);
 }
 
+export async function getDeletionRequests() {
+  return fetch(`${API_BASE}/organizations/deletion-requests`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function updateDeletionRequest(id, status) {
+  return fetch(`${API_BASE}/organizations/deletion-requests/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify({ status }),
+  }).then(handle);
+}
+
 export async function downloadOrganizationExport() {
   const res = await fetch(`${API_BASE}/organizations/export`, { headers: await authHeaders() });
   if (!res.ok) return handle(res);
