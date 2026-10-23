@@ -95,11 +95,26 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
 
   if (shouldUseOcr(parsed)) {
     const ocr = await ocrResume(buffer, { fileName });
-    if (ocr.available && ocr.text) parsed = { ...ocr, unparseable: false, needsOcr: true };
+    if (ocr.available && ocr.text) {
+      parsed = {
+        ...ocr,
+        unparseable: false,
+        needsOcr: true,
+        warnings: [...new Set([...(parsed.warnings || []), ...(ocr.warnings || [])])],
+      };
+    } else {
+      parsed = { ...parsed, warnings: [...new Set([...(parsed.warnings || []), ...(ocr.warnings || [])])], needsOcr: true };
+    }
   }
 
   if (parsed.unparseable) {
-    return { file_name: fileName, unparseable: true };
+    return {
+      file_name: fileName,
+      unparseable: true,
+      parse_method: parsed.method,
+      parse_confidence: parsed.confidence,
+      parse_warnings: parsed.warnings || [],
+    };
   }
 
   const domainSkillSet = domain === "general" ? { keyphrases: jdSkills } : taxonomy[domain] || taxonomy.tech;
@@ -118,6 +133,9 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
   return {
     file_name: fileName,
     unparseable: false,
+    parse_method: parsed.method,
+    parse_confidence: parsed.confidence,
+    parse_warnings: parsed.warnings || [],
     matched_skills: matched,
     missing_skills: stillMissing,
     implied_skills: impliedSkills,

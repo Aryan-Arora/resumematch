@@ -224,8 +224,9 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
 
     if (shouldUseOcr(parsed)) {
       const ocr = await ocrResume(buffer, { fileName });
-      if (ocr.available && ocr.text) parsed = { ...ocr, unparseable: false, needsOcr: true };
-      else parsed = { ...parsed, warnings: [...(parsed.warnings || []), ...(ocr.warnings || [])], needsOcr: true };
+      const warnings = [...new Set([...(parsed.warnings || []), ...(ocr.warnings || [])])];
+      if (ocr.available && ocr.text) parsed = { ...ocr, unparseable: false, needsOcr: true, warnings };
+      else parsed = { ...parsed, warnings, needsOcr: true };
     }
 
     if (parsed.unparseable) {
