@@ -4,7 +4,7 @@ import multer from "multer";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, extname } from "path";
-import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
+import { EMBEDDING_MODEL_VERSION, getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
@@ -114,6 +114,7 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
       parse_method: parsed.method,
       parse_confidence: parsed.confidence,
       parse_warnings: parsed.warnings || [],
+      model_version: EMBEDDING_MODEL_VERSION,
     };
   }
 
@@ -136,6 +137,7 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
     parse_method: parsed.method,
     parse_confidence: parsed.confidence,
     parse_warnings: parsed.warnings || [],
+    model_version: EMBEDDING_MODEL_VERSION,
     matched_skills: matched,
     missing_skills: stillMissing,
     implied_skills: impliedSkills,

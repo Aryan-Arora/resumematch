@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname, join, extname } from "path";
 import { supabase } from "../supabaseClient.js";
 import { parsePdf, parseDocx, extractEmail, extractContactDetails } from "../services/parsing.js";
-import { getEmbedding, cosineSimilarity } from "../services/embedding.js";
+import { EMBEDDING_MODEL_VERSION, getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
@@ -294,6 +294,7 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
         parse_method: parsed.method,
         parse_confidence: parsed.confidence,
         parse_warnings: parseWarnings,
+        model_version: EMBEDDING_MODEL_VERSION,
         eligibility_status: eligibility.status,
         eligibility_reasons: eligibility.reasons,
         review_status: "needs_review",

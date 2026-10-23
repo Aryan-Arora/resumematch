@@ -1,12 +1,18 @@
 import { pipeline } from "@xenova/transformers";
 
+// Keep this identifier alongside every persisted screening result. Changing
+// the primary model changes the meaning of stored vectors and scores, so it
+// must be an explicit, reviewable release decision.
+export const EMBEDDING_MODEL_VERSION = "Xenova/all-MiniLM-L6-v2";
+export const PRECISE_EMBEDDING_MODEL_VERSION = "Xenova/all-mpnet-base-v2";
+
 // Used for the primary JD-vs-resume document embedding — persisted in Postgres
 // as a vector(384) column, so this model must never change without a migration.
 let extractorPromise = null;
 
 function getExtractor() {
   if (!extractorPromise) {
-    extractorPromise = pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    extractorPromise = pipeline("feature-extraction", EMBEDDING_MODEL_VERSION);
   }
   return extractorPromise;
 }
@@ -24,7 +30,7 @@ let preciseExtractorPromise = null;
 
 function getPreciseExtractor() {
   if (!preciseExtractorPromise) {
-    preciseExtractorPromise = pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    preciseExtractorPromise = pipeline("feature-extraction", PRECISE_EMBEDDING_MODEL_VERSION);
   }
   return preciseExtractorPromise;
 }
