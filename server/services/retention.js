@@ -13,19 +13,32 @@ export async function runRetentionSweep() {
     supabase.from("jobs").select("id, title, org_id, created_at"),
     supabase.from("organizations").select("id, retention_days"),
   ]);
-  if (jobsError || organizationsError) return;
+  if (jobsError || organizationsError) {
+    console.error("Retention sweep could not load cleanup inputs", { jobs: jobsError?.message || null, organizations: organizationsError?.message || null });
+    return { expired: 0, deleted: 0, failed: 1 };
+  }
   const retentionByOrg = new Map((organizations || []).map((org) => [org.id, Number(org.retention_days) || fallbackDays]));
   const now = Date.now();
   const expiredJobs = (jobs || []).filter((job) => {
     const days = retentionByOrg.get(job.org_id) || fallbackDays;
     return new Date(job.created_at).getTime() < now - days * 24 * 60 * 60 * 1000;
   });
-  if (expiredJobs.length === 0) return;
+  if (expiredJobs.length === 0) return { expired: 0, deleted: 0, failed: 0 };
 
   console.log(`Retention sweep: deleting ${expiredJobs.length} job(s) past their organization retention limit...`);
+  let deleted = 0;
+  let failed = 0;
   for (const job of expiredJobs) {
-    await deleteJobCascade(job);
+    try {
+      if (await deleteJobCascade(job)) deleted += 1;
+      else failed += 1;
+    } catch (error) {
+      failed += 1;
+      console.error(`Retention sweep failed for job ${job.id}`, error);
+    }
   }
+  console.log("Retention sweep complete", { expired: expiredJobs.length, deleted, failed });
+  return { expired: expiredJobs.length, deleted, failed };
 }
 
 export function scheduleRetentionSweep() {
