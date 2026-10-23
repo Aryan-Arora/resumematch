@@ -67,3 +67,12 @@ test("login page is reachable and shows the sign-in form", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByRole("button", { name: /sign in/i }).first()).toBeVisible();
 });
+
+test("privacy request page renders a non-authenticated form", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("/privacy-request");
+  await expect(page).toHaveTitle(/Candidate privacy request/);
+  await expect(page.getByRole("heading", { name: "Request data deletion" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Submit privacy request" })).toBeVisible();
+  await expect(errors).toEqual([]);
+});

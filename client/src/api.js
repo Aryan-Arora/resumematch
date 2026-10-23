@@ -94,6 +94,14 @@ export async function matchPreview(description, files) {
   }).then(handle);
 }
 
+export async function submitDeletionRequest(payload) {
+  return fetch(`${API_BASE}/public/deletion-request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).then(handle);
+}
+
 export async function getJobs() {
   return fetch(`${API_BASE}/jobs`, { headers: await authHeaders() }).then(handle);
 }

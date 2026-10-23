@@ -69,6 +69,7 @@ const routes = [
     lastmod: p.date,
   })),
   { path: "/privacy", component: "LegalPage", props: { page: "privacy" }, priority: "0.3", changefreq: "monthly" },
+  { path: "/privacy-request", component: "PrivacyRequestPage", priority: "0.3", changefreq: "monthly" },
   { path: "/terms", component: "LegalPage", props: { page: "terms" }, priority: "0.3", changefreq: "monthly" },
 ];
 

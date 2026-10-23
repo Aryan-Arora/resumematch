@@ -13,9 +13,10 @@ import Blog from './components/Blog.jsx'
 import BlogPost from './components/BlogPost.jsx'
 import SeoLandingPage from './components/SeoLandingPage.jsx'
 import ResourcePage from './components/ResourcePage.jsx'
+import PrivacyRequestPage from './components/PrivacyRequestPage.jsx'
 
 // No client-side router in this app — the public, unauthenticated routes
-// (/, /demo, /reset-password, /privacy, /terms, /blog, /blog/:slug) are
+// (/, /demo, /reset-password, /privacy, /privacy-request, /terms, /blog, /blog/:slug) are
 // handled here, before the auth wall, rather than pulling in a routing
 // library for a handful of pages. "/" is the marketing home page; the
 // interactive try-it-first demo lives at "/demo"; the actual app lives
@@ -40,6 +41,8 @@ createRoot(document.getElementById('root')).render(
       </AuthGate>
     ) : path === '/reset-password' ? (
       <ResetPassword />
+    ) : path === '/privacy-request' ? (
+      <PrivacyRequestPage />
     ) : path === '/privacy' ? (
       <LegalPage page="privacy" />
     ) : path === '/terms' ? (
