@@ -2,7 +2,6 @@ import { Router } from "express";
 import crypto from "crypto";
 import { supabase } from "../supabaseClient.js";
 import { orgActionLimiter } from "../middleware/rateLimit.js";
-import { getDeletionSlaDueAt, isDeletionRequestOverdue } from "../services/deletionSla.js";
 
 const router = Router();
 
@@ -46,11 +45,7 @@ async function isOwner(orgId, userId) {
 router.get("/organizations/webhooks", async (req, res) => {
   const { data, error } = await supabase.from("organization_webhooks").select("id, url, events, active, created_at, updated_at").eq("org_id", req.orgId).order("created_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
-  res.json((data || []).map((request) => ({
-    ...request,
-    sla_due_at: getDeletionSlaDueAt(request.created_at),
-    overdue: isDeletionRequestOverdue(request.created_at, request.status),
-  })));
+  res.json(data || []);
 });
 
 router.post("/organizations/webhooks", orgActionLimiter, async (req, res) => {
