@@ -76,3 +76,12 @@ test("privacy request page renders a non-authenticated form", async ({ page }) =
   await expect(page.getByRole("button", { name: "Submit privacy request" })).toBeVisible();
   await expect(errors).toEqual([]);
 });
+
+test("public API contract is available", async ({ request }) => {
+  const response = await request.get("https://resumematch-api.fly.dev/api/openapi.json");
+  expect(response.ok()).toBeTruthy();
+  const spec = await response.json();
+  expect(spec.openapi).toBe("3.0.3");
+  expect(spec.paths["/candidates/{id}/review"]).toBeTruthy();
+  expect(spec.paths["/public/deletion-request"]).toBeTruthy();
+});
