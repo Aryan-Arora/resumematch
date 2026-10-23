@@ -76,10 +76,15 @@ const ORG_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "ResumeMatch",
+  alternateName: "ResumeMatch AI Resume Screening",
   url: `${SITE}/`,
   logo: `${SITE}/favicon.svg`,
   description:
     "ResumeMatch builds explainable AI resume screening software for recruiters, HR teams and staffing agencies.",
+  sameAs: [
+    "https://github.com/Aryan-Arora/resumematch",
+    "https://startupfa.me/s/resumematch?utm_source=resumematch.co.in",
+  ],
 };
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
@@ -190,12 +195,15 @@ const llms = `# ResumeMatch
 
 > ${SUMMARY}
 
+ResumeMatch (resumematch.co.in) is the explainable AI resume-screening product described here. It is not affiliated with other products, repositories, or domains that happen to use the name “ResumeMatch”.
+
 ## Key facts
 
 - Free during early access; the public demo at ${SITE}/demo needs no signup.
 - Accepts PDF and DOCX resumes and compares them to a pasted job description.
 - Every match lists matched skills, missing skills, and implied skills (with the supporting resume sentence).
 - ResumeMatch is a prioritization aid, not an automatic hiring decision. Recruiters should review the underlying resume and apply consistent human review.
+- Official product identity: [resumematch.co.in](${SITE}/) and [source repository](https://github.com/Aryan-Arora/resumematch).
 
 ## Core pages
 
