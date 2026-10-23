@@ -6,3 +6,5 @@ look/
 scratch-cardboard-gen.tsx
 resumematch-live-demo-*.png
 client/public/video/
+test-results/
+playwright-report/

@@ -6,6 +6,7 @@
   "description": "HR candidate screening tool: JD-to-resume semantic matching with explainable skill-gap analysis",
   "scripts": {
     "test": "vitest run",
+    "smoke": "playwright test",
     "test:pipeline": "node server/test/pipeline.test.js",
     "dev": "node server/index.js",
     "start": "node server/index.js"
@@ -27,6 +28,7 @@
     "resend": "^6.17.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "vitest": "^4.1.10"
   },
   "overrides": {
