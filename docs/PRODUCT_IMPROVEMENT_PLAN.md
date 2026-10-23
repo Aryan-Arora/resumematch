@@ -80,7 +80,7 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 - CSV export, resume-backed ATS CSV import, Greenhouse Harvest, Lever, and Workable metadata imports, and allowlisted provider-resume attachment are available. Matching files are screened through the normal parser; unmatched records remain explicitly unscreened. Remaining integration work is native scheduling.
 - Signed webhooks and a documented API are implemented, including delivery history and recruiter workflow events.
 - Searchable talent pools across projects.
-- Calendar integration and candidate self-scheduling.
+- Calendar integration and candidate self-scheduling. **Partially implemented:** authenticated Google Calendar/Outlook draft links and `.ics` export are available; provider-native OAuth scheduling and candidate self-scheduling remain open.
 
 ## Quality gates for every release
 
