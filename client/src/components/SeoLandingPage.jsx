@@ -27,6 +27,14 @@ const PAGES = {
     body: "ResumeMatch is built for the moment between receiving applications and deciding who deserves a closer look. Create a project, invite teammates with a workspace join code, and move from job description to explainable shortlist in one place.",
     points: ["Share projects with your hiring team", "Screen PDF and DOCX resumes in bulk", "Star candidates and shortlist them from the review table"],
   },
+  "/resumematch-vs-ats": {
+    title: "ResumeMatch vs. a Full ATS",
+    description: "Understand when ResumeMatch fits alongside or before an ATS, and where a full applicant tracking system remains the better choice.",
+    eyebrow: "ResumeMatch vs. a full ATS",
+    intro: "Use the focused screening layer when you do not need an entire hiring suite.",
+    body: "ResumeMatch helps recruiters compare resumes with a job description, inspect the evidence behind a match, and move candidates through a lightweight review workflow. It does not replace every ATS function: a full ATS is still the better fit for requisition approvals, complex pipelines, sourcing integrations, and long-term candidate relationship management.",
+    points: ["Choose ResumeMatch for explainable screening and a fast shortlist", "Keep a full ATS for complex recruiting operations and system integrations", "Use them together when screening quality matters before candidates enter the wider funnel"],
+  },
 };
 
 export default function SeoLandingPage({ path }) {

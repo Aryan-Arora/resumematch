@@ -22,7 +22,7 @@ import ResourcePage from './components/ResourcePage.jsx'
 // behind /login.
 const path = window.location.pathname.replace(/\/+$/, '') || '/'
 const blogSlug = path.startsWith('/blog/') ? path.slice('/blog/'.length) : null
-const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters'])
+const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters', '/resumematch-vs-ats'])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

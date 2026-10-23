@@ -5,6 +5,7 @@ const PRODUCT_LINKS = [
   { href: "/free-resume-screening-software", label: "Free resume screening software" },
   { href: "/explainable-ai-resume-screening", label: "Explainable AI resume screening" },
   { href: "/ats-alternative-for-recruiters", label: "ATS alternative for recruiters" },
+  { href: "/resumematch-vs-ats", label: "ResumeMatch vs. a full ATS" },
   { href: "/resume-parser", label: "Resume parser" },
   { href: "/docs", label: "Documentation" },
 ];

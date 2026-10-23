@@ -49,7 +49,7 @@ function setMeta(html, attr, key, content, route) {
   return html.replace(re, () => `<meta ${attr}="${key}" content="${esc(content)}" />`);
 }
 
-const SEO_PAGES = ["/free-resume-screening-software", "/explainable-ai-resume-screening", "/ats-alternative-for-recruiters"];
+const SEO_PAGES = ["/free-resume-screening-software", "/explainable-ai-resume-screening", "/ats-alternative-for-recruiters", "/resumematch-vs-ats"];
 
 const { BLOG_POSTS } = await vite.ssrLoadModule("/src/content/blogPosts.js");
 
