@@ -63,13 +63,14 @@ router.get("/candidates/:id/resume", async (req, res) => {
     .createSignedUrl(candidate.file_path, 60);
   if (error) return res.status(500).json({ error: error.message });
 
-  await supabase.from("organization_audit_events").insert({
+  const { error: auditError } = await supabase.from("organization_audit_events").insert({
     org_id: req.orgId,
     actor_id: req.userId || null,
     candidate_id: req.params.id,
     event_type: "resume_viewed",
     event_data: { file_name: candidate.file_name },
   });
+  if (auditError) return res.status(503).json({ error: "could not record resume access audit event" });
 
   res.json({ url: data.signedUrl });
 });
@@ -344,17 +345,18 @@ router.delete("/candidates/:id", async (req, res) => {
     .single();
   if (fetchError) return res.status(404).json({ error: "candidate not found" });
 
-  if (candidate.file_path) {
-    await supabase.storage.from("resumes").remove([candidate.file_path]);
-  }
-
-  await supabase.from("organization_audit_events").insert({
+  const { error: auditError } = await supabase.from("organization_audit_events").insert({
     org_id: req.orgId,
     actor_id: req.userId || null,
     candidate_id: candidate.id,
     event_type: "candidate_deleted",
     event_data: { file_name: candidate.file_name, reason: "recruiter_action" },
   });
+  if (auditError) return res.status(503).json({ error: "could not record deletion audit event; candidate was not deleted" });
+
+  if (candidate.file_path) {
+    await supabase.storage.from("resumes").remove([candidate.file_path]);
+  }
 
   const { error } = await supabase
     .from("candidates")

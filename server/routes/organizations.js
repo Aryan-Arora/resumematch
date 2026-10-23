@@ -158,13 +158,17 @@ router.patch("/organizations/deletion-requests/:id", orgActionLimiter, async (re
   if (status === "resolved" && data.candidate_id) {
     const { data: candidate } = await supabase.from("candidates").select("file_path").eq("id", data.candidate_id).eq("org_id", req.orgId).maybeSingle();
     if (candidate?.file_path) await supabase.storage.from("resumes").remove([candidate.file_path]);
-    await supabase.from("organization_audit_events").insert({
+    const { error: auditError } = await supabase.from("organization_audit_events").insert({
       org_id: req.orgId,
       actor_id: req.userId || null,
       candidate_id: data.candidate_id,
       event_type: "candidate_deleted",
       event_data: { reason: "privacy_request", deletion_request_id: data.id },
     });
+    if (auditError) {
+      await supabase.from("candidate_deletion_requests").update({ status: "pending", resolved_at: null }).eq("id", data.id).eq("org_id", req.orgId);
+      return res.status(503).json({ error: "could not record deletion audit event; candidate was not deleted" });
+    }
     await supabase.from("candidates").delete().eq("id", data.candidate_id).eq("org_id", req.orgId);
   }
   res.json(data);
