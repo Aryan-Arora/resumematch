@@ -7,7 +7,7 @@ This document describes what ResumeMatch stores, for how long, and how it gets d
 | Data | Where it lives | Contains PII? |
 |---|---|---|
 | Job description text + embedding | Postgres (`jobs` table) | No |
-| Original resume file (PDF/DOCX) | Supabase Storage (`resumes` bucket) | Yes |
+| Original resume file (PDF/DOCX/PNG/JPEG) | Supabase Storage (`resumes` bucket) | Yes |
 | Extracted resume text + embedding | Postgres (`candidates` table) | Yes |
 | Match results (scores, matched/missing/implied skills) | Postgres (`candidates` table) | Indirectly (tied to a named candidate) |
 | Account email | Supabase Auth | Yes |
