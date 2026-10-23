@@ -94,6 +94,15 @@ export default function CandidateTable({ job, onAddMore }) {
   const [templateSaved, setTemplateSaved] = useState(false);
   const [contactSavingId, setContactSavingId] = useState(null);
 
+  function renderTemplatePreview(template, type) {
+    const fallback = type === "shortlist" ? "We would like to move forward with your application." : type === "interview" ? "We would like to invite you to an interview." : "Thank you for your interest in this role.";
+    return (template || fallback)
+      .replace(/\{\{candidateName\}\}/g, "Candidate")
+      .replace(/\{\{jobTitle\}\}/g, job.title || "this role")
+      .replace(/\{\{orgName\}\}/g, "your organization")
+      .replace(/\{\{interviewUrl\}\}/g, job.interview_url || "(interview link)");
+  }
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -359,6 +368,10 @@ export default function CandidateTable({ job, onAddMore }) {
             <div className="absolute right-0 z-20 mt-2 w-80 clay-card p-4 space-y-3">
               {[['shortlist', 'Shortlist'], ['interview', 'Interview'], ['rejection', 'Rejection']].map(([key, label]) => <label key={key} className="block text-xs text-[var(--color-text-muted)]">{label}<textarea value={emailTemplates[key] || ""} onChange={(e) => setEmailTemplates((prev) => ({ ...prev, [key]: e.target.value }))} maxLength={5000} placeholder="Leave blank for default" className="mt-1 w-full min-h-16 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
               <button onClick={saveTemplates} className="clay-button w-full bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] text-xs px-3 py-2 rounded-lg">{templateSaved ? "Saved" : "Save templates"}</button>
+              <div className="border-t border-[var(--color-border)]/60 pt-3 space-y-2">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--color-text-faint)]">Preview</p>
+                {[["shortlist", "Shortlist"], ["interview", "Interview"], ["rejection", "Rejection"]].map(([key, label]) => <div key={key}><p className="text-[11px] text-[var(--color-text-muted)]">{label}</p><p className="text-xs text-[var(--color-text)] whitespace-pre-wrap">{renderTemplatePreview(emailTemplates[key], key)}</p></div>)}
+              </div>
             </div>
           </details>
         </div>
