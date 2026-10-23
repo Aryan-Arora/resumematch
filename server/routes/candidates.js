@@ -2,6 +2,7 @@ import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
 import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
 import { shortlistLimiter } from "../middleware/rateLimit.js";
+import { createInterviewIcs } from "../services/ics.js";
 
 const router = Router();
 
@@ -69,6 +70,31 @@ router.get("/candidates/:id/resume", async (req, res) => {
   });
 
   res.json({ url: data.signedUrl });
+});
+
+router.get("/candidates/:id/interview.ics", async (req, res) => {
+  const { data: candidate, error } = await supabase
+    .from("candidates")
+    .select("id, file_name, email, jobs(title, interview_url)")
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .single();
+  if (error || !candidate) return res.status(404).json({ error: "candidate not found" });
+  try {
+    const ics = createInterviewIcs({
+      candidateName: candidate.file_name,
+      jobTitle: candidate.jobs?.title,
+      start: req.query.start,
+      end: req.query.end,
+      location: req.query.location,
+      description: candidate.jobs?.interview_url ? `Schedule details: ${candidate.jobs.interview_url}` : undefined,
+    });
+    res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="interview-${candidate.id}.ics"`);
+    res.send(ics);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 router.patch("/candidates/:id/star", async (req, res) => {

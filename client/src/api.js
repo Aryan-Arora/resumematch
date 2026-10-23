@@ -216,6 +216,22 @@ export async function markCandidateReviewed(candidateId) {
   }).then(handle);
 }
 
+export async function downloadInterviewCalendar(candidateId, start, end, location = "") {
+  const params = new URLSearchParams({ start, end });
+  if (location) params.set("location", location);
+  const res = await fetch(`${API_BASE}/candidates/${candidateId}/interview.ics?${params}`, { headers: await authHeaders() });
+  if (!res.ok) return handle(res);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `interview-${candidateId}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function updateCandidateContact(candidateId, fields) {
   return fetch(`${API_BASE}/candidates/${candidateId}/contact`, {
     method: "PATCH",

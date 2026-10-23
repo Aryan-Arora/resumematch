@@ -21,6 +21,7 @@ const spec = {
     "/jobs/{id}/candidates": { post: { summary: "Upload candidates for screening", parameters: [{ "$ref": "#/components/parameters/Id" }], responses: { 202: { description: "Queued" } } } },
     "/candidates/{id}/review": { patch: { summary: "Record human review", parameters: [{ "$ref": "#/components/parameters/Id" }], responses: { 200: { description: "Reviewed candidate" } } } },
     "/candidates/{id}/contact": { patch: { summary: "Correct extracted contact details", parameters: [{ "$ref": "#/components/parameters/Id" }], responses: { 200: { description: "Updated candidate" } } } },
+    "/candidates/{id}/interview.ics": { get: { summary: "Download a calendar event for an interview", parameters: [{ "$ref": "#/components/parameters/Id" }, { name: "start", in: "query", required: true, schema: { type: "string", format: "date-time" } }, { name: "end", in: "query", required: true, schema: { type: "string", format: "date-time" } }, { name: "location", in: "query", schema: { type: "string" } }], responses: { 200: { description: "ICS calendar event" } } } },
     "/analytics": { get: { summary: "Get organization screening analytics", responses: { 200: { description: "Analytics" } } } },
     "/analytics/calibration-export": { get: { summary: "Download recruiter calibration CSV", responses: { 200: { description: "CSV export" } } } },
     "/organizations/export": { get: { summary: "Download organization data and audit export", responses: { 200: { description: "JSON export" } } } },
