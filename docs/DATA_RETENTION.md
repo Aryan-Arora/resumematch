@@ -16,7 +16,7 @@ Resumes are never sent to a third-party AI API — matching runs on local embedd
 
 ## Retention period
 
-**Jobs are automatically deleted 180 days after creation**, along with every non-starred candidate under them (resume file + row). A daily scheduled sweep (`server/services/retention.js`) enforces this — no manual action needed.
+**Jobs are automatically deleted after 180 days by default**, along with every non-starred candidate under them (resume file + row). The API's daily scheduled sweep (`server/services/retention.js`) enforces this — no manual action needed. Operators can set `RETENTION_DAYS` in the API environment to a value from 30 to 3650 days; invalid or missing values safely use 180 days.
 
 **Starring is the retention override.** A recruiter can star a candidate to protect them from this automatic deletion (and from manual job deletion — see below). Starring a candidate whose job gets deleted detaches them from the job (keeping a snapshot of the job title for context) rather than deleting them; they then live under "Starred CVs" indefinitely, until the recruiter unstars or deletes them explicitly.
 

@@ -1,7 +1,6 @@
 import { supabase } from "../supabaseClient.js";
 import { deleteJobCascade } from "../routes/jobs.js";
-
-const RETENTION_DAYS = 180;
+import { DEFAULT_RETENTION_DAYS, MIN_RETENTION_DAYS, MAX_RETENTION_DAYS, getRetentionDays } from "./retentionConfig.js";
 const SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000; // once a day
 
 // Automated enforcement of docs/DATA_RETENTION.md: jobs older than 180 days
@@ -9,7 +8,8 @@ const SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000; // once a day
 // preserved (see deleteJobCascade) since starring is meant to survive
 // automated cleanup, not just manual job deletion.
 export async function runRetentionSweep() {
-  const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const retentionDays = getRetentionDays();
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: expiredJobs, error } = await supabase
     .from("jobs")
@@ -17,11 +17,12 @@ export async function runRetentionSweep() {
     .lt("created_at", cutoff);
   if (error || !expiredJobs || expiredJobs.length === 0) return;
 
-  console.log(`Retention sweep: deleting ${expiredJobs.length} job(s) past the ${RETENTION_DAYS}-day limit...`);
+  console.log(`Retention sweep: deleting ${expiredJobs.length} job(s) past the ${retentionDays}-day limit...`);
   for (const job of expiredJobs) {
     await deleteJobCascade(job);
   }
 }
+
 
 export function scheduleRetentionSweep() {
   runRetentionSweep();

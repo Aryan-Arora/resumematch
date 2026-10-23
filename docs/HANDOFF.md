@@ -4,7 +4,7 @@ Live at https://resumematch.co.in. Client on Vercel, API on Fly.io (`resumematch
 
 ## Where things stand
 
-- Engineering is a late-stage beta. `docs/PRODUCT_IMPROVEMENT_PLAN.md` is the roadmap; the remaining major gaps are CSV/ATS integrations, webhooks/API, calendar scheduling, and configurable retention.
+- Engineering is a late-stage beta. `docs/PRODUCT_IMPROVEMENT_PLAN.md` is the roadmap; the remaining major gaps are CSV/ATS integrations, webhooks/API, calendar scheduling, and organization-level retention settings. The API retention window is now deployment-configurable via `RETENTION_DAYS` (30–3650 days, default 180).
 - Traction is the real gap: 4 signups total (last one Aug 3), no paying users, no pricing or billing. Check signups before building more features.
 - Tests: `npm test` (58 server tests) and `npm run smoke` (5 Playwright checks against the live site; set `SMOKE_BASE_URL` to test a preview). The smoke test does not cover the logged-in flow. That needs a dedicated test account, because signing up locally creates a real user in production Supabase. The latest full smoke run passed after the dependency updates.
 
