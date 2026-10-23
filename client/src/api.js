@@ -31,6 +31,14 @@ export async function getMyOrganization() {
   return fetch(`${API_BASE}/organizations/me`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function updateOrganizationSettings(settings) {
+  return fetch(`${API_BASE}/organizations/settings`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify(settings),
+  }).then(handle);
+}
+
 export async function downloadOrganizationExport() {
   const res = await fetch(`${API_BASE}/organizations/export`, { headers: await authHeaders() });
   if (!res.ok) return handle(res);

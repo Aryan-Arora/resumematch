@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTheme, toggleTheme } from "../theme";
 import { useSession, signOut } from "../auth";
-import { downloadOrganizationExport, getMyOrganization } from "../api";
+import { downloadOrganizationExport, getMyOrganization, updateOrganizationSettings } from "../api";
 import Logo from "./Logo";
 
 const NAV_ITEMS = [
@@ -18,12 +18,17 @@ export default function Sidebar({ current, onNavigate }) {
   const [showCode, setShowCode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [retentionDays, setRetentionDays] = useState(180);
+  const [savingRetention, setSavingRetention] = useState(false);
   const session = useSession();
 
   useEffect(() => {
     setThemeState(getTheme());
     getMyOrganization()
-      .then((data) => setOrganization(data.organization))
+      .then((data) => {
+        setOrganization(data.organization);
+        setRetentionDays(data.organization?.retention_days || 180);
+      })
       .catch(() => {});
   }, []);
 
@@ -39,6 +44,19 @@ export default function Sidebar({ current, onNavigate }) {
       window.alert(error.message || "Could not create the organization export.");
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function saveRetention() {
+    setSavingRetention(true);
+    try {
+      const data = await updateOrganizationSettings({ retention_days: Number(retentionDays) });
+      setOrganization(data.organization);
+      setRetentionDays(data.organization.retention_days);
+    } catch (error) {
+      window.alert(error.message || "Could not save retention settings.");
+    } finally {
+      setSavingRetention(false);
     }
   }
 
@@ -93,9 +111,15 @@ export default function Sidebar({ current, onNavigate }) {
               >
                 {organization.name}
                 {showCode && (
-                  <span className="ml-1.5 font-mono tracking-wider text-[var(--color-accent)]">
-                    {organization.join_code}
-                  </span>
+                  <div className="mt-2 space-y-2">
+                    <span className="block font-mono tracking-wider text-[var(--color-accent)]">Join code: {organization.join_code}</span>
+                    <label className="block text-[11px] text-[var(--color-text-muted)]">Retention days (30–3650)
+                      <div className="flex items-center gap-2 mt-1">
+                        <input type="number" min="30" max="3650" value={retentionDays} onChange={(e) => setRetentionDays(e.target.value)} className="w-20 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]" />
+                        <button onClick={(e) => { e.stopPropagation(); saveRetention(); }} disabled={savingRetention} className="text-[var(--color-accent)] hover:underline disabled:opacity-50">{savingRetention ? "Saving…" : "Save"}</button>
+                      </div>
+                    </label>
+                  </div>
                 )}
               </button>
             )}

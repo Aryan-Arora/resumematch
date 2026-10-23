@@ -30,7 +30,7 @@ router.get("/organizations/me", async (req, res) => {
   if (!req.orgId) return res.json({ organization: null });
   const { data, error } = await supabase
     .from("organizations")
-    .select("id, name, join_code")
+    .select("id, name, join_code, retention_days")
     .eq("id", req.orgId)
     .single();
   if (error) return res.status(500).json({ error: error.message });
@@ -85,6 +85,28 @@ router.get("/organizations/members", async (req, res) => {
     if (data?.user) users.push({ id: data.user.id, email: data.user.email });
   }
   res.json(users);
+});
+
+router.patch("/organizations/settings", orgActionLimiter, async (req, res) => {
+  const retentionDays = Number.parseInt(req.body?.retention_days, 10);
+  if (!Number.isInteger(retentionDays) || retentionDays < 30 || retentionDays > 3650) {
+    return res.status(400).json({ error: "retention_days must be an integer between 30 and 3650" });
+  }
+  const { data: organization, error: organizationError } = await supabase
+    .from("organizations")
+    .select("created_by")
+    .eq("id", req.orgId)
+    .single();
+  if (organizationError || !organization) return res.status(404).json({ error: "organization not found" });
+  if (organization.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can change retention settings" });
+  const { data, error } = await supabase
+    .from("organizations")
+    .update({ retention_days: retentionDays })
+    .eq("id", req.orgId)
+    .select("id, name, join_code, retention_days")
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ organization: data });
 });
 
 router.post("/organizations", orgActionLimiter, async (req, res) => {
