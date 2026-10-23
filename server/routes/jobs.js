@@ -832,7 +832,8 @@ router.delete("/jobs/:id", orgActionLimiter, async (req, res) => {
   if (!job) return res.status(404).json({ error: "job not found" });
   if (job.organizations?.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can delete a job" });
 
-  await deleteJobCascade(job);
+  const deleted = await deleteJobCascade(job, { actorId: req.userId, reason: "recruiter_action" });
+  if (!deleted) return res.status(503).json({ error: "job deletion audit could not be recorded; job was not deleted" });
 
   res.status(204).send();
 });
@@ -841,7 +842,7 @@ router.delete("/jobs/:id", orgActionLimiter, async (req, res) => {
 // Starred candidates are preserved: detached from the job (job_id set to
 // null) with a snapshot of the job title, since starring is meant to survive
 // the job it was found under, both on manual delete and the 180-day sweep.
-export async function deleteJobCascade(job) {
+export async function deleteJobCascade(job, { actorId = null, reason = "retention_sweep" } = {}) {
   const { data: candidates } = await supabase
     .from("candidates")
     .select("id, file_path, starred")
@@ -870,7 +871,7 @@ export async function deleteJobCascade(job) {
     );
     if (auditError) {
       console.error(`Retention audit failed for job ${job.id}; skipping deletion.`);
-      return;
+      return false;
     }
     await supabase
       .from("candidates")
@@ -885,7 +886,20 @@ export async function deleteJobCascade(job) {
       .in("id", starred.map((c) => c.id));
   }
 
+  const { error: jobAuditError } = await supabase.from("organization_audit_events").insert({
+    org_id: job.org_id,
+    actor_id: actorId,
+    candidate_id: null,
+    event_type: "job_deleted",
+    event_data: { job_id: job.id, title: job.title, reason },
+  });
+  if (jobAuditError) {
+    console.error(`Job deletion audit failed for ${job.id}; skipping job deletion.`);
+    return false;
+  }
+
   await supabase.from("jobs").delete().eq("id", job.id);
+  return true;
 }
 
 export default router;
