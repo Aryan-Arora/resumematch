@@ -2,6 +2,7 @@ import { Router } from "express";
 import crypto from "crypto";
 import { supabase } from "../supabaseClient.js";
 import { orgActionLimiter } from "../middleware/rateLimit.js";
+import { validateWebhookUrl } from "../services/webhookUrl.js";
 
 const router = Router();
 
@@ -51,7 +52,7 @@ router.get("/organizations/webhooks", async (req, res) => {
 router.post("/organizations/webhooks", orgActionLimiter, async (req, res) => {
   if (!(await isOwner(req.orgId, req.userId))) return res.status(403).json({ error: "only the organization owner can manage webhooks" });
   let url;
-  try { const parsed = new URL(String(req.body?.url || "")); if (parsed.protocol !== "https:" || parsed.username || parsed.password) throw new Error(); url = parsed.href; } catch { return res.status(400).json({ error: "webhook URL must use https:// and cannot contain credentials" }); }
+  try { url = await validateWebhookUrl(req.body?.url); } catch (error) { return res.status(400).json({ error: error.message }); }
   const events = Array.isArray(req.body?.events) ? req.body.events.filter((event) => typeof event === "string" && /^[a-z0-9.*_-]{1,80}$/i.test(event)).slice(0, 20) : ["candidate.screened"];
   const secret = typeof req.body?.secret === "string" && req.body.secret.length >= 32 ? req.body.secret.slice(0, 256) : crypto.randomBytes(32).toString("hex");
   const { data, error } = await supabase.from("organization_webhooks").insert({ org_id: req.orgId, url, secret, events: events.length ? events : ["candidate.screened"] }).select("id, url, events, active, created_at").single();

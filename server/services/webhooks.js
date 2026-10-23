@@ -1,15 +1,9 @@
 import crypto from "crypto";
 import { supabase } from "../supabaseClient.js";
 import { signWebhook } from "./webhookSignature.js";
+import { validateWebhookUrl } from "./webhookUrl.js";
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS = [0, 1000, 5000];
-
-function safeUrl(value) {
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === "https:" && !parsed.username && !parsed.password ? parsed.href : null;
-  } catch { return null; }
-}
 
 export async function dispatchWebhook(orgId, eventType, payload) {
   const { data: hooks, error } = await supabase.from("organization_webhooks").select("id, url, secret, events").eq("org_id", orgId).eq("active", true);
@@ -22,8 +16,8 @@ export async function dispatchWebhook(orgId, eventType, payload) {
     let lastError = "";
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
       if (RETRY_DELAYS[attempt]) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS[attempt]));
-      const url = safeUrl(hook.url);
-      if (!url) { lastError = "webhook URL must use https://"; break; }
+      let url;
+      try { url = await validateWebhookUrl(hook.url); } catch (error) { lastError = error.message; break; }
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 8000);
       try {
