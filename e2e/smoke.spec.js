@@ -110,3 +110,11 @@ test("public API contract is available", async ({ request }) => {
   expect(spec.paths["/public/match"]).toBeTruthy();
   expect(spec.paths["/public/match"].post.description).toMatch(/PNG|JPEG/);
 });
+
+test("readiness exposes non-secret email configuration status", async ({ request }) => {
+  const response = await request.get("https://resumematch-api.fly.dev/api/health/ready");
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  expect(["configured", "not_configured"]).toContain(body.checks.email);
+  expect(body.checks.email).not.toMatch(/re_/i);
+});

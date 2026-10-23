@@ -74,14 +74,14 @@ app.get("/api/health/ready", async (req, res) => {
     return res.status(503).json({
       ok: false,
       service: "resumematch-api",
-      checks: { database: "timeout" },
+      checks: { database: "timeout", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" },
       latency_ms: Date.now() - startedAt,
       request_id: req.requestId,
     });
   }
   const { error } = result;
-  if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down" }, request_id: req.requestId });
-  res.json({ ok: true, service: "resumematch-api", checks: { database: "up" }, latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
+  if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" }, request_id: req.requestId });
+  res.json({ ok: true, service: "resumematch-api", checks: { database: "up", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" }, latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
 });
 
 app.use("/api", authRouter);
