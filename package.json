@@ -34,7 +34,6 @@
   "overrides": {
     "protobufjs": "^8.7.0",
     "sharp": "^0.35.5",
-    "@xmldom/xmldom": "^0.9.12",
     "ip-address": "^10.7.4"
   }
 }
