@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient.js";
 import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
 import { shortlistLimiter } from "../middleware/rateLimit.js";
 import { createInterviewIcs } from "../services/ics.js";
+import { dispatchWebhook } from "../services/webhooks.js";
 
 const router = Router();
 
@@ -148,6 +149,7 @@ router.patch("/candidates/:id/workflow", async (req, res) => {
   const { data, error } = await supabase.from("candidates").update(update).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
   await supabase.from("candidate_activity").insert({ candidate_id: data.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "workflow_updated", event_data: update });
+  void dispatchWebhook(req.orgId, "candidate.workflow_updated", { candidate_id: data.id, changes: update, pipeline_stage: data.pipeline_stage, assigned_to: data.assigned_to });
   res.json(data);
 });
 
@@ -158,6 +160,7 @@ router.patch("/candidates/:id/feedback", async (req, res) => {
   const { data, error } = await supabase.from("candidates").update({ match_feedback: req.body.match_feedback, match_feedback_note: note }).eq("id", req.params.id).eq("org_id", req.orgId).select().single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
   await supabase.from("candidate_activity").insert({ candidate_id: data.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "match_feedback", event_data: { feedback: req.body.match_feedback, note } });
+  void dispatchWebhook(req.orgId, "candidate.feedback_updated", { candidate_id: data.id, feedback: req.body.match_feedback, note });
   res.json(data);
 });
 
@@ -187,6 +190,7 @@ router.patch("/candidates/:id/review", async (req, res) => {
       event_data: {},
     }),
   ]);
+  void dispatchWebhook(req.orgId, "candidate.reviewed", { candidate_id: data.id, review_status: data.review_status });
   res.json(data);
 });
 
@@ -233,6 +237,7 @@ router.patch("/candidates/:id/contact", async (req, res) => {
     event_type: "contact_corrected",
     event_data: { fields: Object.keys(update) },
   });
+  void dispatchWebhook(req.orgId, "candidate.contact_corrected", { candidate_id: data.id, fields: Object.keys(update) });
   res.json(data);
 });
 
