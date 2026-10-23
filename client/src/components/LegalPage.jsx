@@ -102,15 +102,18 @@ function PrivacyContent() {
         <p>
           If you're a candidate and a recruiter has uploaded your resume to ResumeMatch, we
           process it on that organization's behalf. To access, correct, or request deletion of
-          your data, contact the organization that uploaded it directly — or email us and we'll
-          route the request to them.
+          your data, contact the organization that uploaded it directly, use our{" "}
+          <a href="/privacy-request" className="text-[var(--color-accent)] hover:underline">privacy request form</a>,
+          or email us and we'll route the request to them.
         </p>
       </Section>
       <Section title="Your rights">
         <p>
           Depending on where you're located, you may have the right to access, correct, export, or
-          delete the personal data we hold about you, and to object to certain processing. To
-          exercise any of these, email us below — we aim to respond within 30 days.
+          delete the personal data we hold about you, and to object to certain processing. You can
+          use the privacy request form or email us below. We aim to acknowledge requests within
+          seven days and resolve them within 30 days, subject to verification and the organization's
+          role as controller for recruiter-uploaded candidate data.
         </p>
       </Section>
       <Section title="Children's privacy">
