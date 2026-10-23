@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ocrResume, shouldUseOcr } from "./ocr.js";
+import { parseImage } from "./parsing.js";
 
 describe("OCR detection", () => {
   it("flags image-only documents", () => {
@@ -24,5 +25,14 @@ describe("OCR detection", () => {
     const result = await ocrResume(Buffer.from("not an image"), { fileName: "resume.png" });
     expect(result.available).toBe(false);
     expect(result.warnings[0]).toMatch(/Tesseract|recognition/i);
+  });
+
+  it("gives image OCR failures an explicit parse shape", () => {
+    expect(parseImage()).toMatchObject({
+      unparseable: true,
+      needsOcr: true,
+      method: "text",
+      confidence: 0,
+    });
   });
 });

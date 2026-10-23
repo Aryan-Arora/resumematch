@@ -8,7 +8,7 @@ import { EMBEDDING_MODEL_VERSION, getEmbedding, cosineSimilarity } from "../serv
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { classifyDomain, getDomainList } from "../services/domainClassify.js";
 import { extractKeyphrases } from "../services/keyphraseExtract.js";
-import { parsePdf, parseDocx } from "../services/parsing.js";
+import { parsePdf, parseDocx, parseImage } from "../services/parsing.js";
 import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
@@ -132,7 +132,7 @@ async function scoreResumeBuffer(buffer, fileName, jdEmbedding, domain, jdSkills
   let parsed;
   if (ext === ".pdf") parsed = await parsePdf(buffer);
   else if (ext === ".docx") parsed = await parseDocx(buffer);
-  else parsed = { text: "", unparseable: true };
+  else parsed = parseImage();
 
   if (shouldUseOcr(parsed)) {
     const ocr = await ocrResume(buffer, { fileName });

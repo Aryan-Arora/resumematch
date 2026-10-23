@@ -72,3 +72,16 @@ export async function parseDocx(buffer) {
     return { text: "", unparseable: true, needsOcr: true, method: "text", confidence: 0, warnings: ["DOCX text extraction failed."] };
   }
 }
+
+// Image resumes have no text layer to inspect. Returning the same structured
+// shape as PDF/DOCX parsing keeps OCR failures explicit and database-safe.
+export function parseImage() {
+  return {
+    text: "",
+    unparseable: true,
+    needsOcr: true,
+    method: "text",
+    confidence: 0,
+    warnings: ["Image resume requires OCR before screening."],
+  };
+}

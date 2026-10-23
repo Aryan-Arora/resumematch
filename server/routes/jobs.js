@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, extname } from "path";
 import { supabase } from "../supabaseClient.js";
-import { parsePdf, parseDocx, extractEmail, extractContactDetails } from "../services/parsing.js";
+import { parsePdf, parseDocx, parseImage, extractEmail, extractContactDetails } from "../services/parsing.js";
 import { EMBEDDING_MODEL_VERSION, getEmbedding, cosineSimilarity } from "../services/embedding.js";
 import { extractSkills, extractSkillsWithSemanticFallback, compareSkills } from "../services/skillMatch.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
@@ -238,7 +238,7 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
     } else if (ext === ".docx") {
       parsed = await parseDocx(buffer);
     } else {
-      parsed = { text: "", unparseable: true };
+      parsed = parseImage();
     }
 
     if (shouldUseOcr(parsed)) {
