@@ -106,4 +106,7 @@ test("public API contract is available", async ({ request }) => {
   expect(spec.paths["/candidates/{id}/reprocess"]).toBeTruthy();
   expect(spec.paths["/candidates/{id}/email"]).toBeTruthy();
   expect(spec.paths["/jobs/{id}"]).toBeTruthy();
+  expect(spec.paths["/public/classify"]).toBeTruthy();
+  expect(spec.paths["/public/match"]).toBeTruthy();
+  expect(spec.paths["/public/match"].post.description).toMatch(/PNG|JPEG/);
 });
