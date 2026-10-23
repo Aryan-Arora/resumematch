@@ -77,7 +77,7 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 
 ## Priority 4 — integrations and growth
 
-- CSV export, resume-backed ATS CSV import, and Greenhouse Harvest metadata import are available. Matching files are screened through the normal parser; unmatched records remain explicitly unscreened. Next: Lever and Workable connectors plus resume-download mappings.
+- CSV export, resume-backed ATS CSV import, and Greenhouse Harvest and Lever metadata imports are available. Matching files are screened through the normal parser; unmatched records remain explicitly unscreened. Next: Workable connector plus resume-download mappings.
 - Signed webhooks and a documented API are implemented, including delivery history and recruiter workflow events.
 - Searchable talent pools across projects.
 - Calendar integration and candidate self-scheduling.
