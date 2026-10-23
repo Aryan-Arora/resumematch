@@ -19,6 +19,7 @@ import {
   updateCandidateContact,
   sendCandidateEmail,
   getOrganizationMembers,
+  getCandidateActivity,
   updateJobSettings,
 } from "../api";
 import SkillRadar from "./SkillRadar";
@@ -95,6 +96,8 @@ export default function CandidateTable({ job, onAddMore }) {
   const [emailTemplates, setEmailTemplates] = useState(job.email_templates || { shortlist: "", interview: "", rejection: "" });
   const [templateSaved, setTemplateSaved] = useState(false);
   const [contactSavingId, setContactSavingId] = useState(null);
+  const [activityById, setActivityById] = useState({});
+  const [activityLoadingId, setActivityLoadingId] = useState(null);
   const [viewLinkCopied, setViewLinkCopied] = useState(false);
 
   useEffect(() => {
@@ -116,6 +119,24 @@ export default function CandidateTable({ job, onAddMore }) {
       window.setTimeout(() => setViewLinkCopied(false), 1800);
     } catch {
       setActionError("Copy failed — copy the URL from your browser address bar.");
+    }
+  }
+
+  async function toggleCandidate(id) {
+    if (expandedId === id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(id);
+    if (activityById[id]) return;
+    setActivityLoadingId(id);
+    try {
+      const activity = await getCandidateActivity(id);
+      setActivityById((previous) => ({ ...previous, [id]: activity }));
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setActivityLoadingId(null);
     }
   }
 
@@ -449,7 +470,7 @@ export default function CandidateTable({ job, onAddMore }) {
                     <Fragment key={c.id}>
                       <tr
                         className="border-b border-[var(--color-border)]/40 last:border-b-0 cursor-pointer hover:bg-[var(--color-surface-hover)] transition"
-                        onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                        onClick={() => toggleCandidate(c.id)}
                       >
                         <td className="py-3 px-2 sm:px-5 min-w-0">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -649,6 +670,10 @@ export default function CandidateTable({ job, onAddMore }) {
                                       {c.portfolio_url && <a href={c.portfolio_url} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] hover:underline">Portfolio ↗</a>}
                                     </div>}
                                     {c.email && <><button onClick={() => emailCandidate(c.id, "shortlist")} className="text-xs text-[var(--color-accent)] hover:underline">Send shortlist email</button><button onClick={() => emailCandidate(c.id, "interview")} className="text-xs text-[var(--color-accent)] hover:underline">Send interview invite</button><button onClick={() => emailCandidate(c.id, "rejection")} className="text-xs text-[var(--color-danger)] hover:underline">Send rejection email</button></>}
+                                  </div>
+                                  <div className="mt-5 border-t border-[var(--color-border)]/50 pt-4">
+                                    <p className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">Candidate activity</p>
+                                    {activityLoadingId === c.id ? <p className="text-xs text-[var(--color-text-faint)]">Loading activity…</p> : activityById[c.id]?.length ? <div className="space-y-2">{activityById[c.id].slice(0, 12).map((event) => <div key={event.id} className="flex flex-wrap items-baseline justify-between gap-2 text-xs"><span className="text-[var(--color-text)]">{String(event.event_type || "activity").replaceAll("_", " ")}{event.event_data?.delivery_id ? ` · delivery ${event.event_data.delivery_id}` : ""}</span><time className="text-[var(--color-text-faint)]" dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time></div>)}</div> : <p className="text-xs text-[var(--color-text-faint)]">No activity recorded yet.</p>}
                                   </div>
                                 </div>
                                 <div>
