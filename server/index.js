@@ -15,6 +15,7 @@ import { supabase } from "./supabaseClient.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 import { warmModels } from "./services/warmup.js";
+import openapiRouter from "./routes/openapi.js";
 
 dotenv.config();
 
@@ -84,6 +85,7 @@ app.get("/api/health/ready", async (req, res) => {
 
 app.use("/api", authRouter);
 app.use("/api", publicRouter);
+app.use("/api", openapiRouter);
 app.use("/api", requireAuth, organizationsRouter);
 app.use("/api", requireAuth, requireOrg, jobsRouter);
 app.use("/api", requireAuth, requireOrg, candidatesRouter);
