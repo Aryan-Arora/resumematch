@@ -32,6 +32,7 @@ export default function BulkUpload({ job, onUploaded }) {
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState(null); // { done, failed, total }
   const [csvFile, setCsvFile] = useState(null);
+  const [csvResumes, setCsvResumes] = useState([]);
   const [importing, setImporting] = useState(false);
 
   function addFiles(fileList) {
@@ -86,9 +87,10 @@ export default function BulkUpload({ job, onUploaded }) {
     setError(null);
     setImporting(true);
     try {
-      const result = await importCandidateCsv(job.id, csvFile);
+      const result = await importCandidateCsv(job.id, csvFile, csvResumes);
       if (result.failures?.length) setError(`${result.imported} imported; ${result.failures.length} row(s) skipped. ${result.failures[0].error}`);
       setCsvFile(null);
+      setCsvResumes([]);
       onUploaded();
     } catch (err) {
       setError(err.message);
@@ -115,9 +117,10 @@ export default function BulkUpload({ job, onUploaded }) {
 
         <div className="mb-6 p-4 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-surface-alt)]/50">
           <p className="font-heading text-sm font-semibold text-[var(--color-text)]">Import ATS candidate metadata</p>
-          <p className="text-xs text-[var(--color-text-muted)] mt-1">CSV rows are added as manual, unparseable records until you upload their PDF or DOCX resume. Required: name, email, or file_name.</p>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">Rows with a matching file_name and resume are screened automatically; unmatched rows stay manual and unscreened. Required: name, email, or file_name.</p>
           <div className="flex items-center gap-3 mt-3">
             <input type="file" accept=".csv,text/csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" />
+            <input type="file" accept=".pdf,.docx" multiple onChange={(e) => setCsvResumes(Array.from(e.target.files || []))} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" aria-label="Matching resumes" />
             <button onClick={handleCsvImport} disabled={!csvFile || importing} className="border border-[var(--color-accent)] text-[var(--color-accent)] font-heading text-sm font-medium px-3 py-2 rounded-lg disabled:opacity-50">
               {importing ? "Importing..." : "Import CSV"}
             </button>

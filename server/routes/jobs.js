@@ -61,9 +61,10 @@ const upload = multer({
 });
 const csvUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+  limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_FILES_PER_UPLOAD + 1 },
   fileFilter(req, file, cb) {
-    if (!/\.csv$/i.test(file.originalname)) return cb(Object.assign(new Error("Only .csv files are accepted."), { status: 400 }));
+    if (file.fieldname === "csv" && !/\.csv$/i.test(file.originalname)) return cb(Object.assign(new Error("Only .csv files are accepted for the csv field."), { status: 400 }));
+    if (file.fieldname === "resumes" && !ALLOWED_RESUME_EXTENSIONS.has(extname(file.originalname).toLowerCase())) return cb(Object.assign(new Error("Only .pdf and .docx resumes are accepted."), { status: 400 }));
     cb(null, true);
   },
 });
@@ -407,11 +408,14 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
 
 // Import recruiter metadata from an ATS export. Imported rows intentionally do
 // not receive an AI score: a resume file is required before screening begins.
-router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.single("csv"), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "a CSV file is required" });
+router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.fields([{ name: "csv", maxCount: 1 }, { name: "resumes", maxCount: MAX_FILES_PER_UPLOAD }]), async (req, res) => {
+  const csvFile = req.files?.csv?.[0];
+  const resumeFiles = req.files?.resumes || [];
+  if (!csvFile) return res.status(400).json({ error: "a CSV file is required" });
+  if (csvFile.size > 2 * 1024 * 1024) return res.status(400).json({ error: "CSV files must be 2MB or smaller" });
   let rows;
   try {
-    rows = parseCsv(req.file.buffer.toString("utf8"));
+    rows = parseCsv(csvFile.buffer.toString("utf8"));
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -431,30 +435,55 @@ router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.single("csv"
     return false;
   });
   if (fresh.length === 0) return res.status(409).json({ error: "all valid rows already exist for this job", failures });
-  const candidateRows = fresh.map((row) => ({
-    job_id: job.id,
-    org_id: req.orgId,
-    file_name: row.file_name,
-    file_path: null,
-    email: row.email,
-    phone: row.phone,
-    linkedin_url: row.linkedin_url,
-    portfolio_url: row.portfolio_url,
-    recruiter_notes: row.recruiter_notes,
-    status: "imported",
-    unparseable: true,
-    parse_method: "manual",
-    parse_warnings: ["Imported from ATS metadata; upload a PDF or DOCX before screening."],
-    review_status: "needs_review",
-  }));
-  const { data: candidates, error: insertError } = await supabase.from("candidates").insert(candidateRows).select("id, job_id, file_name, email, status, unparseable, parse_method, created_at");
-  if (insertError) return res.status(500).json({ error: insertError.message });
+  if (resumeFiles.length > 0 && getQueueDepth() + resumeFiles.length > MAX_PENDING_TASKS) {
+    return res.status(429).json({ error: "Resume processing is busy right now. Please wait and retry the import.", queue_depth: getQueueDepth() });
+  }
+  const resumeByName = new Map(resumeFiles.map((file) => [file.originalname, file]));
+  const queuedRows = [];
+  const candidateRows = [];
+  for (const row of fresh) {
+    const file = resumeByName.get(row.file_name);
+    if (!file) {
+      candidateRows.push({
+        job_id: job.id, org_id: req.orgId, file_name: row.file_name, file_path: null,
+        email: row.email, phone: row.phone, linkedin_url: row.linkedin_url, portfolio_url: row.portfolio_url,
+        recruiter_notes: row.recruiter_notes, status: "imported", unparseable: true, parse_method: "manual",
+        parse_warnings: ["Imported from ATS metadata; upload a PDF or DOCX before screening."], review_status: "needs_review",
+      });
+      continue;
+    }
+    const ext = extname(file.originalname).toLowerCase();
+    if (!hasExpectedFileSignature(file.buffer, ext)) {
+      failures.push({ row: row.rowNumber, error: `resume file ${file.originalname} is not a valid ${ext === ".pdf" ? "PDF" : "DOCX"}` });
+      continue;
+    }
+    const safeBasename = file.originalname.replace(/[/\\]/g, "_").replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100);
+    const storagePath = `${job.id}/${Date.now()}-${safeBasename}`;
+    const { error: uploadError } = await supabase.storage.from("resumes").upload(storagePath, file.buffer, { contentType: ALLOWED_RESUME_CONTENT_TYPES[ext] });
+    if (uploadError) {
+      failures.push({ row: row.rowNumber, error: uploadError.message });
+      continue;
+    }
+    queuedRows.push({ job_id: job.id, org_id: req.orgId, file_name: file.originalname, file_path: storagePath, email: row.email, phone: row.phone, linkedin_url: row.linkedin_url, portfolio_url: row.portfolio_url, recruiter_notes: row.recruiter_notes, status: "queued", review_status: "needs_review" });
+  }
+  candidateRows.push(...queuedRows);
+  if (candidateRows.length === 0) return res.status(400).json({ error: "no importable candidate rows found", failures });
+  const { data: candidates, error: insertError } = await supabase.from("candidates").insert(candidateRows).select("id, job_id, file_name, file_path, email, status, unparseable, parse_method, created_at");
+  if (insertError) {
+    const uploadedPaths = queuedRows.map((row) => row.file_path).filter(Boolean);
+    if (uploadedPaths.length) await supabase.storage.from("resumes").remove(uploadedPaths);
+    return res.status(500).json({ error: insertError.message });
+  }
   const candidateIds = (candidates || []).map((candidate) => candidate.id);
   await Promise.all([
-    supabase.from("candidate_activity").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "csv_metadata" } }))),
-    supabase.from("organization_audit_events").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "csv_metadata" } }))),
+    supabase.from("candidate_activity").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: queuedRows.length ? "csv_metadata_and_resumes" : "csv_metadata" } }))),
+    supabase.from("organization_audit_events").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: queuedRows.length ? "csv_metadata_and_resumes" : "csv_metadata" } }))),
   ]);
-  res.status(201).json({ candidates, imported: candidates?.length || 0, failures });
+  res.status(201).json({ candidates, imported: candidates?.length || 0, queued: queuedRows.length, failures });
+  const skillEmbeddingCache = getSharedSkillEmbeddingCache();
+  for (const candidate of (candidates || []).filter((candidate) => candidate.status === "queued")) {
+    enqueue(() => processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache));
+  }
 });
 
 export async function recoverStuckCandidates() {

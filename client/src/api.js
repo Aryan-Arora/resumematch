@@ -158,9 +158,10 @@ export async function uploadCandidates(jobId, files) {
   }).then(handle);
 }
 
-export async function importCandidateCsv(jobId, file) {
+export async function importCandidateCsv(jobId, file, resumes = []) {
   const formData = new FormData();
   formData.append("csv", file);
+  for (const resume of resumes) formData.append("resumes", resume);
   return fetch(`${API_BASE}/jobs/${jobId}/candidates/import`, {
     method: "POST",
     headers: await authHeaders(),
