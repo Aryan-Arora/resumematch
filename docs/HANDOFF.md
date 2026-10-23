@@ -6,7 +6,7 @@ Live at https://resumematch.co.in. Client on Vercel, API on Fly.io (`resumematch
 
 - Engineering is a late-stage beta. `docs/PRODUCT_IMPROVEMENT_PLAN.md` is the roadmap and still lists CSV import, ATS connectors, webhooks/API, calendar scheduling, bulk actions, a calibration report and retention controls as undone.
 - Traction is the real gap: 4 signups total (last one Aug 3), no paying users, no pricing or billing. Check signups before building more features.
-- Tests: `npm test` (58 server tests) and `npm run smoke` (5 Playwright checks against the live site; set `SMOKE_BASE_URL` to test a preview). The smoke test does not cover the logged-in flow. That needs a dedicated test account, because signing up locally creates a real user in production Supabase.
+- Tests: `npm test` (58 server tests) and `npm run smoke` (5 Playwright checks against the live site; set `SMOKE_BASE_URL` to test a preview). The smoke test does not cover the logged-in flow. That needs a dedicated test account, because signing up locally creates a real user in production Supabase. The latest full smoke run passed after the dependency updates.
 
 ## Added this stretch
 
@@ -14,6 +14,7 @@ Live at https://resumematch.co.in. Client on Vercel, API on Fly.io (`resumematch
 - **Prerendering (SEO/GEO):** the app is a client-rendered SPA with no router. `npm run build` now runs `client/scripts/prerender.mjs` after `vite build`. It renders each public route to `dist/<route>/index.html` with its own title, canonical, social tags and JSON-LD, and generates `sitemap.xml`, `llms.txt` and `llms-full.txt` from the same route list and `client/src/content/blogPosts.js`. Do not re-add static copies of those files to `client/public`. A new public route must be added to the `routes` array in the script and to the switch in `client/src/main.jsx`, or it will not be prerendered. `useSEO` and `useJsonLd` in `client/src/lib/seo.js` double as the build-time collectors. The current build prerenders 29 public routes, including `/resumematch-vs-ats`.
 - **Other SEO:** AI-crawler rules in `robots.txt`, sitewide footer product links, `www` to apex 308 redirect, IndexNow key file in `client/public` (all 29 URLs submitted once; resubmit after adding pages). Organization schema and `llms.txt` now disambiguate this product from unrelated projects using the ResumeMatch name.
 - **Database security:** `public.candidate_activity` now has RLS enabled with organization-scoped authenticated read and insert policies. Supabase security advisor no longer reports `rls_disabled_in_public` for the application tables. Leaked-password protection remains unavailable on the current Supabase plan.
+- **Dependency security:** production and client audits are clean (`npm audit --omit=dev` and `npm audit --prefix client`). Multer, proxy address parsing, sharp, IP parsing, and frontend build tooling are pinned to patched versions; keep the Mammoth-compatible XML parser version because newer major versions break DOCX extraction.
 
 ## Pending, needs the owner
 
