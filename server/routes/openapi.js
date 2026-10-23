@@ -27,6 +27,9 @@ const spec = {
     "/analytics/calibration-export": { get: { summary: "Download recruiter calibration CSV", responses: { 200: { description: "CSV export" } } } },
     "/organizations/export": { get: { summary: "Download organization data and audit export", responses: { 200: { description: "JSON export" } } } },
     "/organizations/deletion-requests": { get: { summary: "List candidate deletion requests", responses: { 200: { description: "Requests" } } } },
+    "/organizations/webhooks": { get: { summary: "List organization webhooks", responses: { 200: { description: "Webhook configurations without secrets" } } }, post: { summary: "Create a signed organization webhook", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri", pattern: "^https://" }, secret: { type: "string", minLength: 32 }, events: { type: "array", items: { type: "string" } } } } } } }, responses: { 201: { description: "Created; secret is returned once" } } } },
+    "/organizations/webhooks/{id}": { delete: { summary: "Delete an organization webhook", parameters: [{ "$ref": "#/components/parameters/Id" }], responses: { 204: { description: "Deleted" } } } },
+    "/organizations/webhooks/deliveries": { get: { summary: "List recent webhook deliveries", responses: { 200: { description: "Delivery attempts" } } } },
   },
 };
 spec.components.parameters = { Id: { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } } };

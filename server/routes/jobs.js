@@ -19,6 +19,7 @@ import { hasExpectedFileSignature } from "../services/fileValidation.js";
 import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 import { parseCsv } from "../services/csv.js";
 import { normalizeImportRows } from "../services/candidateImport.js";
+import { dispatchWebhook } from "../services/webhooks.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -322,6 +323,12 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
   }
 }
 
+async function notifyCandidateScreened(job, candidateId, fileName) {
+  const { data } = await supabase.from("candidates").select("status, final_score, unparseable, eligibility_status").eq("id", candidateId).eq("org_id", job.org_id).maybeSingle();
+  if (!data || data.status !== "done") return;
+  void dispatchWebhook(job.org_id, "candidate.screened", { candidate_id: candidateId, job_id: job.id, file_name: fileName, status: data.status, final_score: data.final_score, unparseable: data.unparseable, eligibility_status: data.eligibility_status });
+}
+
 router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), async (req, res) => {
   const jobId = req.params.id;
   const files = req.files;
@@ -400,9 +407,10 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
 
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of queued) {
-    enqueue(() =>
-      processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
-    );
+    enqueue(async () => {
+      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await notifyCandidateScreened(job, candidate.id, candidate.file_name);
+    });
   }
 });
 
@@ -482,7 +490,10 @@ router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.fields([{ na
   res.status(201).json({ candidates, imported: candidates?.length || 0, queued: queuedRows.length, failures });
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of (candidates || []).filter((candidate) => candidate.status === "queued")) {
-    enqueue(() => processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache));
+    enqueue(async () => {
+      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await notifyCandidateScreened(job, candidate.id, candidate.file_name);
+    });
   }
 });
 
@@ -510,9 +521,10 @@ export async function recoverStuckCandidates() {
       job = data;
       jobCache.set(candidate.job_id, job);
     }
-    enqueue(() =>
-      processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
-    );
+    enqueue(async () => {
+      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await notifyCandidateScreened(job, candidate.id, candidate.file_name);
+    });
   }
 }
 
@@ -551,7 +563,10 @@ router.post("/candidates/:id/reprocess", jobWriteLimiter, async (req, res) => {
   if (updateError) return res.status(500).json({ error: updateError.message });
 
   await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "reprocessing_requested", event_data: { previous_status: candidate.status } });
-  enqueue(() => processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, getSharedSkillEmbeddingCache()));
+    enqueue(async () => {
+      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, getSharedSkillEmbeddingCache());
+      await notifyCandidateScreened(job, candidate.id, candidate.file_name);
+    });
   res.status(202).json(updated);
 });
 
