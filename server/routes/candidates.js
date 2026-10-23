@@ -330,10 +330,10 @@ router.post("/candidates/:id/email", shortlistLimiter, async (req, res) => {
   if (!candidate.email) return res.status(400).json({ error: "no email address was found on this candidate's resume" });
   const candidateName = (candidate.file_name || "").replace(/\.(pdf|docx)$/i, "").replace(/[_-]+/g, " ").trim() || "there";
   try {
-    await sendCandidateEmail({ to: candidate.email, candidateName, jobTitle: candidate.jobs?.title || "the role", orgName: candidate.organizations?.name, type, template: candidate.jobs?.email_templates?.[type], interviewUrl: candidate.jobs?.interview_url });
+    const delivery = await sendCandidateEmail({ to: candidate.email, candidateName, jobTitle: candidate.jobs?.title || "the role", orgName: candidate.organizations?.name, type, template: candidate.jobs?.email_templates?.[type], interviewUrl: candidate.jobs?.interview_url });
+    await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "email_sent", event_data: { type, delivery_id: delivery?.id || null } });
+    return res.json({ sent: true, type, delivery_id: delivery?.id || null });
   } catch (err) { return res.status(err.status || 500).json({ error: err.message }); }
-  await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "email_sent", event_data: { type } });
-  res.json({ sent: true, type });
 });
 
 router.delete("/candidates/:id", orgActionLimiter, async (req, res) => {

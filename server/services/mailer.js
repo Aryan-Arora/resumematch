@@ -26,7 +26,7 @@ export async function sendCandidateEmail({ to, candidateName, jobTitle, orgName,
   const values = { candidateName, jobTitle, orgName: orgName || "our team", interviewUrl: interviewUrl || "" };
   const body = (template || DEFAULT_TEMPLATES[type] || DEFAULT_TEMPLATES.shortlist).replace(/\{\{(candidateName|jobTitle|orgName|interviewUrl)\}\}/g, (_, key) => values[key] || "");
   const subject = type === "interview" ? `Interview invitation — ${jobTitle}` : type === "rejection" ? `Your application — ${jobTitle}` : `You've been shortlisted — ${jobTitle}`;
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: FROM,
     to,
     subject,
@@ -36,4 +36,5 @@ export async function sendCandidateEmail({ to, candidateName, jobTitle, orgName,
   if (error) {
     throw Object.assign(new Error(error.message || "Failed to send email"), { status: 502 });
   }
+  return { id: data?.id || null };
 }
