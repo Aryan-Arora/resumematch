@@ -72,7 +72,7 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 ### Audit and retention
 
 - Candidate activity timeline and downloadable audit export.
-- Configurable retention and deletion controls. **Implemented:** organization owners can configure a 30–3650 day retention policy, and candidate deletion requests have a generic public endpoint, candidate-facing page, and owner-only resolution. An operational SLA remains open.
+- Configurable retention and deletion controls. **Implemented:** organization owners can configure a 30–3650 day retention policy, candidate deletion requests have a generic public endpoint, candidate-facing page, owner-only resolution, and an owner-visible configurable SLA due date with overdue status.
 - Verify organization scoping and storage access with negative tests.
 
 ## Priority 4 — integrations and growth
