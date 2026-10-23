@@ -35,4 +35,17 @@ describe("OCR detection", () => {
       confidence: 0,
     });
   });
+
+  it("turns an unsupported OCR provider into a review warning", async () => {
+    const previous = process.env.OCR_PROVIDER;
+    process.env.OCR_PROVIDER = "unsupported-provider";
+    try {
+      const result = await ocrResume(Buffer.from("resume"), { fileName: "resume.png" });
+      expect(result.available).toBe(false);
+      expect(result.warnings[0]).toMatch(/not available|manual review/i);
+    } finally {
+      if (previous === undefined) delete process.env.OCR_PROVIDER;
+      else process.env.OCR_PROVIDER = previous;
+    }
+  });
 });

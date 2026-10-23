@@ -17,7 +17,15 @@ export async function ocrResume(buffer, { fileName = "resume.pdf" } = {}) {
       warnings: ["OCR is disabled. Upload a text-based PDF/DOCX or enable OCR_PROVIDER."],
     };
   }
-  if (provider !== "local-tesseract") throw new Error(`OCR provider '${provider}' is not implemented yet.`);
+  if (provider !== "local-tesseract") {
+    return {
+      available: false,
+      text: "",
+      method: "ocr",
+      confidence: 0,
+      warnings: [`OCR provider '${provider}' is not available; route this resume to manual review.`],
+    };
+  }
   const isPdf = /\.pdf$/i.test(fileName);
   const isImage = /\.(png|jpe?g)$/i.test(fileName);
   if (!isPdf && !isImage) {
