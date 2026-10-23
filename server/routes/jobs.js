@@ -853,6 +853,15 @@ export async function deleteJobCascade(job) {
   if (unstarred.length > 0) {
     const paths = unstarred.map((c) => c.file_path).filter(Boolean);
     if (paths.length > 0) await supabase.storage.from("resumes").remove(paths);
+    await supabase.from("organization_audit_events").insert(
+      unstarred.map((candidate) => ({
+        org_id: job.org_id,
+        actor_id: null,
+        candidate_id: candidate.id,
+        event_type: "candidate_deleted",
+        event_data: { reason: "retention_sweep", job_id: job.id },
+      }))
+    );
     await supabase
       .from("candidates")
       .delete()
