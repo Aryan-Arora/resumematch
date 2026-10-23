@@ -23,6 +23,7 @@ import { dispatchWebhook } from "../services/webhooks.js";
 import { fetchGreenhouseCandidates } from "../services/greenhouse.js";
 import { fetchLeverOpportunities } from "../services/lever.js";
 import { fetchWorkableCandidates } from "../services/workable.js";
+import { downloadProviderResume } from "../services/providerResume.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -579,6 +580,30 @@ router.post("/jobs/:id/integrations/workable/candidates/import", uploadLimiter, 
     supabase.from("organization_audit_events").insert(ids.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "workable" } }))),
   ]);
   res.status(201).json({ imported: candidates?.length || 0, skipped_duplicates: rows.length - fresh.length, candidates });
+});
+
+router.post("/candidates/:id/provider-resume", uploadLimiter, async (req, res) => {
+  const { provider, resume_url: resumeUrl, api_key: apiKey } = req.body || {};
+  if (!["greenhouse", "lever", "workable"].includes(provider) || typeof resumeUrl !== "string") return res.status(400).json({ error: "provider and resume_url are required" });
+  const { data: candidate, error: candidateError } = await supabase.from("candidates").select("id, job_id, org_id, file_name, parse_attempts").eq("id", req.params.id).eq("org_id", req.orgId).single();
+  if (candidateError || !candidate) return res.status(404).json({ error: "candidate not found" });
+  const { data: job, error: jobError } = await supabase.from("jobs").select("*").eq("id", candidate.job_id).eq("org_id", req.orgId).single();
+  if (jobError || !job) return res.status(404).json({ error: "job not found" });
+  let downloaded;
+  try { downloaded = await downloadProviderResume(provider, resumeUrl, apiKey); }
+  catch (error) { return res.status(400).json({ error: error.message }); }
+  if (!hasExpectedFileSignature(downloaded.buffer, downloaded.ext)) return res.status(400).json({ error: "provider response is not a valid PDF or DOCX" });
+  const storagePath = `${job.id}/${Date.now()}-${downloaded.fileName}`;
+  const { error: uploadError } = await supabase.storage.from("resumes").upload(storagePath, downloaded.buffer, { contentType: downloaded.ext === ".pdf" ? "application/pdf" : ALLOWED_RESUME_CONTENT_TYPES[".docx"] });
+  if (uploadError) return res.status(500).json({ error: uploadError.message });
+  const { data: updated, error: updateError } = await supabase.from("candidates").update({ file_name: downloaded.fileName, file_path: storagePath, status: "queued", unparseable: false, error_message: null, parse_warnings: [], review_status: "needs_review" }).eq("id", candidate.id).eq("org_id", req.orgId).select("id, file_name, status, created_at").single();
+  if (updateError) { await supabase.storage.from("resumes").remove([storagePath]); return res.status(500).json({ error: updateError.message }); }
+  await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "provider_resume_attached", event_data: { provider, file_name: downloaded.fileName } });
+  res.status(202).json(updated);
+  enqueue(async () => {
+    await processCandidate(job, candidate.id, storagePath, downloaded.fileName, getSharedSkillEmbeddingCache());
+    await notifyCandidateScreened(job, candidate.id, downloaded.fileName);
+  });
 });
 
 export async function recoverStuckCandidates() {
