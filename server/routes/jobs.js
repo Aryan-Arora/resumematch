@@ -22,6 +22,7 @@ import { normalizeImportRows } from "../services/candidateImport.js";
 import { dispatchWebhook } from "../services/webhooks.js";
 import { fetchGreenhouseCandidates } from "../services/greenhouse.js";
 import { fetchLeverOpportunities } from "../services/lever.js";
+import { fetchWorkableCandidates } from "../services/workable.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -551,6 +552,31 @@ router.post("/jobs/:id/integrations/lever/candidates/import", uploadLimiter, asy
   await Promise.all([
     supabase.from("candidate_activity").insert(ids.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "lever" } }))),
     supabase.from("organization_audit_events").insert(ids.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "lever" } }))),
+  ]);
+  res.status(201).json({ imported: candidates?.length || 0, skipped_duplicates: rows.length - fresh.length, candidates });
+});
+
+router.post("/jobs/:id/integrations/workable/candidates/import", uploadLimiter, async (req, res) => {
+  const { api_key: apiKey, workable_account: account, workable_job_shortcode: shortcode } = req.body || {};
+  if (typeof apiKey !== "string" || typeof account !== "string" || typeof shortcode !== "string") return res.status(400).json({ error: "api_key, workable_account, and workable_job_shortcode are required" });
+  const { data: job, error: jobError } = await supabase.from("jobs").select("id").eq("id", req.params.id).eq("org_id", req.orgId).single();
+  if (jobError || !job) return res.status(404).json({ error: "job not found" });
+  let rows;
+  try { rows = await fetchWorkableCandidates(apiKey, account, shortcode); }
+  catch (error) { return res.status(502).json({ error: error.message }); }
+  const emails = rows.map((row) => row.email).filter(Boolean).map((email) => email.toLowerCase());
+  const { data: existing, error: existingError } = emails.length ? await supabase.from("candidates").select("email").eq("job_id", job.id).eq("org_id", req.orgId).in("email", emails) : { data: [], error: null };
+  if (existingError) return res.status(500).json({ error: existingError.message });
+  const existingEmails = new Set((existing || []).map((row) => row.email));
+  const fresh = rows.filter((row) => !row.email || !existingEmails.has(row.email.toLowerCase()));
+  const candidateRows = fresh.map((row) => ({ job_id: job.id, org_id: req.orgId, file_name: row.file_name, email: row.email || null, phone: row.phone || null, linkedin_url: row.linkedin_url || null, recruiter_notes: row.recruiter_notes || "", status: "imported", unparseable: true, parse_method: "manual", parse_warnings: ["Imported from Workable metadata; upload a PDF or DOCX before screening."], review_status: "needs_review" }));
+  if (!candidateRows.length) return res.status(200).json({ imported: 0, skipped_duplicates: rows.length, candidates: [] });
+  const { data: candidates, error: insertError } = await supabase.from("candidates").insert(candidateRows).select("id, job_id, file_name, email, status, unparseable, parse_method, created_at");
+  if (insertError) return res.status(500).json({ error: insertError.message });
+  const ids = (candidates || []).map((candidate) => candidate.id);
+  await Promise.all([
+    supabase.from("candidate_activity").insert(ids.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "workable" } }))),
+    supabase.from("organization_audit_events").insert(ids.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "workable" } }))),
   ]);
   res.status(201).json({ imported: candidates?.length || 0, skipped_duplicates: rows.length - fresh.length, candidates });
 });
