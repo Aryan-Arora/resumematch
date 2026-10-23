@@ -84,4 +84,7 @@ test("public API contract is available", async ({ request }) => {
   expect(spec.openapi).toBe("3.0.3");
   expect(spec.paths["/candidates/{id}/review"]).toBeTruthy();
   expect(spec.paths["/public/deletion-request"]).toBeTruthy();
+  expect(spec.paths["/candidates/{id}/reprocess"]).toBeTruthy();
+  expect(spec.paths["/candidates/{id}/email"]).toBeTruthy();
+  expect(spec.paths["/jobs/{id}"]).toBeTruthy();
 });
