@@ -51,7 +51,7 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 
 - Editable per-job templates with preview and variables.
 - Resend delivery status and failure details.
-- Interview link insertion and calendar integration.
+- Interview link insertion and calendar integration. **Implemented:** recruiters can download an authenticated `.ics` event for a candidate interview slot; provider-native scheduling remains open.
 
 ## Priority 3 — data quality and trust
 

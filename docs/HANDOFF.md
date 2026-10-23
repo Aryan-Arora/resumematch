@@ -4,7 +4,7 @@ Live at https://resumematch.co.in. Client on Vercel, API on Fly.io (`resumematch
 
 ## Where things stand
 
-- Engineering is a late-stage beta. `docs/PRODUCT_IMPROVEMENT_PLAN.md` is the roadmap; the remaining major gaps are CSV/ATS integrations, webhook delivery, and calendar scheduling. The current authenticated API is documented at `/api/openapi.json`. Organization owners can configure retention from 30–3650 days, candidate deletion requests have a public page plus owner-review workflow, and durable audit events cover resume access and hard deletion.
+- Engineering is a late-stage beta. `docs/PRODUCT_IMPROVEMENT_PLAN.md` is the roadmap; the remaining major gaps are CSV/ATS integrations and webhook delivery. The current authenticated API is documented at `/api/openapi.json`, and interview slots can be exported as `.ics` files. Organization owners can configure retention from 30–3650 days, candidate deletion requests have a public page plus owner-review workflow, and durable audit events cover resume access and hard deletion.
 - Traction is the real gap: 4 signups total (last one Aug 3), no paying users, no pricing or billing. Check signups before building more features.
 - Tests: `npm test` (58 server tests) and `npm run smoke` (5 Playwright checks against the live site; set `SMOKE_BASE_URL` to test a preview). The smoke test does not cover the logged-in flow. That needs a dedicated test account, because signing up locally creates a real user in production Supabase. The latest full smoke run passed after the dependency updates.
 
