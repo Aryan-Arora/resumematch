@@ -24,6 +24,7 @@ import { fetchGreenhouseCandidates } from "../services/greenhouse.js";
 import { fetchLeverOpportunities } from "../services/lever.js";
 import { fetchWorkableCandidates } from "../services/workable.js";
 import { downloadProviderResume } from "../services/providerResume.js";
+import { validateWebhookUrl } from "../services/webhookUrl.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -119,7 +120,9 @@ router.patch("/jobs/:id/settings", jobWriteLimiter, async (req, res) => {
   const templates = req.body.email_templates && typeof req.body.email_templates === "object" ? req.body.email_templates : null;
   const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : undefined;
   if (!templates && interviewUrl === undefined) return res.status(400).json({ error: "job settings are required" });
-  if (interviewUrl && !/^https:\/\//i.test(interviewUrl)) return res.status(400).json({ error: "Interview link must use https://" });
+  if (interviewUrl) {
+    try { await validateWebhookUrl(interviewUrl); } catch (error) { return res.status(400).json({ error: `Interview link is invalid: ${error.message}` }); }
+  }
   const update = {};
   if (interviewUrl !== undefined) update.interview_url = interviewUrl;
   if (templates) update.email_templates = {
@@ -152,7 +155,9 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
   if (description.length > 5000) {
     return res.status(400).json({ error: "Description is too long (max 5,000 characters)." });
   }
-  if (interviewUrl && !/^https:\/\//i.test(interviewUrl)) return res.status(400).json({ error: "Interview link must use https://" });
+  if (interviewUrl) {
+    try { await validateWebhookUrl(interviewUrl); } catch (error) { return res.status(400).json({ error: `Interview link is invalid: ${error.message}` }); }
+  }
 
   const jdEmbedding = await getEmbedding(description);
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
