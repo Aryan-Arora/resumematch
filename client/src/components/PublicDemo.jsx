@@ -174,12 +174,12 @@ export default function PublicDemo() {
           <div className="border border-dashed border-[var(--color-border)] rounded-2xl px-3.5 py-3">
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-[var(--color-text-muted)]">
-                Attach up to {MAX_DEMO_RESUMES} resumes (optional) — .pdf or .docx
+                Attach up to {MAX_DEMO_RESUMES} resumes (optional) — PDF, DOCX, PNG, or JPEG
               </span>
               <span className="text-xs font-medium text-[var(--color-accent)]">Choose files</span>
               <input
                 type="file"
-                accept=".pdf,.docx"
+                accept=".pdf,.docx,.png,.jpg,.jpeg"
                 multiple
                 onChange={handleFileChange}
                 className="hidden"

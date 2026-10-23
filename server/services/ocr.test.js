@@ -17,6 +17,12 @@ describe("OCR detection", () => {
   it("does not send DOCX binaries to the image OCR provider", async () => {
     const result = await ocrResume(Buffer.from("not an image"), { fileName: "resume.docx" });
     expect(result.available).toBe(false);
-    expect(result.warnings[0]).toMatch(/image-only PDF/i);
+    expect(result.warnings[0]).toMatch(/scanned PDF, PNG, and JPEG/i);
+  });
+
+  it("accepts image resumes at the OCR boundary", async () => {
+    const result = await ocrResume(Buffer.from("not an image"), { fileName: "resume.png" });
+    expect(result.available).toBe(false);
+    expect(result.warnings[0]).toMatch(/Tesseract|recognition/i);
   });
 });

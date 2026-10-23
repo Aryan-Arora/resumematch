@@ -18,13 +18,15 @@ export async function ocrResume(buffer, { fileName = "resume.pdf" } = {}) {
     };
   }
   if (provider !== "local-tesseract") throw new Error(`OCR provider '${provider}' is not implemented yet.`);
-  if (!/\.pdf$/i.test(fileName)) {
+  const isPdf = /\.pdf$/i.test(fileName);
+  const isImage = /\.(png|jpe?g)$/i.test(fileName);
+  if (!isPdf && !isImage) {
     return {
       available: false,
       text: "",
       method: "ocr",
       confidence: 0,
-      warnings: ["OCR currently supports image-only PDF resumes; verify this document manually."],
+      warnings: ["OCR supports scanned PDF, PNG, and JPEG resumes; verify this document manually."],
     };
   }
 
@@ -32,19 +34,24 @@ export async function ocrResume(buffer, { fileName = "resume.pdf" } = {}) {
   const source = join(workdir, fileName.replace(/[^a-z0-9._-]/gi, "_").slice(-80));
   try {
     await writeFile(source, buffer);
-    const input = join(workdir, "page");
-    try {
-      await execFileAsync("pdftoppm", ["-png", "-r", "180", source, input], { timeout: 30000 });
-    } catch (error) {
-      return {
-        available: false,
-        text: "",
-        method: "ocr",
-        confidence: 0,
-        warnings: [`OCR could not convert this PDF (${error.code === "ENOENT" ? "PDF tools are unavailable" : "conversion failed"}).`],
-      };
+    let images;
+    if (isImage) {
+      images = [source];
+    } else {
+      const input = join(workdir, "page");
+      try {
+        await execFileAsync("pdftoppm", ["-png", "-r", "180", source, input], { timeout: 30000 });
+      } catch (error) {
+        return {
+          available: false,
+          text: "",
+          method: "ocr",
+          confidence: 0,
+          warnings: [`OCR could not convert this PDF (${error.code === "ENOENT" ? "PDF tools are unavailable" : "conversion failed"}).`],
+        };
+      }
+      images = (await readdir(workdir)).filter((name) => name.startsWith("page-") && name.endsWith(".png")).sort().map((name) => join(workdir, name));
     }
-    const images = (await readdir(workdir)).filter((name) => name.startsWith("page-") && name.endsWith(".png")).sort().map((name) => join(workdir, name));
     const textParts = [];
     for (const image of images.slice(0, 20)) {
       try {
@@ -56,7 +63,7 @@ export async function ocrResume(buffer, { fileName = "resume.pdf" } = {}) {
           text: "",
           method: "ocr",
           confidence: 0,
-          warnings: [`OCR could not read this PDF (${error.code === "ENOENT" ? "Tesseract is unavailable" : "recognition failed"}).`],
+          warnings: [`OCR could not read this ${isImage ? "image" : "PDF"} (${error.code === "ENOENT" ? "Tesseract is unavailable" : "recognition failed"}).`],
         };
       }
     }

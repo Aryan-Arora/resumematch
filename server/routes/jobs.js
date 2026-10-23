@@ -38,13 +38,16 @@ const taxonomy = JSON.parse(
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB per file
 const MAX_FILES_PER_UPLOAD = 100;
-const ALLOWED_RESUME_EXTENSIONS = new Set([".pdf", ".docx"]);
+const ALLOWED_RESUME_EXTENSIONS = new Set([".pdf", ".docx", ".png", ".jpg", ".jpeg"]);
 const ALLOWED_RESUME_CONTENT_TYPES = {
   ".pdf": "application/pdf",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
 };
 
-// Only .pdf/.docx get past this — without it, any file type (including
+// Only supported resume formats get past this — without it, any file type (including
 // HTML/SVG) could be uploaded to Storage and later served back via a signed
 // URL with an attacker-controlled Content-Type, which is a stored-content
 // risk once opened in a browser tab.
@@ -57,7 +60,7 @@ const upload = multer({
   fileFilter(req, file, cb) {
     const ext = extname(file.originalname).toLowerCase();
     if (!ALLOWED_RESUME_EXTENSIONS.has(ext)) {
-      const err = new Error("Only .pdf and .docx resumes are accepted.");
+      const err = new Error("Only .pdf, .docx, PNG, and JPEG resumes are accepted.");
       err.status = 400;
       return cb(err);
     }
@@ -69,7 +72,7 @@ const csvUpload = multer({
   limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_FILES_PER_UPLOAD + 1 },
   fileFilter(req, file, cb) {
     if (file.fieldname === "csv" && !/\.csv$/i.test(file.originalname)) return cb(Object.assign(new Error("Only .csv files are accepted for the csv field."), { status: 400 }));
-    if (file.fieldname === "resumes" && !ALLOWED_RESUME_EXTENSIONS.has(extname(file.originalname).toLowerCase())) return cb(Object.assign(new Error("Only .pdf and .docx resumes are accepted."), { status: 400 }));
+    if (file.fieldname === "resumes" && !ALLOWED_RESUME_EXTENSIONS.has(extname(file.originalname).toLowerCase())) return cb(Object.assign(new Error("Only .pdf, .docx, PNG, and JPEG resumes are accepted."), { status: 400 }));
     cb(null, true);
   },
 });
@@ -383,7 +386,7 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
     if (!hasExpectedFileSignature(file.buffer, ext)) {
       failures.push({
         file_name: file.originalname,
-        error: ext === ".pdf" ? "File is not a valid PDF." : "File is not a valid DOCX document.",
+        error: ext === ".pdf" ? "File is not a valid PDF." : ext === ".docx" ? "File is not a valid DOCX document." : "File is not a valid PNG or JPEG image.",
       });
       continue;
     }
@@ -476,13 +479,13 @@ router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.fields([{ na
         job_id: job.id, org_id: req.orgId, file_name: row.file_name, file_path: null,
         email: row.email, phone: row.phone, linkedin_url: row.linkedin_url, portfolio_url: row.portfolio_url,
         recruiter_notes: row.recruiter_notes, status: "imported", unparseable: true, parse_method: "manual",
-        parse_warnings: ["Imported from ATS metadata; upload a PDF or DOCX before screening."], review_status: "needs_review",
+        parse_warnings: ["Imported from ATS metadata; upload a PDF, DOCX, PNG, or JPEG before screening."], review_status: "needs_review",
       });
       continue;
     }
     const ext = extname(file.originalname).toLowerCase();
     if (!hasExpectedFileSignature(file.buffer, ext)) {
-      failures.push({ row: row.rowNumber, error: `resume file ${file.originalname} is not a valid ${ext === ".pdf" ? "PDF" : "DOCX"}` });
+      failures.push({ row: row.rowNumber, error: `resume file ${file.originalname} is not a valid ${ext === ".pdf" ? "PDF" : ext === ".docx" ? "DOCX" : "PNG or JPEG image"}` });
       continue;
     }
     const safeBasename = file.originalname.replace(/[/\\]/g, "_").replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100);

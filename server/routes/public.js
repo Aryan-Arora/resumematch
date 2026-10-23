@@ -93,8 +93,8 @@ const publicUpload = multer({
   limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_DEMO_RESUMES },
   fileFilter(req, file, cb) {
     const ext = extname(file.originalname).toLowerCase();
-    if (![".pdf", ".docx"].includes(ext)) {
-      const error = new Error("Only .pdf and .docx resumes are accepted.");
+    if (![".pdf", ".docx", ".png", ".jpg", ".jpeg"].includes(ext)) {
+      const error = new Error("Only .pdf, .docx, PNG, and JPEG resumes are accepted.");
       error.status = 400;
       return cb(error);
     }
@@ -250,7 +250,7 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
       const ext = extname(file.originalname).toLowerCase();
       if (!hasExpectedFileSignature(file.buffer, ext)) {
         return res.status(400).json({
-          error: `${file.originalname}: ${ext === ".pdf" ? "file is not a valid PDF" : "file is not a valid DOCX document"}.`,
+          error: `${file.originalname}: ${ext === ".pdf" ? "file is not a valid PDF" : ext === ".docx" ? "file is not a valid DOCX document" : "file is not a valid PNG or JPEG image"}.`,
         });
       }
       candidates.push(

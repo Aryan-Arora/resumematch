@@ -120,7 +120,7 @@ export default function BulkUpload({ job, onUploaded }) {
           <p className="text-xs text-[var(--color-text-muted)] mt-1">Rows with a matching file_name and resume are screened automatically; unmatched rows stay manual and unscreened. Required: name, email, or file_name.</p>
           <div className="flex items-center gap-3 mt-3">
             <input type="file" accept=".csv,text/csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" />
-            <input type="file" accept=".pdf,.docx" multiple onChange={(e) => setCsvResumes(Array.from(e.target.files || []))} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" aria-label="Matching resumes" />
+            <input type="file" accept=".pdf,.docx,.png,.jpg,.jpeg" multiple onChange={(e) => setCsvResumes(Array.from(e.target.files || []))} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" aria-label="Matching resumes" />
             <button onClick={handleCsvImport} disabled={!csvFile || importing} className="border border-[var(--color-accent)] text-[var(--color-accent)] font-heading text-sm font-medium px-3 py-2 rounded-lg disabled:opacity-50">
               {importing ? "Importing..." : "Import CSV"}
             </button>
@@ -154,14 +154,14 @@ export default function BulkUpload({ job, onUploaded }) {
             Drop candidate resumes here
           </p>
           <p className="text-xs text-[var(--color-text-muted)]">
-            PDF or DOCX, or click to browse — up to 100 files, 10MB each
+              PDF, DOCX, PNG, or JPEG — up to 100 files, 10MB each
           </p>
           <span className="mt-1 px-5 py-2 border border-[var(--color-accent)] text-[var(--color-accent)] font-heading text-sm font-medium rounded-lg">
             Browse Files
           </span>
           <input
             type="file"
-            accept=".pdf,.docx"
+            accept=".pdf,.docx,.png,.jpg,.jpeg"
             multiple
             onChange={(e) => addFiles(e.target.files)}
             className="hidden"
