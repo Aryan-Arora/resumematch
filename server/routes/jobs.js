@@ -17,6 +17,8 @@ import { extractRequiredFilters, evaluateEligibility } from "../services/eligibi
 import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { hasExpectedFileSignature } from "../services/fileValidation.js";
 import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
+import { parseCsv } from "../services/csv.js";
+import { normalizeImportRows } from "../services/candidateImport.js";
 
 function domainTaxonomy(job) {
   return job.jd_domain === "general"
@@ -54,6 +56,14 @@ const upload = multer({
       err.status = 400;
       return cb(err);
     }
+    cb(null, true);
+  },
+});
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+  fileFilter(req, file, cb) {
+    if (!/\.csv$/i.test(file.originalname)) return cb(Object.assign(new Error("Only .csv files are accepted."), { status: 400 }));
     cb(null, true);
   },
 });
@@ -393,6 +403,58 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
       processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache)
     );
   }
+});
+
+// Import recruiter metadata from an ATS export. Imported rows intentionally do
+// not receive an AI score: a resume file is required before screening begins.
+router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.single("csv"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "a CSV file is required" });
+  let rows;
+  try {
+    rows = parseCsv(req.file.buffer.toString("utf8"));
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+  const { imported, failures } = normalizeImportRows(rows);
+  if (imported.length === 0) return res.status(400).json({ error: "no valid candidate rows found", failures });
+  const { data: job, error: jobError } = await supabase.from("jobs").select("id").eq("id", req.params.id).eq("org_id", req.orgId).single();
+  if (jobError || !job) return res.status(404).json({ error: "job not found" });
+  const emails = imported.map((row) => row.email).filter(Boolean);
+  const { data: existing, error: existingError } = emails.length
+    ? await supabase.from("candidates").select("email").eq("job_id", job.id).eq("org_id", req.orgId).in("email", emails)
+    : { data: [], error: null };
+  if (existingError) return res.status(500).json({ error: existingError.message });
+  const existingEmails = new Set((existing || []).map((row) => row.email));
+  const fresh = imported.filter((row) => {
+    if (!row.email || !existingEmails.has(row.email)) return true;
+    failures.push({ row: row.rowNumber, error: "email already exists for this job" });
+    return false;
+  });
+  if (fresh.length === 0) return res.status(409).json({ error: "all valid rows already exist for this job", failures });
+  const candidateRows = fresh.map((row) => ({
+    job_id: job.id,
+    org_id: req.orgId,
+    file_name: row.file_name,
+    file_path: null,
+    email: row.email,
+    phone: row.phone,
+    linkedin_url: row.linkedin_url,
+    portfolio_url: row.portfolio_url,
+    recruiter_notes: row.recruiter_notes,
+    status: "imported",
+    unparseable: true,
+    parse_method: "manual",
+    parse_warnings: ["Imported from ATS metadata; upload a PDF or DOCX before screening."],
+    review_status: "needs_review",
+  }));
+  const { data: candidates, error: insertError } = await supabase.from("candidates").insert(candidateRows).select("id, job_id, file_name, email, status, unparseable, parse_method, created_at");
+  if (insertError) return res.status(500).json({ error: insertError.message });
+  const candidateIds = (candidates || []).map((candidate) => candidate.id);
+  await Promise.all([
+    supabase.from("candidate_activity").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "csv_metadata" } }))),
+    supabase.from("organization_audit_events").insert(candidateIds.map((candidate_id) => ({ candidate_id, org_id: req.orgId, actor_id: req.userId || null, event_type: "candidate_imported", event_data: { source: "csv_metadata" } }))),
+  ]);
+  res.status(201).json({ candidates, imported: candidates?.length || 0, failures });
 });
 
 export async function recoverStuckCandidates() {

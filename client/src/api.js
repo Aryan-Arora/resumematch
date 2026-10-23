@@ -158,6 +158,16 @@ export async function uploadCandidates(jobId, files) {
   }).then(handle);
 }
 
+export async function importCandidateCsv(jobId, file) {
+  const formData = new FormData();
+  formData.append("csv", file);
+  return fetch(`${API_BASE}/jobs/${jobId}/candidates/import`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: formData,
+  }).then(handle);
+}
+
 export async function getUploadStatus(jobId) {
   return fetch(`${API_BASE}/jobs/${jobId}/candidates/status`, {
     headers: await authHeaders(),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { uploadCandidates, getUploadStatus } from "../api";
+import { uploadCandidates, getUploadStatus, importCandidateCsv } from "../api";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,6 +31,8 @@ export default function BulkUpload({ job, onUploaded }) {
   const [error, setError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState(null); // { done, failed, total }
+  const [csvFile, setCsvFile] = useState(null);
+  const [importing, setImporting] = useState(false);
 
   function addFiles(fileList) {
     setFiles(Array.from(fileList));
@@ -79,6 +81,22 @@ export default function BulkUpload({ job, onUploaded }) {
     }
   }
 
+  async function handleCsvImport() {
+    if (!csvFile) return;
+    setError(null);
+    setImporting(true);
+    try {
+      const result = await importCandidateCsv(job.id, csvFile);
+      if (result.failures?.length) setError(`${result.imported} imported; ${result.failures.length} row(s) skipped. ${result.failures[0].error}`);
+      setCsvFile(null);
+      onUploaded();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-8 py-10">
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-8 transition-colors">
@@ -94,6 +112,17 @@ export default function BulkUpload({ job, onUploaded }) {
           Bulk upload candidate resumes for{" "}
           <span className="font-medium text-[var(--color-text)]">{job.title}</span>.
         </p>
+
+        <div className="mb-6 p-4 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-surface-alt)]/50">
+          <p className="font-heading text-sm font-semibold text-[var(--color-text)]">Import ATS candidate metadata</p>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">CSV rows are added as manual, unparseable records until you upload their PDF or DOCX resume. Required: name, email, or file_name.</p>
+          <div className="flex items-center gap-3 mt-3">
+            <input type="file" accept=".csv,text/csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} className="text-xs text-[var(--color-text-muted)] max-w-[220px]" />
+            <button onClick={handleCsvImport} disabled={!csvFile || importing} className="border border-[var(--color-accent)] text-[var(--color-accent)] font-heading text-sm font-medium px-3 py-2 rounded-lg disabled:opacity-50">
+              {importing ? "Importing..." : "Import CSV"}
+            </button>
+          </div>
+        </div>
 
         <label
           onDragOver={(e) => {
