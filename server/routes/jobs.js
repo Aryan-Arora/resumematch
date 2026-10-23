@@ -16,7 +16,7 @@ import { generateComplianceNoticeHtml } from "../services/complianceNotice.js";
 import { extractRequiredFilters, evaluateEligibility } from "../services/eligibility.js";
 import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { hasExpectedFileSignature } from "../services/fileValidation.js";
-import { jobWriteLimiter, uploadLimiter } from "../middleware/rateLimit.js";
+import { jobWriteLimiter, uploadLimiter, orgActionLimiter } from "../middleware/rateLimit.js";
 import { parseCsv } from "../services/csv.js";
 import { normalizeImportRows } from "../services/candidateImport.js";
 import { dispatchWebhook } from "../services/webhooks.js";
@@ -820,7 +820,7 @@ router.get("/jobs/:id/activity-export", async (req, res) => {
   res.send([header.map(escape).join(","), ...rows].join("\n"));
 });
 
-router.delete("/jobs/:id", async (req, res) => {
+router.delete("/jobs/:id", orgActionLimiter, async (req, res) => {
   const jobId = req.params.id;
 
   const { data: job } = await supabase

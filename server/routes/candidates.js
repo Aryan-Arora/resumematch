@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
 import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
-import { shortlistLimiter } from "../middleware/rateLimit.js";
+import { shortlistLimiter, orgActionLimiter } from "../middleware/rateLimit.js";
 import { createInterviewIcs } from "../services/ics.js";
 import { dispatchWebhook } from "../services/webhooks.js";
 import { createCalendarLinks } from "../services/calendarLinks.js";
@@ -336,7 +336,7 @@ router.post("/candidates/:id/email", shortlistLimiter, async (req, res) => {
   res.json({ sent: true, type });
 });
 
-router.delete("/candidates/:id", async (req, res) => {
+router.delete("/candidates/:id", orgActionLimiter, async (req, res) => {
   const { data: candidate, error: fetchError } = await supabase
     .from("candidates")
     .select("id, file_path, file_name")
