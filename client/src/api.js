@@ -85,6 +85,10 @@ export async function getWebhookDeliveries() {
   return fetch(`${API_BASE}/organizations/webhooks/deliveries`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function importProviderCandidates(jobId, provider, payload) {
+  return fetch(`${API_BASE}/jobs/${jobId}/integrations/${provider}/candidates/import`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(payload) }).then(handle);
+}
+
 export async function createOrganization(name) {
   return fetch(`${API_BASE}/organizations`, {
     method: "POST",
