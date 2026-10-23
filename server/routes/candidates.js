@@ -120,6 +120,52 @@ router.patch("/candidates/:id/feedback", async (req, res) => {
   res.json(data);
 });
 
+// Recruiters can correct contact extraction without editing the original
+// resume. This is intentionally narrow and organization-scoped so a manual
+// correction cannot alter the model's stored scores or eligibility evidence.
+router.patch("/candidates/:id/contact", async (req, res) => {
+  const fields = ["email", "phone", "linkedin_url", "portfolio_url"];
+  const update = {};
+  for (const field of fields) {
+    if (req.body[field] !== undefined) {
+      if (req.body[field] !== null && typeof req.body[field] !== "string") {
+        return res.status(400).json({ error: `${field} must be a string or null` });
+      }
+      update[field] = typeof req.body[field] === "string" ? req.body[field].trim().slice(0, 500) || null : null;
+    }
+  }
+  if (!Object.keys(update).length) return res.status(400).json({ error: "at least one contact field is required" });
+  if (update.email && (!/^\S+@\S+\.\S+$/.test(update.email) || update.email.length > 320)) {
+    return res.status(400).json({ error: "email must be a valid address" });
+  }
+  for (const field of ["linkedin_url", "portfolio_url"]) {
+    if (update[field]) {
+      try {
+        const url = new URL(update[field]);
+        if (url.protocol !== "https:") throw new Error("invalid protocol");
+      } catch {
+        return res.status(400).json({ error: `${field} must be an https URL` });
+      }
+    }
+  }
+  const { data, error } = await supabase
+    .from("candidates")
+    .update(update)
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .select()
+    .single();
+  if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  await supabase.from("candidate_activity").insert({
+    candidate_id: data.id,
+    org_id: req.orgId,
+    actor_id: req.userId || null,
+    event_type: "contact_corrected",
+    event_data: { fields: Object.keys(update) },
+  });
+  res.json(data);
+});
+
 router.get("/candidates/:id/activity", async (req, res) => {
   const { data, error } = await supabase.from("candidate_activity").select("*").eq("candidate_id", req.params.id).eq("org_id", req.orgId).order("created_at", { ascending: false }).limit(100);
   if (error) return res.status(500).json({ error: error.message });

@@ -13,6 +13,7 @@ import {
   updateCandidateWorkflow,
   bulkUpdateCandidateWorkflow,
   updateCandidateFeedback,
+  updateCandidateContact,
   sendCandidateEmail,
   getOrganizationMembers,
   updateJobSettings,
@@ -88,6 +89,7 @@ export default function CandidateTable({ job, onAddMore }) {
   const [members, setMembers] = useState([]);
   const [emailTemplates, setEmailTemplates] = useState(job.email_templates || { shortlist: "", interview: "", rejection: "" });
   const [templateSaved, setTemplateSaved] = useState(false);
+  const [contactSavingId, setContactSavingId] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -209,6 +211,19 @@ export default function CandidateTable({ job, onAddMore }) {
       const updated = await updateCandidateFeedback(id, value);
       setCandidates((prev) => prev.map((c) => c.id === id ? { ...c, ...updated } : c));
     } catch (err) { setActionError(err.message); }
+  }
+
+  async function saveContact(id, fields) {
+    setContactSavingId(id);
+    setActionError(null);
+    try {
+      const updated = await updateCandidateContact(id, fields);
+      setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)));
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setContactSavingId(null);
+    }
   }
 
   async function emailCandidate(id, type) {
@@ -525,6 +540,26 @@ export default function CandidateTable({ job, onAddMore }) {
                                   <label className="block mt-3 text-xs text-[var(--color-text-muted)]">Assigned recruiter
                                     <select value={c.assigned_to || ""} onChange={(e) => updateWorkflow(c.id, { assigned_to: e.target.value || null })} className="mt-1 w-full sm:w-64 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)]"><option value="">Unassigned</option>{members.map((member) => <option key={member.id} value={member.id}>{member.email}</option>)}</select>
                                   </label>
+                                  <div className="mt-4 border-t border-[var(--color-border)]/50 pt-4">
+                                    <p className="text-xs font-heading font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">Correct extracted contact details</p>
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                      {[["email", "Email"], ["phone", "Phone"], ["linkedin_url", "LinkedIn URL"], ["portfolio_url", "Portfolio URL"]].map(([field, label]) => (
+                                        <label key={field} className="text-xs text-[var(--color-text-muted)]">{label}
+                                          <input
+                                            defaultValue={c[field] || ""}
+                                            type={field === "email" ? "email" : "text"}
+                                            onBlur={(e) => {
+                                              const value = e.target.value.trim();
+                                              if (value !== (c[field] || "")) saveContact(c.id, { [field]: value || null });
+                                            }}
+                                            disabled={contactSavingId === c.id}
+                                            className="mt-1 w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-2 text-sm text-[var(--color-text)] disabled:opacity-60"
+                                          />
+                                        </label>
+                                      ))}
+                                    </div>
+                                    <p className="text-[11px] text-[var(--color-text-faint)] mt-2">Changes are recorded in the audit log and do not alter the AI score.</p>
+                                  </div>
                                   {c.reminder_at && <p className="text-xs text-[var(--color-text-faint)] mt-1">Reminder set for {new Date(c.reminder_at).toLocaleString()}</p>}
                                   {c.pipeline_stage === "interview" && job.interview_url && <a href={job.interview_url} target="_blank" rel="noreferrer" className="inline-flex mt-3 text-sm text-[var(--color-accent)] hover:underline">Open interview scheduling link →</a>}
                                   <label className="inline-flex items-center gap-2 mt-3 text-xs text-[var(--color-text-muted)]">Was this match accurate?
