@@ -15,6 +15,7 @@ import { supabase } from "./supabaseClient.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 import { warmModels } from "./services/warmup.js";
+import { waitForQueueIdle } from "./services/uploadQueue.js";
 import openapiRouter from "./routes/openapi.js";
 
 dotenv.config();
@@ -136,11 +137,18 @@ const server = app.listen(port, "0.0.0.0", () => {
   warmModels();
 });
 
+async function shutdown(signal) {
+  console.log(`${signal} received; draining resume queue before shutdown.`);
+  server.close();
+  const drained = await waitForQueueIdle(15000);
+  if (!drained) console.warn("Resume queue did not fully drain before shutdown; queued candidates will be recovered on restart.");
+  process.exit(0);
+}
+
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received; shutting down gracefully.");
-  server.close(() => process.exit(0));
+  void shutdown("SIGTERM");
 });
 
 process.on("SIGINT", () => {
-  server.close(() => process.exit(0));
+  void shutdown("SIGINT");
 });

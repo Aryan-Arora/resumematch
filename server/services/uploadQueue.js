@@ -15,6 +15,14 @@ export function getQueueDepth() {
   return queue.length + (running ? 1 : 0);
 }
 
+export async function waitForQueueIdle(timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (getQueueDepth() > 0 && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  return getQueueDepth() === 0;
+}
+
 async function drain() {
   if (running) return;
   running = true;

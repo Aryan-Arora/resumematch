@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { enqueue, getQueueDepth } from "./uploadQueue.js";
+import { enqueue, getQueueDepth, waitForQueueIdle } from "./uploadQueue.js";
 
 function waitFor(conditionFn, { timeout = 2000, interval = 10 } = {}) {
   return new Promise((resolve, reject) => {
@@ -52,5 +52,15 @@ describe("uploadQueue", () => {
 
     await waitFor(() => results.length === 1);
     expect(results).toEqual(["ran"]);
+  });
+
+  it("waits until the queue is drained", async () => {
+    let finished = false;
+    enqueue(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      finished = true;
+    });
+    expect(await waitForQueueIdle(500)).toBe(true);
+    expect(finished).toBe(true);
   });
 });
