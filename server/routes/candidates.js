@@ -103,7 +103,9 @@ router.get("/candidates/:id/interview-links", async (req, res) => {
   const { data: candidate, error } = await supabase.from("candidates").select("id, file_name, email, jobs(title, interview_url)").eq("id", req.params.id).eq("org_id", req.orgId).single();
   if (error || !candidate) return res.status(404).json({ error: "candidate not found" });
   try {
-    const links = createCalendarLinks({ title: `Interview — ${candidate.file_name || "Candidate"}`, start: req.query.start, end: req.query.end, location: req.query.location || "", details: candidate.jobs?.interview_url ? `Interview link: ${candidate.jobs.interview_url}` : "ResumeMatch interview", email: candidate.email || "" });
+    const title = candidate.jobs?.title || candidate.file_name || "Candidate";
+    const details = candidate.jobs?.interview_url ? `Interview link: ${candidate.jobs.interview_url}` : "ResumeMatch interview";
+    const links = createCalendarLinks({ title: `Interview — ${title}`, start: req.query.start, end: req.query.end, location: req.query.location || "", details, email: candidate.email || "" });
     res.json(links);
   } catch (calendarError) { res.status(400).json({ error: calendarError.message }); }
 });

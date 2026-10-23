@@ -234,13 +234,18 @@ export default function CandidateTable({ job, onAddMore }) {
     if (!start) return;
     const end = window.prompt("Interview end (ISO date/time)");
     if (!end) return;
+    const googleWindow = window.open("about:blank", "_blank");
+    const outlookWindow = window.open("about:blank", "_blank");
     try {
       const links = await getInterviewCalendarLinks(candidate.id, start, end);
-      window.open(links.google, "_blank", "noopener,noreferrer");
-      window.open(links.outlook, "_blank", "noopener,noreferrer");
+      if (googleWindow) googleWindow.location.href = links.google;
+      if (outlookWindow) outlookWindow.location.href = links.outlook;
       await downloadInterviewCalendar(candidate.id, start, end);
+    } catch (err) {
+      googleWindow?.close();
+      outlookWindow?.close();
+      setActionError(err.message);
     }
-    catch (err) { setActionError(err.message); }
   }
 
   async function saveContact(id, fields) {
