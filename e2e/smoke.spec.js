@@ -63,6 +63,25 @@ test("demo: upload a resume and see matched, implied and missing skills", async 
   await expect(page.getByText("backend-engineer.docx").first()).toBeVisible();
 });
 
+test("public API accepts image resumes and returns an OCR review result", async ({ request }) => {
+  // A tiny valid PNG is enough to prove the upload/signature/OCR routing path;
+  // it intentionally contains no readable resume text, so the safe result is
+  // an explicit manual-review response rather than a fabricated match.
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  const response = await request.post("https://resumematch-api.fly.dev/api/public/match", {
+    multipart: {
+      description: JD,
+      resumes: { name: "scanned-resume.png", mimeType: "image/png", buffer: png },
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  expect(body.candidates).toHaveLength(1);
+  expect(body.candidates[0].file_name).toBe("scanned-resume.png");
+  expect(body.candidates[0].unparseable).toBe(true);
+  expect(body.candidates[0].parse_warnings.join(" ")).toMatch(/OCR|readable|text/i);
+});
+
 test("login page is reachable and shows the sign-in form", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByRole("button", { name: /sign in/i }).first()).toBeVisible();
