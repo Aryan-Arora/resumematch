@@ -117,4 +117,6 @@ test("readiness exposes non-secret email configuration status", async ({ request
   const body = await response.json();
   expect(["configured", "not_configured"]).toContain(body.checks.email);
   expect(body.checks.email).not.toMatch(/re_/i);
+  expect(["warming", "ready", "degraded"]).toContain(body.checks.models);
+  expect(body.model_warmup.state).toBe(body.checks.models);
 });

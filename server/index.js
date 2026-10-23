@@ -15,6 +15,7 @@ import { supabase } from "./supabaseClient.js";
 import { requireAuth, requireOrg } from "./middleware/auth.js";
 import { scheduleRetentionSweep } from "./services/retention.js";
 import { warmModels } from "./services/warmup.js";
+import { getWarmupStatus } from "./services/warmup.js";
 import { waitForQueueIdle } from "./services/uploadQueue.js";
 import openapiRouter from "./routes/openapi.js";
 
@@ -74,14 +75,14 @@ app.get("/api/health/ready", async (req, res) => {
     return res.status(503).json({
       ok: false,
       service: "resumematch-api",
-      checks: { database: "timeout", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" },
+      checks: { database: "timeout", email: process.env.RESEND_API_KEY ? "configured" : "not_configured", models: getWarmupStatus().state },
       latency_ms: Date.now() - startedAt,
       request_id: req.requestId,
     });
   }
   const { error } = result;
-  if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" }, request_id: req.requestId });
-  res.json({ ok: true, service: "resumematch-api", checks: { database: "up", email: process.env.RESEND_API_KEY ? "configured" : "not_configured" }, latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
+  if (error) return res.status(503).json({ ok: false, service: "resumematch-api", checks: { database: "down", email: process.env.RESEND_API_KEY ? "configured" : "not_configured", models: getWarmupStatus().state }, request_id: req.requestId });
+  res.json({ ok: true, service: "resumematch-api", checks: { database: "up", email: process.env.RESEND_API_KEY ? "configured" : "not_configured", models: getWarmupStatus().state }, model_warmup: getWarmupStatus(), latency_ms: Date.now() - startedAt, timestamp: new Date().toISOString() });
 });
 
 app.use("/api", authRouter);
