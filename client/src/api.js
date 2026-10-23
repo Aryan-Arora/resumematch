@@ -69,6 +69,22 @@ export async function getOrganizationMembers() {
   return fetch(`${API_BASE}/organizations/members`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function getOrganizationWebhooks() {
+  return fetch(`${API_BASE}/organizations/webhooks`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function createOrganizationWebhook(payload) {
+  return fetch(`${API_BASE}/organizations/webhooks`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(payload) }).then(handle);
+}
+
+export async function deleteOrganizationWebhook(id) {
+  return fetch(`${API_BASE}/organizations/webhooks/${id}`, { method: "DELETE", headers: await authHeaders() }).then(handle);
+}
+
+export async function getWebhookDeliveries() {
+  return fetch(`${API_BASE}/organizations/webhooks/deliveries`, { headers: await authHeaders() }).then(handle);
+}
+
 export async function createOrganization(name) {
   return fetch(`${API_BASE}/organizations`, {
     method: "POST",

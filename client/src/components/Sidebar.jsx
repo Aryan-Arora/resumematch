@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { key: "starred", label: "Starred CVs", icon: "star" },
   { key: "analytics", label: "Analytics", icon: "analytics" },
   { key: "privacy-requests", label: "Privacy requests", icon: "privacy_tip" },
+  { key: "settings", label: "Settings", icon: "settings" },
 ];
 
 export default function Sidebar({ current, onNavigate }) {
