@@ -59,14 +59,14 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 
 - Normalize columns, tables, headers, and multi-page documents.
 - Add OCR for image-only PDFs as a provider behind the existing OCR boundary.
-- Add manual correction for low-confidence extraction.
+- Add manual correction for low-confidence extraction. **Implemented:** recruiters can correct extracted contact fields from candidate detail; corrections are organization-scoped and audit logged.
 - Acceptance: scanned, two-column, and standard resumes each produce an explicit confidence result.
 
 ### AI governance
 
 - Store model version and screening configuration for every candidate.
 - Capture recruiter feedback as accurate, inaccurate, or unclear.
-- Add calibration report comparing AI recommendations with recruiter outcomes.
+- Add calibration report comparing AI recommendations with recruiter outcomes. **Implemented:** analytics reports feedback coverage and average score by recruiter feedback label.
 - Never turn unclear evidence into an automatic rejection.
 
 ### Audit and retention
