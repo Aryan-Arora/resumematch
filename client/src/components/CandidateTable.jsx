@@ -73,18 +73,20 @@ function EligibilityBadge({ candidate }) {
 }
 
 export default function CandidateTable({ job, onAddMore }) {
+  const initialParams = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const initialFilter = ["all", "eligible", "needs_review", "ineligible", "follow_up"].includes(initialParams.get("review")) ? initialParams.get("review") : "all";
   const [candidates, setCandidates] = useState([]);
   const [taxonomy, setTaxonomy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
-  const [minScore, setMinScore] = useState(0);
-  const [mustHaveSkill, setMustHaveSkill] = useState("");
+  const [minScore, setMinScore] = useState(() => Number.isFinite(Number(initialParams.get("min_score"))) ? Math.max(0, Math.min(1, Number(initialParams.get("min_score")))) : 0);
+  const [mustHaveSkill, setMustHaveSkill] = useState(() => initialParams.get("skill") || "");
   const [semanticWeight, setSemanticWeight] = useState(60);
   const [shortlistingId, setShortlistingId] = useState(null);
   const [actionError, setActionError] = useState(null);
-  const [search, setSearch] = useState("");
-  const [eligibilityFilter, setEligibilityFilter] = useState("all");
+  const [search, setSearch] = useState(() => initialParams.get("q") || "");
+  const [eligibilityFilter, setEligibilityFilter] = useState(initialFilter);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [compareIds, setCompareIds] = useState(new Set());
   const [viewMode, setViewMode] = useState("table");
@@ -93,6 +95,29 @@ export default function CandidateTable({ job, onAddMore }) {
   const [emailTemplates, setEmailTemplates] = useState(job.email_templates || { shortlist: "", interview: "", rejection: "" });
   const [templateSaved, setTemplateSaved] = useState(false);
   const [contactSavingId, setContactSavingId] = useState(null);
+  const [viewLinkCopied, setViewLinkCopied] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const setOrDelete = (key, value, defaultValue = "") => value && value !== defaultValue ? params.set(key, value) : params.delete(key);
+    setOrDelete("review", eligibilityFilter, "all");
+    setOrDelete("q", search.trim());
+    setOrDelete("min_score", minScore > 0 ? String(minScore) : "");
+    setOrDelete("skill", mustHaveSkill);
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
+  }, [eligibilityFilter, search, minScore, mustHaveSkill]);
+
+  async function copyViewLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setViewLinkCopied(true);
+      window.setTimeout(() => setViewLinkCopied(false), 1800);
+    } catch {
+      setActionError("Copy failed — copy the URL from your browser address bar.");
+    }
+  }
 
   function renderTemplatePreview(template, type) {
     const fallback = type === "shortlist" ? "We would like to move forward with your application." : type === "interview" ? "We would like to invite you to an interview." : "Thank you for your interest in this role.";
@@ -389,6 +414,7 @@ export default function CandidateTable({ job, onAddMore }) {
           <div className="clay-card p-4 mb-4 flex flex-col sm:flex-row gap-3">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search candidates, skills, notes..." className="flex-1 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]" />
             <select value={eligibilityFilter} onChange={(e) => setEligibilityFilter(e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]"><option value="all">All review states</option><option value="eligible">Eligible</option><option value="needs_review">Needs review</option><option value="ineligible">Gate failed</option><option value="follow_up">Follow up today</option></select>
+            <button type="button" onClick={copyViewLink} className="glass-panel whitespace-nowrap px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition" title="Copy a shareable link to this review view">{viewLinkCopied ? "Copied" : "Copy view link"}</button>
           </div>
           {selectedIds.size > 0 && <div className="mb-4 flex flex-wrap items-center gap-2 text-sm"><span className="text-[var(--color-text-muted)]">{selectedIds.size} selected</span>{[["screening","Move to screening"],["shortlisted","Shortlist"],["rejected","Reject"]].map(([stage, label]) => <button key={stage} onClick={() => bulkStage(stage)} className="glass-panel px-3 py-1.5 text-[var(--color-text)]">{label}</button>)}</div>}
           {compareIds.size > 0 && <div className="clay-card mb-4 p-4 overflow-x-auto"><div className="flex items-center justify-between mb-3"><h3 className="font-heading text-sm font-semibold text-[var(--color-text)]">Candidate comparison ({compareIds.size}/4)</h3><button onClick={() => setCompareIds(new Set())} className="text-xs text-[var(--color-accent)] hover:underline">Clear</button></div><table className="w-full min-w-[620px] text-sm"><tbody><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Candidate</th>{[...compareIds].map((id) => <td key={id} className="py-2 px-3 font-medium text-[var(--color-text)]">{candidates.find((c) => c.id === id)?.file_name}</td>)}</tr><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Score</th>{[...compareIds].map((id) => { const c = weightedCandidates.find((item) => item.id === id); return <td key={id} className="py-2 px-3 text-[var(--color-text)]">{c?.weighted_score == null ? "—" : `${Math.round(c.weighted_score * 100)}%`}</td>; })}</tr><tr className="border-b border-[var(--color-border)]/50"><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Eligibility</th>{[...compareIds].map((id) => <td key={id} className="py-2 px-3 text-[var(--color-text)]">{candidates.find((c) => c.id === id)?.eligibility_status || "Needs review"}</td>)}</tr><tr><th className="text-left py-2 pr-4 text-xs uppercase text-[var(--color-text-muted)]">Matched / missing</th>{[...compareIds].map((id) => { const c = candidates.find((item) => item.id === id); return <td key={id} className="py-2 px-3 text-[var(--color-text-muted)]">{c?.matched_skills?.length || 0} / {c?.missing_skills?.length || 0}</td>; })}</tr></tbody></table></div>}
