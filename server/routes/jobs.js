@@ -327,6 +327,22 @@ export async function processCandidate(job, candidateId, storagePath, fileName, 
   }
 }
 
+// Storage, OCR, embeddings, and the database can fail transiently. Retry a
+// bounded number of times so a temporary outage does not strand a candidate;
+// malformed files still end in `failed` after the limit and remain manually
+// reprocessable from the recruiter workspace.
+async function processCandidateWithRetry(job, candidateId, storagePath, fileName, skillEmbeddingCache) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    await processCandidate(job, candidateId, storagePath, fileName, skillEmbeddingCache);
+    const { data } = await supabase.from("candidates").select("status").eq("id", candidateId).eq("org_id", job.org_id).maybeSingle();
+    if (!data || data.status === "done" || attempt === maxAttempts) return data;
+    await supabase.from("candidates").update({ status: "queued", error_message: null }).eq("id", candidateId).eq("org_id", job.org_id);
+    await new Promise((resolve) => setTimeout(resolve, 250 * (2 ** (attempt - 1))));
+  }
+  return null;
+}
+
 async function notifyCandidateScreened(job, candidateId, fileName) {
   const { data } = await supabase.from("candidates").select("status, final_score, unparseable, eligibility_status").eq("id", candidateId).eq("org_id", job.org_id).maybeSingle();
   if (!data || data.status !== "done") return;
@@ -412,7 +428,7 @@ router.post("/jobs/:id/candidates", uploadLimiter, upload.array("resumes"), asyn
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of queued) {
     enqueue(async () => {
-      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await processCandidateWithRetry(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
       await notifyCandidateScreened(job, candidate.id, candidate.file_name);
     });
   }
@@ -495,7 +511,7 @@ router.post("/jobs/:id/candidates/import", uploadLimiter, csvUpload.fields([{ na
   const skillEmbeddingCache = getSharedSkillEmbeddingCache();
   for (const candidate of (candidates || []).filter((candidate) => candidate.status === "queued")) {
     enqueue(async () => {
-      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await processCandidateWithRetry(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
       await notifyCandidateScreened(job, candidate.id, candidate.file_name);
     });
   }
@@ -601,7 +617,7 @@ router.post("/candidates/:id/provider-resume", uploadLimiter, async (req, res) =
   await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "provider_resume_attached", event_data: { provider, file_name: downloaded.fileName } });
   res.status(202).json(updated);
   enqueue(async () => {
-    await processCandidate(job, candidate.id, storagePath, downloaded.fileName, getSharedSkillEmbeddingCache());
+    await processCandidateWithRetry(job, candidate.id, storagePath, downloaded.fileName, getSharedSkillEmbeddingCache());
     await notifyCandidateScreened(job, candidate.id, downloaded.fileName);
   });
 });
@@ -631,7 +647,7 @@ export async function recoverStuckCandidates() {
       jobCache.set(candidate.job_id, job);
     }
     enqueue(async () => {
-      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
+      await processCandidateWithRetry(job, candidate.id, candidate.file_path, candidate.file_name, skillEmbeddingCache);
       await notifyCandidateScreened(job, candidate.id, candidate.file_name);
     });
   }
@@ -673,7 +689,7 @@ router.post("/candidates/:id/reprocess", jobWriteLimiter, async (req, res) => {
 
   await supabase.from("candidate_activity").insert({ candidate_id: candidate.id, org_id: req.orgId, actor_id: req.userId || null, event_type: "reprocessing_requested", event_data: { previous_status: candidate.status } });
     enqueue(async () => {
-      await processCandidate(job, candidate.id, candidate.file_path, candidate.file_name, getSharedSkillEmbeddingCache());
+      await processCandidateWithRetry(job, candidate.id, candidate.file_path, candidate.file_name, getSharedSkillEmbeddingCache());
       await notifyCandidateScreened(job, candidate.id, candidate.file_name);
     });
   res.status(202).json(updated);
