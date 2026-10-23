@@ -10,5 +10,12 @@ CREATE TABLE IF NOT EXISTS public.candidate_deletion_requests (
   resolved_at timestamptz
 );
 ALTER TABLE public.candidate_deletion_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org members can read deletion requests"
+  ON public.candidate_deletion_requests FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE profiles.id = (select auth.uid())
+      AND profiles.org_id = candidate_deletion_requests.org_id
+  ));
 CREATE INDEX IF NOT EXISTS candidate_deletion_requests_org_status_idx
   ON public.candidate_deletion_requests (org_id, status, created_at DESC);

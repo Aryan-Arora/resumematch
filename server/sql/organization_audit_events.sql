@@ -9,5 +9,12 @@ CREATE TABLE IF NOT EXISTS public.organization_audit_events (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.organization_audit_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org members can read organization audit"
+  ON public.organization_audit_events FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE profiles.id = (select auth.uid())
+      AND profiles.org_id = organization_audit_events.org_id
+  ));
 CREATE INDEX IF NOT EXISTS organization_audit_events_org_created_idx ON public.organization_audit_events (org_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS organization_audit_events_candidate_idx ON public.organization_audit_events (candidate_id, created_at DESC);
