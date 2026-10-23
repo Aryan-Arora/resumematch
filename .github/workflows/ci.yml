@@ -18,3 +18,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Build and prerender client
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
