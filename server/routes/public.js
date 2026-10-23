@@ -47,6 +47,47 @@ const demoLimiter = rateLimit({
   message: { error: "Too many requests from this address — please try again in a few minutes." },
 });
 
+const deletionRequestLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many deletion requests from this address — please try again later." },
+});
+
+// Candidate privacy requests are deliberately generic: the response never
+// reveals whether an email exists in an organization's candidate data.
+router.post("/public/deletion-request", deletionRequestLimiter, async (req, res) => {
+  const organizationId = typeof req.body?.organization_id === "string" ? req.body.organization_id.trim() : "";
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  if (!/^[0-9a-f-]{36}$/i.test(organizationId) || !/^\S+@\S+\.\S+$/.test(email) || email.length > 320) {
+    return res.status(202).json({ accepted: true });
+  }
+  const { data: candidate } = await supabase
+    .from("candidates")
+    .select("id")
+    .eq("org_id", organizationId)
+    .eq("email", email)
+    .limit(1)
+    .maybeSingle();
+  const { data: existing } = await supabase
+    .from("candidate_deletion_requests")
+    .select("id")
+    .eq("org_id", organizationId)
+    .eq("email", email)
+    .eq("status", "pending")
+    .limit(1)
+    .maybeSingle();
+  if (!existing) {
+    await supabase.from("candidate_deletion_requests").insert({
+      org_id: organizationId,
+      candidate_id: candidate?.id || null,
+      email,
+    });
+  }
+  return res.status(202).json({ accepted: true });
+});
+
 const publicUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE_BYTES, files: MAX_DEMO_RESUMES },

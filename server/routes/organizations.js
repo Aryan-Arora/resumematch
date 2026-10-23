@@ -87,6 +87,41 @@ router.get("/organizations/members", async (req, res) => {
   res.json(users);
 });
 
+router.get("/organizations/deletion-requests", async (req, res) => {
+  const { data, error } = await supabase
+    .from("candidate_deletion_requests")
+    .select("id, candidate_id, email, status, notes, created_at, resolved_at")
+    .eq("org_id", req.orgId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+router.patch("/organizations/deletion-requests/:id", orgActionLimiter, async (req, res) => {
+  const status = req.body?.status;
+  if (!['resolved', 'rejected'].includes(status)) return res.status(400).json({ error: "status must be resolved or rejected" });
+  const notes = typeof req.body?.notes === "string" ? req.body.notes.trim().slice(0, 2000) : "";
+  const { data: organization } = await supabase.from("organizations").select("created_by").eq("id", req.orgId).single();
+  if (!organization) return res.status(404).json({ error: "organization not found" });
+  if (organization.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can resolve deletion requests" });
+  const { data, error } = await supabase
+    .from("candidate_deletion_requests")
+    .update({ status, notes, resolved_at: new Date().toISOString() })
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .eq("status", "pending")
+    .select()
+    .single();
+  if (error || !data) return res.status(404).json({ error: "pending deletion request not found" });
+  if (status === "resolved" && data.candidate_id) {
+    const { data: candidate } = await supabase.from("candidates").select("file_path").eq("id", data.candidate_id).eq("org_id", req.orgId).maybeSingle();
+    if (candidate?.file_path) await supabase.storage.from("resumes").remove([candidate.file_path]);
+    await supabase.from("candidates").delete().eq("id", data.candidate_id).eq("org_id", req.orgId);
+  }
+  res.json(data);
+});
+
 router.patch("/organizations/settings", orgActionLimiter, async (req, res) => {
   const retentionDays = Number.parseInt(req.body?.retention_days, 10);
   if (!Number.isInteger(retentionDays) || retentionDays < 30 || retentionDays > 3650) {

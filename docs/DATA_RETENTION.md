@@ -33,12 +33,12 @@ Resumes are never sent to a third-party AI API — matching runs on local embedd
 
 ## What's not yet implemented
 
-- **No candidate-initiated deletion request flow.** A candidate whose resume was screened has no self-service way to request removal — today this would have to be handled manually (recruiter deletes the candidate row on request).
+- **Candidate deletion requests:** candidates can submit a privacy request to `POST /api/public/deletion-request` with the organization ID and email. The response is deliberately generic to prevent candidate enumeration; organization owners review pending requests through authenticated deletion-request endpoints, and resolving one removes the candidate row and stored resume.
 - **No audit log of who accessed, starred, or deleted what.** Deletion and starring happen, but there's no record of when or by whom.
 - **The 180-day clock runs from job creation, not from a "closed/filled" status** — the app has no concept of closing a job yet, so the "90 days after closed" half of the originally recommended policy isn't implemented, only the 180-day fallback.
 
 ## Before handling real candidate data at scale, this still needs
 
-1. A documented process for handling a candidate's deletion request (who receives it, how fast it's actioned — many jurisdictions require this within a defined window, e.g. 30 days under GDPR).
+1. A documented operational SLA for reviewing candidate deletion requests (many jurisdictions require this within a defined window, e.g. 30 days under GDPR).
 2. A privacy notice shown to candidates at the point resumes are collected, if this is ever used to collect resumes directly from applicants rather than sourced resumes brought in by a recruiter.
 3. Legal review — this document is an engineering-level policy statement, not legal advice, and hasn't been reviewed by counsel.
