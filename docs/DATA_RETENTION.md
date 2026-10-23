@@ -34,7 +34,7 @@ Resumes are never sent to a third-party AI API — matching runs on local embedd
 ## What's not yet implemented
 
 - **Candidate deletion requests:** candidates can use `/privacy-request` or `POST /api/public/deletion-request` with the organization ID and email. The response is deliberately generic to prevent candidate enumeration; organization owners review pending requests through authenticated deletion-request endpoints, and resolving one removes the candidate row and stored resume.
-- Candidate activity records workflow changes, feedback, corrections, and emails. Resume access and hard deletion are not yet retained as durable activity events.
+- Candidate activity records workflow changes, feedback, corrections, and emails. Organization audit events now also retain resume views, star/unstar actions, and hard deletions even after the candidate row is removed.
 - **The 180-day clock runs from job creation, not from a "closed/filled" status** — the app has no concept of closing a job yet, so the "90 days after closed" half of the originally recommended policy isn't implemented, only the 180-day fallback.
 
 ## Before handling real candidate data at scale, this still needs

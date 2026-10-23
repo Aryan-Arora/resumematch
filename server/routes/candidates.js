@@ -60,6 +60,14 @@ router.get("/candidates/:id/resume", async (req, res) => {
     .createSignedUrl(candidate.file_path, 60);
   if (error) return res.status(500).json({ error: error.message });
 
+  await supabase.from("organization_audit_events").insert({
+    org_id: req.orgId,
+    actor_id: req.userId || null,
+    candidate_id: req.params.id,
+    event_type: "resume_viewed",
+    event_data: { file_name: candidate.file_name },
+  });
+
   res.json({ url: data.signedUrl });
 });
 
@@ -73,6 +81,13 @@ router.patch("/candidates/:id/star", async (req, res) => {
     .select()
     .single();
   if (error || !data) return res.status(404).json({ error: "candidate not found" });
+  await supabase.from("organization_audit_events").insert({
+    org_id: req.orgId,
+    actor_id: req.userId || null,
+    candidate_id: data.id,
+    event_type: data.starred ? "candidate_starred" : "candidate_unstarred",
+    event_data: {},
+  });
   res.json(data);
 });
 
@@ -251,7 +266,7 @@ router.post("/candidates/:id/email", shortlistLimiter, async (req, res) => {
 router.delete("/candidates/:id", async (req, res) => {
   const { data: candidate, error: fetchError } = await supabase
     .from("candidates")
-    .select("file_path")
+    .select("id, file_path, file_name")
     .eq("id", req.params.id)
     .eq("org_id", req.orgId)
     .single();
@@ -260,6 +275,14 @@ router.delete("/candidates/:id", async (req, res) => {
   if (candidate.file_path) {
     await supabase.storage.from("resumes").remove([candidate.file_path]);
   }
+
+  await supabase.from("organization_audit_events").insert({
+    org_id: req.orgId,
+    actor_id: req.userId || null,
+    candidate_id: candidate.id,
+    event_type: "candidate_deleted",
+    event_data: { file_name: candidate.file_name, reason: "recruiter_action" },
+  });
 
   const { error } = await supabase
     .from("candidates")

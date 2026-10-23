@@ -42,7 +42,7 @@ router.get("/organizations/me", async (req, res) => {
 // contains the structured data recruiters can review, correct, or hand to a
 // data-subject request workflow.
 router.get("/organizations/export", orgActionLimiter, async (req, res) => {
-  const [jobsResult, candidatesResult, activityResult] = await Promise.all([
+  const [jobsResult, candidatesResult, activityResult, auditResult] = await Promise.all([
     supabase
       .from("jobs")
       .select("id, title, description, jd_skills, jd_domain, created_at, interview_url, email_templates")
@@ -58,9 +58,14 @@ router.get("/organizations/export", orgActionLimiter, async (req, res) => {
       .select("id, candidate_id, actor_id, event_type, event_data, created_at")
       .eq("org_id", req.orgId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("organization_audit_events")
+      .select("id, candidate_id, actor_id, event_type, event_data, created_at")
+      .eq("org_id", req.orgId)
+      .order("created_at", { ascending: false }),
   ]);
 
-  const failed = [jobsResult, candidatesResult, activityResult].find((result) => result.error);
+  const failed = [jobsResult, candidatesResult, activityResult, auditResult].find((result) => result.error);
   if (failed) return res.status(500).json({ error: failed.error.message });
 
   const payload = {
@@ -69,6 +74,7 @@ router.get("/organizations/export", orgActionLimiter, async (req, res) => {
     jobs: jobsResult.data || [],
     candidates: candidatesResult.data || [],
     candidate_activity: activityResult.data || [],
+    organization_audit_events: auditResult.data || [],
   };
   const stamp = new Date().toISOString().slice(0, 10);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
