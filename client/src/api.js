@@ -263,6 +263,12 @@ export async function downloadInterviewCalendar(candidateId, start, end, locatio
   URL.revokeObjectURL(url);
 }
 
+export async function getInterviewCalendarLinks(candidateId, start, end, location = "") {
+  const query = new URLSearchParams({ start, end });
+  if (location) query.set("location", location);
+  return fetch(`${API_BASE}/candidates/${candidateId}/interview-links?${query}`, { headers: await authHeaders() }).then(handle);
+}
+
 export async function updateCandidateContact(candidateId, fields) {
   return fetch(`${API_BASE}/candidates/${candidateId}/contact`, {
     method: "PATCH",

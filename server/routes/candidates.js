@@ -4,6 +4,7 @@ import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
 import { shortlistLimiter } from "../middleware/rateLimit.js";
 import { createInterviewIcs } from "../services/ics.js";
 import { dispatchWebhook } from "../services/webhooks.js";
+import { createCalendarLinks } from "../services/calendarLinks.js";
 
 const router = Router();
 
@@ -96,6 +97,15 @@ router.get("/candidates/:id/interview.ics", async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+});
+
+router.get("/candidates/:id/interview-links", async (req, res) => {
+  const { data: candidate, error } = await supabase.from("candidates").select("id, file_name, email, jobs(title, interview_url)").eq("id", req.params.id).eq("org_id", req.orgId).single();
+  if (error || !candidate) return res.status(404).json({ error: "candidate not found" });
+  try {
+    const links = createCalendarLinks({ title: `Interview — ${candidate.file_name || "Candidate"}`, start: req.query.start, end: req.query.end, location: req.query.location || "", details: candidate.jobs?.interview_url ? `Interview link: ${candidate.jobs.interview_url}` : "ResumeMatch interview", email: candidate.email || "" });
+    res.json(links);
+  } catch (calendarError) { res.status(400).json({ error: calendarError.message }); }
 });
 
 router.patch("/candidates/:id/star", async (req, res) => {

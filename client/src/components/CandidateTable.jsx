@@ -15,6 +15,7 @@ import {
   updateCandidateFeedback,
   markCandidateReviewed,
   downloadInterviewCalendar,
+  getInterviewCalendarLinks,
   updateCandidateContact,
   sendCandidateEmail,
   getOrganizationMembers,
@@ -233,7 +234,12 @@ export default function CandidateTable({ job, onAddMore }) {
     if (!start) return;
     const end = window.prompt("Interview end (ISO date/time)");
     if (!end) return;
-    try { await downloadInterviewCalendar(candidate.id, start, end); }
+    try {
+      const links = await getInterviewCalendarLinks(candidate.id, start, end);
+      window.open(links.google, "_blank", "noopener,noreferrer");
+      window.open(links.outlook, "_blank", "noopener,noreferrer");
+      await downloadInterviewCalendar(candidate.id, start, end);
+    }
     catch (err) { setActionError(err.message); }
   }
 
