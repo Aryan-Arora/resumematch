@@ -50,7 +50,7 @@ Make ResumeMatch a trustworthy recruiter workspace, not just a resume scoring pa
 ### Communication
 
 - Editable per-job templates with preview and variables.
-- Resend delivery status and failure details.
+- Resend delivery status and failure details. **Implemented:** successful sends return and audit the provider delivery ID; provider failures return a distinct 502 error.
 - Interview link insertion and calendar integration. **Implemented:** recruiters can download an authenticated `.ics` event for a candidate interview slot; provider-native scheduling remains open.
 
 ## Priority 3 — data quality and trust
