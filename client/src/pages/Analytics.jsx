@@ -41,7 +41,7 @@ export default function Analytics() {
         Aggregate stats across all projects and candidates.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         <StatCard label="Total Projects" value={data.totalJobs} />
         <StatCard label="Total Candidates" value={data.totalCandidates} />
         <StatCard
@@ -49,6 +49,10 @@ export default function Analytics() {
           value={data.avgScore !== null ? `${Math.round(data.avgScore * 100)}%` : "—"}
         />
         <StatCard label="Unparseable" value={data.unparseableCount} />
+        <StatCard
+          label="Feedback coverage"
+          value={`${Math.round((data.calibration?.feedbackCoverage || 0) * 100)}%`}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -68,6 +72,43 @@ export default function Analytics() {
               </BarChart>
             </ResponsiveContainer>
           )}
+        </div>
+
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-[var(--color-text)]">
+                Recruiter calibration
+              </h2>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                Feedback helps you spot where recommendations need review.
+              </p>
+            </div>
+            <span className="text-xs text-[var(--color-text-muted)]">
+              {data.calibration?.totalFeedback || 0} responses
+            </span>
+          </div>
+          <div className="space-y-3">
+            {[
+              ["Accurate", "accurate", "text-emerald-500"],
+              ["Inaccurate", "inaccurate", "text-[var(--color-danger)]"],
+              ["Unclear", "unclear", "text-amber-500"],
+            ].map(([label, key, color]) => {
+              const count = data.calibration?.feedbackCounts?.[key] || 0;
+              const average = data.calibration?.avgScoreByFeedback?.[key];
+              return (
+                <div key={key} className="flex items-center justify-between text-sm">
+                  <span className={`${color} font-medium`}>{label}</span>
+                  <span className="text-[var(--color-text-muted)]">
+                    {count} {count === 1 ? "response" : "responses"}
+                    {average !== null && average !== undefined
+                      ? ` · avg. score ${Math.round(average * 100)}%`
+                      : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/60 rounded-xl p-5 transition-colors">

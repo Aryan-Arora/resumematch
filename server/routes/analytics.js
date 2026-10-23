@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
+import { summarizeCalibration } from "../services/calibration.js";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get("/analytics", async (req, res) => {
 
   const { data: candidates, error: candidatesError } = await supabase
     .from("candidates")
-    .select("final_score, unparseable, matched_skills")
+    .select("final_score, unparseable, matched_skills, match_feedback")
     .eq("org_id", req.orgId);
   if (candidatesError) return res.status(500).json({ error: candidatesError.message });
 
@@ -47,6 +48,7 @@ router.get("/analytics", async (req, res) => {
     .map(([skill, count]) => ({ skill, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
+  const calibration = summarizeCalibration(candidates);
 
   res.json({
     totalJobs: jobs.length,
@@ -55,6 +57,7 @@ router.get("/analytics", async (req, res) => {
     avgScore,
     scoreDistribution,
     topSkills,
+    calibration,
   });
 });
 
