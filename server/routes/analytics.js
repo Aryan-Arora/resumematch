@@ -61,4 +61,33 @@ router.get("/analytics", async (req, res) => {
   });
 });
 
+router.get("/analytics/calibration-export", async (req, res) => {
+  const { data, error } = await supabase
+    .from("candidates")
+    .select("id, job_id, file_name, final_score, match_feedback, match_feedback_note, eligibility_status, created_at")
+    .eq("org_id", req.orgId)
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+
+  const escape = (value) => {
+    const text = value === null || value === undefined ? "" : String(value);
+    return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  };
+  const header = ["candidate_id", "job_id", "file_name", "final_score", "match_feedback", "match_feedback_note", "eligibility_status", "created_at"];
+  const rows = (data || []).map((candidate) => [
+    candidate.id,
+    candidate.job_id,
+    candidate.file_name,
+    candidate.final_score,
+    candidate.match_feedback,
+    candidate.match_feedback_note,
+    candidate.eligibility_status,
+    candidate.created_at,
+  ]);
+  const csv = [header, ...rows].map((row) => row.map(escape).join(",")).join("\r\n") + "\r\n";
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="resumematch-calibration-${new Date().toISOString().slice(0, 10)}.csv"`);
+  res.send(csv);
+});
+
 export default router;

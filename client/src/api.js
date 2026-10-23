@@ -94,6 +94,20 @@ export async function getAnalytics() {
   return fetch(`${API_BASE}/analytics`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function downloadCalibrationExport() {
+  const res = await fetch(`${API_BASE}/analytics/calibration-export`, { headers: await authHeaders() });
+  if (!res.ok) return handle(res);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `resumematch-calibration-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function createJob(title, description, domain, interviewUrl, requirementConfig, emailTemplates) {
   return fetch(`${API_BASE}/jobs`, {
     method: "POST",

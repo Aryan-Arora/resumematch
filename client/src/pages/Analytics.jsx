@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { getAnalytics } from "../api";
+import { downloadCalibrationExport, getAnalytics } from "../api";
 import { useTheme } from "../theme";
 
 const CHART_COLORS = {
@@ -22,6 +22,7 @@ function StatCard({ label, value }) {
 export default function Analytics() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const theme = useTheme();
   const colors = CHART_COLORS[theme];
 
@@ -34,12 +35,28 @@ export default function Analytics() {
   if (error) return <p className="p-10 text-[var(--color-danger)]">{error}</p>;
   if (!data) return <p className="p-10 text-[var(--color-text-muted)]">Loading analytics...</p>;
 
+  async function exportCalibration() {
+    setExporting(true);
+    try {
+      await downloadCalibrationExport();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
-      <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)] mb-1">Analytics</h1>
-      <p className="text-[var(--color-text-muted)] text-sm mb-6">
-        Aggregate stats across all projects and candidates.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold text-[var(--color-text)] mb-1">Analytics</h1>
+          <p className="text-[var(--color-text-muted)] text-sm">Aggregate stats across all projects and candidates.</p>
+        </div>
+        <button onClick={exportCalibration} disabled={exporting} className="glass-panel px-3.5 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition disabled:opacity-60">
+          {exporting ? "Preparing export…" : "Export calibration CSV"}
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         <StatCard label="Total Projects" value={data.totalJobs} />
