@@ -83,6 +83,15 @@ async function insertAuditWithRetry(payload) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const { error } = await supabase.from("organization_audit_events").insert(payload);
     if (!error) return true;
+    if (attempt === 2) {
+      console.error("Audit event insert failed", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        count: Array.isArray(payload) ? payload.length : 1,
+      });
+    }
     if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
   }
   return false;
