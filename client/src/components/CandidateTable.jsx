@@ -576,6 +576,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 handleToggleStar(c.id, c.starred);
                               }}
                               title={c.starred ? "Unstar (removes retention protection)" : "Star (saves this CV even if the job is deleted or auto-expires)"}
+                              aria-label={c.starred ? `Unstar ${c.file_name}` : `Star ${c.file_name}`}
                               className={`text-xs transition ${
                                 c.starred
                                   ? "text-[var(--color-accent)]"
@@ -602,6 +603,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                       ? "Send shortlist email for the physical round"
                                       : "No email address found on this resume"
                                 }
+                                aria-label={c.shortlist_email_sent_at ? `Shortlist email sent for ${c.file_name}` : `Send shortlist email to ${c.file_name}`}
                                 className={`text-xs transition disabled:opacity-50 ${
                                   c.shortlist_email_sent_at
                                     ? "text-[var(--color-success)]"
@@ -622,6 +624,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                   viewResume(c.id);
                                 }}
                                 title="View resume"
+                                aria-label={`View resume for ${c.file_name}`}
                                 className="text-[var(--color-accent)] transition"
                               >
                                 <span className="material-symbols-outlined text-[18px]">visibility</span>
@@ -635,6 +638,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 }}
                                 disabled={savingWorkflowId === c.id}
                                 title="Retry parsing and OCR"
+                                aria-label={`Retry parsing and OCR for ${c.file_name}`}
                                 className="text-[var(--color-warning,#b7791f)] hover:text-[var(--color-accent)] transition disabled:opacity-50"
                               >
                                 <span className="material-symbols-outlined text-[18px]">refresh</span>
@@ -646,6 +650,7 @@ export default function CandidateTable({ job, onAddMore }) {
                                 handleDelete(c.id, c.file_name);
                               }}
                               title="Remove candidate"
+                              aria-label={`Remove ${c.file_name}`}
                               className="text-[var(--color-text-faint)] hover:text-[var(--color-danger)] transition"
                             >
                               <span className="material-symbols-outlined text-[18px]">delete</span>
