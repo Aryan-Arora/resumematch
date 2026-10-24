@@ -381,12 +381,23 @@ export default function CandidateTable({ job, onAddMore }) {
 
   if (loading)
     return (
-      <p className="max-w-6xl mx-auto px-8 py-10 text-[var(--color-text-muted)]">
-        Loading candidates...
-      </p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10" aria-busy="true">
+        <div className="h-8 w-64 rounded-lg bg-[var(--color-surface-high)] animate-pulse" />
+        <div className="h-16 mt-6 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" />
+        <div className="h-72 mt-4 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" />
+      </div>
     );
   if (error)
-    return <p className="max-w-6xl mx-auto px-8 py-10 text-[var(--color-danger)]">{error}</p>;
+    return (
+      <div className="max-w-xl mx-auto px-4 sm:px-8 py-16">
+        <div className="clay-card p-6 border-[var(--color-danger)]/30" role="alert">
+          <span className="material-symbols-outlined text-[var(--color-danger)]">cloud_off</span>
+          <h1 className="font-heading text-lg font-semibold text-[var(--color-text)] mt-3">Couldn’t load candidates</h1>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">{error}</p>
+          <button onClick={load} className="clay-button mt-5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-xl px-4 py-2.5 text-sm font-medium">Try again</button>
+        </div>
+      </div>
+    );
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
@@ -467,7 +478,7 @@ export default function CandidateTable({ job, onAddMore }) {
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
-          <div className="flex justify-end mb-3"><div className="glass-panel p-1"><button onClick={() => setViewMode("table")} className={`px-3 py-1.5 text-xs rounded ${viewMode === "table" ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}>Table</button><button onClick={() => setViewMode("board")} className={`px-3 py-1.5 text-xs rounded ${viewMode === "board" ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}>Board</button></div></div>
+          <div className="flex justify-end mb-3"><div className="glass-panel p-1" role="group" aria-label="Candidate view"><button onClick={() => setViewMode("table")} aria-pressed={viewMode === "table"} className={`px-3 py-1.5 text-xs rounded ${viewMode === "table" ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}>Table</button><button onClick={() => setViewMode("board")} aria-pressed={viewMode === "board"} className={`px-3 py-1.5 text-xs rounded ${viewMode === "board" ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}>Board</button></div></div>
           <div className="clay-card p-4 mb-4 flex flex-col sm:flex-row gap-3">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search candidates, skills, notes..." className="flex-1 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]" />
             <select value={eligibilityFilter} onChange={(e) => setEligibilityFilter(e.target.value)} className="bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]"><option value="all">All review states</option><option value="eligible">Eligible</option><option value="needs_review">Needs review</option><option value="ineligible">Gate failed</option><option value="follow_up">Follow up today</option></select>
@@ -488,7 +499,7 @@ export default function CandidateTable({ job, onAddMore }) {
               <table className="w-full border-collapse text-left text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]/60 bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
-                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]"><span className="flex items-center gap-2"><input type="checkbox" checked={filteredCandidates.length > 0 && filteredCandidates.every((c) => selectedIds.has(c.id))} onChange={(e) => setSelectedIds(e.target.checked ? new Set(filteredCandidates.map((c) => c.id)) : new Set())} />Candidate</span>
+                    <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide w-[48%] sm:w-[26%]"><span className="flex items-center gap-2"><input type="checkbox" aria-label="Select all visible candidates" checked={filteredCandidates.length > 0 && filteredCandidates.every((c) => selectedIds.has(c.id))} onChange={(e) => setSelectedIds(e.target.checked ? new Set(filteredCandidates.map((c) => c.id)) : new Set())} />Candidate</span>
                     </th>
                     <th className="py-3 px-5 font-medium text-xs uppercase tracking-wide text-center w-[14%] sm:w-[13%]">
                       Score
