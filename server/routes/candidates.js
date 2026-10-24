@@ -8,6 +8,40 @@ import { createCalendarLinks } from "../services/calendarLinks.js";
 
 const router = Router();
 
+// Cross-project talent-pool search.  Keep the response deliberately compact:
+// recruiters need enough signal to decide which project to open, but resume
+// text and storage paths should never be loaded for a list view.
+router.get("/candidates", async (req, res) => {
+  const rawQuery = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 120) : "";
+  const query = rawQuery.replace(/[%,()]/g, " ").replace(/\s+/g, " ").trim();
+  const allowedStages = new Set(["new", "screening", "shortlisted", "interview", "offer", "rejected"]);
+  const stage = typeof req.query.stage === "string" && allowedStages.has(req.query.stage) ? req.query.stage : null;
+  const eligibility = typeof req.query.eligibility === "string" && ["eligible", "ineligible", "needs_review"].includes(req.query.eligibility) ? req.query.eligibility : null;
+  const assignedTo = typeof req.query.assigned_to === "string" && /^[0-9a-f-]{36}$/i.test(req.query.assigned_to) ? req.query.assigned_to : null;
+  const starred = req.query.starred === "true" ? true : req.query.starred === "false" ? false : null;
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 25, 1), 100);
+  const offset = Math.max(Number.parseInt(req.query.offset, 10) || 0, 0);
+
+  let request = supabase
+    .from("candidates")
+    .select("id, job_id, file_name, email, phone, linkedin_url, final_score, semantic_score, skill_score, matched_skills, missing_skills, parse_confidence, parse_warnings, unparseable, eligibility_status, pipeline_stage, recruiter_notes, tags, reminder_at, assigned_to, starred, starred_at, review_status, status, created_at, jobs(id, title)", { count: "exact" })
+    .eq("org_id", req.orgId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (query) {
+    const pattern = `%${query}%`;
+    request = request.or(`file_name.ilike.${pattern},email.ilike.${pattern},recruiter_notes.ilike.${pattern}`);
+  }
+  if (stage) request = request.eq("pipeline_stage", stage);
+  if (eligibility) request = request.eq("eligibility_status", eligibility);
+  if (assignedTo) request = request.eq("assigned_to", assignedTo);
+  if (starred !== null) request = request.eq("starred", starred);
+
+  const { data, error, count } = await request;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ data: (data || []).map(({ jobs, ...candidate }) => ({ ...candidate, job: jobs || null })), pagination: { limit, offset, total: count || 0 } });
+});
+
 async function isOrganizationMember(userId, orgId) {
   if (!userId || typeof userId !== "string") return false;
   const { data, error } = await supabase

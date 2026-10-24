@@ -212,6 +212,15 @@ export async function getStarredCandidates() {
   return fetch(`${API_BASE}/candidates/starred`, { headers: await authHeaders() }).then(handle);
 }
 
+export async function searchTalentPool(params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") query.set(key, String(value));
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return fetch(`${API_BASE}/candidates${suffix}`, { headers: await authHeaders() }).then(handle);
+}
+
 export async function setCandidateStarred(candidateId, starred) {
   return fetch(`${API_BASE}/candidates/${candidateId}/star`, {
     method: "PATCH",
