@@ -14,6 +14,7 @@ import BlogPost from './components/BlogPost.jsx'
 import SeoLandingPage from './components/SeoLandingPage.jsx'
 import ResourcePage from './components/ResourcePage.jsx'
 import PrivacyRequestPage from './components/PrivacyRequestPage.jsx'
+import SchedulePage from './pages/SchedulePage.jsx'
 
 // No client-side router in this app — the public, unauthenticated routes
 // (/, /demo, /reset-password, /privacy, /privacy-request, /terms, /blog, /blog/:slug) are
@@ -24,10 +25,13 @@ import PrivacyRequestPage from './components/PrivacyRequestPage.jsx'
 const path = window.location.pathname.replace(/\/+$/, '') || '/'
 const blogSlug = path.startsWith('/blog/') ? path.slice('/blog/'.length) : null
 const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters', '/resumematch-vs-ats'])
+const scheduleToken = path.startsWith('/schedule/') ? path.slice('/schedule/'.length) : null
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {path === '/resume-parser' ? (
+    {scheduleToken ? (
+      <SchedulePage token={scheduleToken} />
+    ) : path === '/resume-parser' ? (
       <ResourcePage type="parser" />
     ) : path === '/docs' ? (
       <ResourcePage type="docs" />

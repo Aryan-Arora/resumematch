@@ -2,6 +2,18 @@ import { supabase } from "./supabaseClient";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4100/api";
 
+export async function getPublicInterviewSlot(token) {
+  const response = await fetch(`${API_BASE}/public/interview-slots/${encodeURIComponent(token)}`);
+  if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "This interview slot is no longer available.");
+  return response.json();
+}
+
+export async function bookPublicInterviewSlot(token, payload) {
+  const response = await fetch(`${API_BASE}/public/interview-slots/${encodeURIComponent(token)}/book`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Unable to book this interview slot.");
+  return response.json();
+}
+
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
