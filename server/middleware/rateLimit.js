@@ -50,3 +50,12 @@ export const orgActionLimiter = rateLimit({
   keyGenerator: byUser,
   message: { error: "Too many attempts — please wait a few minutes and try again." },
 });
+
+export const calendarLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: byUser,
+  message: { error: "Too many calendar requests — please wait a few minutes and try again." },
+});

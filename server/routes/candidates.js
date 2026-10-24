@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../supabaseClient.js";
 import { sendShortlistEmail, sendCandidateEmail } from "../services/mailer.js";
-import { shortlistLimiter, orgActionLimiter } from "../middleware/rateLimit.js";
+import { shortlistLimiter, orgActionLimiter, calendarLimiter } from "../middleware/rateLimit.js";
 import { createInterviewIcs } from "../services/ics.js";
 import { dispatchWebhook } from "../services/webhooks.js";
 import { createCalendarLinks } from "../services/calendarLinks.js";
@@ -75,7 +75,7 @@ router.get("/candidates/:id/resume", async (req, res) => {
   res.json({ url: data.signedUrl });
 });
 
-router.get("/candidates/:id/interview.ics", async (req, res) => {
+router.get("/candidates/:id/interview.ics", calendarLimiter, async (req, res) => {
   const { data: candidate, error } = await supabase
     .from("candidates")
     .select("id, file_name, email, jobs(title, interview_url)")
@@ -100,7 +100,7 @@ router.get("/candidates/:id/interview.ics", async (req, res) => {
   }
 });
 
-router.get("/candidates/:id/interview-links", async (req, res) => {
+router.get("/candidates/:id/interview-links", calendarLimiter, async (req, res) => {
   const { data: candidate, error } = await supabase.from("candidates").select("id, file_name, email, jobs(title, interview_url)").eq("id", req.params.id).eq("org_id", req.orgId).single();
   if (error || !candidate) return res.status(404).json({ error: "candidate not found" });
   try {
