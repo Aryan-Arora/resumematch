@@ -120,3 +120,12 @@ test("readiness exposes non-secret email configuration status", async ({ request
   expect(["warming", "ready", "degraded"]).toContain(body.checks.models);
   expect(body.model_warmup.state).toBe(body.checks.models);
 });
+
+test("protected recruiter endpoints reject unauthenticated requests", async ({ request }) => {
+  const [jobs, candidates] = await Promise.all([
+    request.get("https://resumematch-api.fly.dev/api/jobs"),
+    request.get("https://resumematch-api.fly.dev/api/candidates/starred"),
+  ]);
+  expect(jobs.status()).toBe(401);
+  expect(candidates.status()).toBe(401);
+});
