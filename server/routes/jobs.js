@@ -216,6 +216,10 @@ router.post("/jobs", jobWriteLimiter, async (req, res) => {
         must_have: Array.isArray(requirementConfig.must_have) ? requirementConfig.must_have.slice(0, 30) : [],
         preferred: Array.isArray(requirementConfig.preferred) ? requirementConfig.preferred.slice(0, 30) : [],
         disqualifiers: Array.isArray(requirementConfig.disqualifiers) ? requirementConfig.disqualifiers.slice(0, 30) : [],
+        certifications: Array.isArray(requirementConfig.certifications) ? requirementConfig.certifications.slice(0, 20) : [],
+        locations: Array.isArray(requirementConfig.locations) ? requirementConfig.locations.slice(0, 10) : [],
+        work_authorization: Array.isArray(requirementConfig.work_authorization) ? requirementConfig.work_authorization.slice(0, 10) : [],
+        minimum_years: Number.isInteger(requirementConfig.minimum_years) && requirementConfig.minimum_years > 0 ? Math.min(requirementConfig.minimum_years, 60) : null,
       },
       org_id: req.orgId,
     })

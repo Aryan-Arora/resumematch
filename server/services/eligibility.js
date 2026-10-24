@@ -38,6 +38,19 @@ export function evaluateEligibility(filters, resumeText) {
       hasUnclear = true;
     }
   }
+  // Structured recruiter-entered gates stay conservative: an absent phrase
+  // is sent to human review rather than treated as proof of rejection. This
+  // keeps location and work-authorisation screening explainable while still
+  // making the requirements visible in the decision record.
+  for (const [label, requirements] of [["Location", filters?.locations], ["Work authorisation", filters?.work_authorization]]) {
+    for (const requirement of Array.isArray(requirements) ? requirements : []) {
+      const value = String(requirement || "").trim();
+      if (!value) continue;
+      const present = text.toLowerCase().includes(value.toLowerCase());
+      reasons.push({ type: present ? "passed" : "unclear", text: `${present ? `${label} evidence found` : `Verify ${label.toLowerCase()}`}: ${value}` });
+      if (!present) hasUnclear = true;
+    }
+  }
   if (filters?.minimum_years) {
     const yearsMatch = text.match(/(\d+)\+?\s+years?/i);
     const years = yearsMatch ? Number(yearsMatch[1]) : null;

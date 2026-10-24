@@ -28,6 +28,10 @@ export default function JDForm({ onJobCreated }) {
   const [mustHave, setMustHave] = useState("");
   const [preferred, setPreferred] = useState("");
   const [disqualifiers, setDisqualifiers] = useState("");
+  const [certifications, setCertifications] = useState("");
+  const [locations, setLocations] = useState("");
+  const [workAuthorization, setWorkAuthorization] = useState("");
+  const [minimumYears, setMinimumYears] = useState("");
   const [emailTemplates, setEmailTemplates] = useState({ shortlist: "", interview: "", rejection: "" });
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -43,7 +47,7 @@ export default function JDForm({ onJobCreated }) {
     setLoading(true);
     try {
       const lines = (value) => value.split("\n").map((item) => item.trim()).filter(Boolean);
-      const job = await createJob(title, description, domain, interviewUrl, { must_have: lines(mustHave), preferred: lines(preferred), disqualifiers: lines(disqualifiers) }, emailTemplates);
+      const job = await createJob(title, description, domain, interviewUrl, { must_have: lines(mustHave), preferred: lines(preferred), disqualifiers: lines(disqualifiers), certifications: lines(certifications), locations: lines(locations), work_authorization: lines(workAuthorization), minimum_years: minimumYears ? Number(minimumYears) : null }, emailTemplates);
       onJobCreated(job);
     } catch (err) {
       setError(err.message);
@@ -66,6 +70,14 @@ export default function JDForm({ onJobCreated }) {
             <input className="w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" value={interviewUrl} onChange={(e) => setInterviewUrl(e.target.value)} placeholder="https://calendly.com/your-team/interview" type="url" />
             <p className="text-xs text-[var(--color-text-faint)] mt-1">Use a Calendly, Google Calendar appointment, or other HTTPS booking link.</p>
           </div>
+          <details className="rounded-xl border border-[var(--color-border)]/70 bg-[var(--color-surface-alt)]/50 p-4">
+            <summary className="cursor-pointer text-sm font-medium text-[var(--color-text)]">Structured eligibility gates <span className="font-normal text-xs text-[var(--color-text-faint)]">(optional, missing evidence goes to review)</span></summary>
+            <p className="text-xs text-[var(--color-text-faint)] mt-2">Use these for requirements that need an explicit recruiter check. ResumeMatch never auto-rejects a candidate only because one of these phrases is absent.</p>
+            <div className="grid gap-3 sm:grid-cols-2 mt-3">
+              {[["Required certifications or licenses", certifications, setCertifications, "e.g. RN license (one per line)"], ["Required locations", locations, setLocations, "e.g. Bengaluru (one per line)"], ["Work authorization evidence", workAuthorization, setWorkAuthorization, "e.g. authorised to work in India" ]].map(([label, value, setter, placeholder]) => <label key={label} className="text-xs text-[var(--color-text-muted)]">{label}<textarea value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} className="mt-1 w-full min-h-16 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
+              <label className="text-xs text-[var(--color-text-muted)]">Minimum years of experience<input type="number" min="1" max="60" value={minimumYears} onChange={(e) => setMinimumYears(e.target.value)} placeholder="e.g. 5" className="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-[var(--color-text)]" /></label>
+            </div>
+          </details>
           <div className="grid gap-4 sm:grid-cols-3">
             {[['Must-have requirements', mustHave, setMustHave, 'One requirement per line'], ['Preferred requirements', preferred, setPreferred, 'Nice to have'], ['Disqualifiers', disqualifiers, setDisqualifiers, 'One automatic review flag per line']].map(([label, value, setter, placeholder]) => <label key={label} className="text-sm font-medium text-[var(--color-text-muted)]">{label}<textarea value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} className="mt-1.5 w-full min-h-24 bg-[var(--color-surface-alt)] border border-[var(--color-border)]/70 rounded-lg px-3 py-2 text-sm text-[var(--color-text)] resize-y" /></label>)}
           </div>
