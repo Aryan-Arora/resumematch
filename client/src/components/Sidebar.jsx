@@ -107,24 +107,28 @@ export default function Sidebar({ current, onNavigate }) {
             </div>
             <p className="text-xs text-[var(--color-text-muted)] mt-1">HR Candidate Screening</p>
             {organization && (
-              <button
-                onClick={() => setShowCode((v) => !v)}
-                title="Click to show/hide your organization's join code"
-                className="text-xs text-[var(--color-text-faint)] hover:text-[var(--color-accent)] transition mt-1 text-left"
-              >
-                {organization.name}
+              <div className="mt-1">
+                <button
+                  onClick={() => setShowCode((v) => !v)}
+                  aria-expanded={showCode}
+                  title="Show organization controls"
+                  className="text-xs text-[var(--color-text-faint)] hover:text-[var(--color-accent)] transition text-left"
+                >
+                  {organization.name}
+                  <span className="material-symbols-outlined text-[14px] ml-1 align-[-3px]">{showCode ? "expand_less" : "expand_more"}</span>
+                </button>
                 {showCode && (
-                  <div className="mt-2 space-y-2">
-                    <span className="block font-mono tracking-wider text-[var(--color-accent)]">Join code: {organization.join_code}</span>
+                  <div className="mt-2 space-y-2 rounded-xl bg-[var(--color-surface-alt)]/70 p-2.5">
+                    <span className="block font-mono tracking-wider text-[var(--color-accent)] text-[11px]">Join code: {organization.join_code}</span>
                     <label className="block text-[11px] text-[var(--color-text-muted)]">Retention days (30–3650)
                       <div className="flex items-center gap-2 mt-1">
-                        <input type="number" min="30" max="3650" value={retentionDays} onChange={(e) => setRetentionDays(e.target.value)} className="w-20 bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]" />
-                        <button onClick={(e) => { e.stopPropagation(); saveRetention(); }} disabled={savingRetention} className="text-[var(--color-accent)] hover:underline disabled:opacity-50">{savingRetention ? "Saving…" : "Save"}</button>
+                        <input type="number" min="30" max="3650" value={retentionDays} onChange={(e) => setRetentionDays(e.target.value)} className="w-20 bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-2 py-1 text-xs text-[var(--color-text)]" />
+                        <button onClick={saveRetention} disabled={savingRetention} className="text-[var(--color-accent)] hover:underline disabled:opacity-50">{savingRetention ? "Saving…" : "Save"}</button>
                       </div>
                     </label>
                   </div>
                 )}
-              </button>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">

@@ -23,12 +23,16 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function loadJobs() {
+    setLoading(true);
+    setError(null);
     getJobs()
       .then(setJobs)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { loadJobs(); }, []);
 
   if (loading) return (
     <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6" aria-busy="true">
@@ -37,7 +41,16 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
       <div className="h-72 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" />
     </div>
   );
-  if (error) return <p className="p-10 text-[var(--color-danger)]">{error}</p>;
+  if (error) return (
+    <div className="max-w-xl mx-auto px-4 sm:px-8 py-16">
+      <div className="clay-card p-6 border-[var(--color-danger)]/30" role="alert">
+        <span className="material-symbols-outlined text-[var(--color-danger)]">cloud_off</span>
+        <h1 className="font-heading text-lg font-semibold text-[var(--color-text)] mt-3">Couldn’t load your workspace</h1>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">{error}</p>
+        <button onClick={loadJobs} className="clay-button mt-5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-xl px-4 py-2.5 text-sm font-medium">Try again</button>
+      </div>
+    </div>
+  );
 
   const totalCandidates = jobs.reduce((sum, j) => sum + j.candidate_count, 0);
   const scored = jobs.filter((j) => j.avg_score !== null);
@@ -104,6 +117,8 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
             </button>
           </div>
         ) : (
+          <>
+          <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
@@ -131,6 +146,16 @@ export default function Dashboard({ onOpenJob, onNavigate }) {
               ))}
             </tbody>
           </table>
+          </div>
+          <div className="sm:hidden divide-y divide-[var(--color-border)]/50">
+            {recent.map((job) => (
+              <button key={job.id} onClick={() => onOpenJob(job)} className="w-full text-left px-5 py-4 hover:bg-[var(--color-surface-hover)]">
+                <span className="block font-medium text-[var(--color-text)] truncate">{job.title}</span>
+                <span className="flex gap-4 mt-1 text-xs text-[var(--color-text-muted)]"><span>{job.candidate_count} candidates</span><span>{job.avg_score !== null ? `${Math.round(job.avg_score * 100)}% avg. match` : "No scores yet"}</span></span>
+              </button>
+            ))}
+          </div>
+          </>
         )}
       </div>
     </div>
