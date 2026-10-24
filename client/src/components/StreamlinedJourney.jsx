@@ -65,20 +65,6 @@ function StepIcon({ i, color }) {
   );
 }
 
-function Line({ w, o }) {
-  return (
-    <div
-      style={{
-        height: 8,
-        width: w,
-        borderRadius: 99,
-        background: "var(--color-border)",
-        opacity: o,
-      }}
-    />
-  );
-}
-
 function StepVisual({ i }) {
   const teal = "var(--color-accent)";
   const soft = "color-mix(in srgb, var(--color-accent) 15%, transparent)";

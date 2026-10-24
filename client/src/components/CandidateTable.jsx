@@ -175,7 +175,7 @@ export default function CandidateTable({ job, onAddMore }) {
     } finally {
       setLoading(false);
     }
-  }, [job.id]);
+  }, [job.id, job.jd_domain]);
 
   async function addInterviewSlot(event) {
     event.preventDefault();
@@ -526,7 +526,7 @@ export default function CandidateTable({ job, onAddMore }) {
                         <td className="py-3 px-2 sm:px-5 min-w-0">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <Avatar name={c.file_name} size={36} className="hidden sm:flex" />
-                            <input type="checkbox" checked={selectedIds.has(c.id)} aria-label={`Select ${c.file_name}`} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><button type="button" onClick={(e) => { e.stopPropagation(); toggleCompare(c.id); }} title="Compare candidate" className={`text-[10px] rounded border px-1.5 py-0.5 ${compareIds.has(c.id) ? "border-[var(--color-accent)] text-[var(--color-accent)]" : "border-[var(--color-border)] text-[var(--color-text-faint)]"}`}>Compare</button><div className="min-w-0"><span className="text-[var(--color-text)] font-medium truncate block">
+                            <input type="checkbox" checked={selectedIds.has(c.id)} aria-label={`Select ${c.file_name}`} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); if (e.target.checked) next.add(c.id); else next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><button type="button" onClick={(e) => { e.stopPropagation(); toggleCompare(c.id); }} title="Compare candidate" aria-label={`Compare ${c.file_name}`} className={`text-[10px] rounded border px-1.5 py-0.5 ${compareIds.has(c.id) ? "border-[var(--color-accent)] text-[var(--color-accent)]" : "border-[var(--color-border)] text-[var(--color-text-faint)]"}`}>Compare</button><div className="min-w-0"><span className="text-[var(--color-text)] font-medium truncate block">
                               {c.file_name}
                             </span><span className="block text-[11px] text-[var(--color-text-faint)] truncate">{c.email || (c.parse_method ? `${c.parse_method} parse` : "Resume uploaded")}</span></div>
                           </div>

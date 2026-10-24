@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getTheme, applyStoredTheme } from "../theme";
+import { applyStoredTheme } from "../theme";
 import { useSEO } from "../lib/seo";
 import Logo from "./Logo";
 
