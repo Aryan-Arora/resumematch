@@ -14,6 +14,7 @@ import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCa
 import { computeFinalScore } from "../services/scoring.js";
 import { supabase } from "../supabaseClient.js";
 import { hasExpectedFileSignature } from "../services/fileValidation.js";
+import { createInterviewIcs } from "../services/ics.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const taxonomy = JSON.parse(
@@ -90,6 +91,18 @@ router.post("/public/interview-slots/:token/book", interviewBookingLimiter, asyn
     return res.status(500).json({ error: "could not book interview slot" });
   }
   res.status(201).json({ booking_id: booking.id, booked_at: booking.booked_at, starts_at: slot.starts_at, ends_at: slot.ends_at, location: slot.location });
+});
+
+router.get("/public/interview-slots/:token/calendar.ics", interviewBookingLimiter, async (req, res) => {
+  const token = typeof req.params.token === "string" ? req.params.token.trim() : "";
+  const { data: slot } = await supabase.from("interview_slots").select("id, starts_at, ends_at, location, status, jobs(title)").eq("booking_token", token).eq("status", "open").maybeSingle();
+  if (!slot || new Date(slot.starts_at) <= new Date()) return res.status(404).json({ error: "interview slot not found or no longer available" });
+  const { data: booking } = await supabase.from("interview_bookings").select("candidate_name").eq("slot_id", slot.id).maybeSingle();
+  if (!booking) return res.status(409).json({ error: "book the interview slot before downloading its calendar event" });
+  const calendar = createInterviewIcs({ candidateName: booking.candidate_name, jobTitle: slot.jobs?.title, start: slot.starts_at, end: slot.ends_at, location: slot.location, description: "ResumeMatch interview" });
+  res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="resumematch-interview.ics"');
+  res.send(calendar);
 });
 
 // Candidate privacy requests are deliberately generic: the response never
