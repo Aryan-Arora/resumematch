@@ -505,15 +505,19 @@ export default function CandidateTable({ job, onAddMore }) {
                   {filteredCandidates.map((c) => (
                     <Fragment key={c.id}>
                       <tr
+                        tabIndex={0}
+                        aria-expanded={expandedId === c.id}
+                        aria-label={`${c.file_name || "Candidate"}. ${expandedId === c.id ? "Collapse" : "Expand"} candidate details`}
                         className="border-b border-[var(--color-border)]/40 last:border-b-0 cursor-pointer hover:bg-[var(--color-surface-hover)] transition"
                         onClick={() => toggleCandidate(c.id)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCandidate(c.id); } }}
                       >
                         <td className="py-3 px-2 sm:px-5 min-w-0">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <Avatar name={c.file_name} size={36} className="hidden sm:flex" />
-                            <input type="checkbox" checked={selectedIds.has(c.id)} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><button type="button" onClick={(e) => { e.stopPropagation(); toggleCompare(c.id); }} title="Compare candidate" className={`text-[10px] rounded border px-1.5 py-0.5 ${compareIds.has(c.id) ? "border-[var(--color-accent)] text-[var(--color-accent)]" : "border-[var(--color-border)] text-[var(--color-text-faint)]"}`}>Compare</button><span className="text-[var(--color-text)] font-medium truncate block min-w-0">
+                            <input type="checkbox" checked={selectedIds.has(c.id)} aria-label={`Select ${c.file_name}`} onChange={(e) => { e.stopPropagation(); setSelectedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(c.id) : next.delete(c.id); return next; }); }} onClick={(e) => e.stopPropagation()} /><button type="button" onClick={(e) => { e.stopPropagation(); toggleCompare(c.id); }} title="Compare candidate" className={`text-[10px] rounded border px-1.5 py-0.5 ${compareIds.has(c.id) ? "border-[var(--color-accent)] text-[var(--color-accent)]" : "border-[var(--color-border)] text-[var(--color-text-faint)]"}`}>Compare</button><div className="min-w-0"><span className="text-[var(--color-text)] font-medium truncate block">
                               {c.file_name}
-                            </span>
+                            </span><span className="block text-[11px] text-[var(--color-text-faint)] truncate">{c.email || (c.parse_method ? `${c.parse_method} parse` : "Resume uploaded")}</span></div>
                           </div>
                         </td>
                         <td className="py-3 px-2 sm:px-5">
