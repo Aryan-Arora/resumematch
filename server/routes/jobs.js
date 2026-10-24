@@ -863,7 +863,7 @@ router.delete("/jobs/:id", orgActionLimiter, async (req, res) => {
 
   const { data: job } = await supabase
     .from("jobs")
-    .select("id, title, organizations!inner(created_by)")
+    .select("id, title, org_id, organizations!inner(created_by)")
     .eq("id", jobId)
     .eq("org_id", req.orgId)
     .single();
