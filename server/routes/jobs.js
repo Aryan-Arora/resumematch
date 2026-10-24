@@ -79,6 +79,15 @@ const csvUpload = multer({
 });
 const router = Router();
 
+async function insertAuditWithRetry(payload) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { error } = await supabase.from("organization_audit_events").insert(payload);
+    if (!error) return true;
+    if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+  }
+  return false;
+}
+
 router.get("/jobs", async (req, res) => {
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
@@ -880,7 +889,7 @@ export async function deleteJobCascade(job, { actorId = null, reason = "retentio
         return;
       }
     }
-    const { error: auditError } = await supabase.from("organization_audit_events").insert(
+    const auditRecorded = await insertAuditWithRetry(
       unstarred.map((candidate) => ({
         org_id: job.org_id,
         actor_id: null,
@@ -889,7 +898,7 @@ export async function deleteJobCascade(job, { actorId = null, reason = "retentio
         event_data: { reason: "retention_sweep", job_id: job.id },
       }))
     );
-    if (auditError) {
+    if (!auditRecorded) {
       console.error(`Retention audit failed for job ${job.id}; skipping deletion.`);
       return false;
     }
@@ -906,14 +915,14 @@ export async function deleteJobCascade(job, { actorId = null, reason = "retentio
       .in("id", starred.map((c) => c.id));
   }
 
-  const { error: jobAuditError } = await supabase.from("organization_audit_events").insert({
+  const jobAuditRecorded = await insertAuditWithRetry({
     org_id: job.org_id,
     actor_id: actorId,
     candidate_id: null,
     event_type: "job_deleted",
     event_data: { job_id: job.id, title: job.title, reason },
   });
-  if (jobAuditError) {
+  if (!jobAuditRecorded) {
     console.error(`Job deletion audit failed for ${job.id}; skipping job deletion.`);
     return false;
   }

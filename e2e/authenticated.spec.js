@@ -18,9 +18,12 @@ test.describe("authenticated recruiter flow", () => {
     const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
     let jobId;
     try {
-      const orgName = `E2E ${Date.now()}`;
-      const organization = await request.post(`${apiBase}/organizations`, { headers, data: { name: orgName } });
-      expect(organization.status()).toBe(201);
+      const currentOrganization = await request.get(`${apiBase}/organizations/me`, { headers: { Authorization: `Bearer ${token}` } });
+      expect(currentOrganization.status()).toBe(200);
+      if (!(await currentOrganization.json()).organization) {
+        const organization = await request.post(`${apiBase}/organizations`, { headers, data: { name: `E2E ${Date.now()}` } });
+        expect(organization.status()).toBe(201);
+      }
 
       const job = await request.post(`${apiBase}/jobs`, { headers, data: { title: "E2E screening role", description: "Backend engineer with JavaScript and at least 2 years experience.", requirement_config: { must_have: ["JavaScript"], minimum_years: 2 } } });
       expect(job.status()).toBe(201);
@@ -48,7 +51,12 @@ test.describe("authenticated recruiter flow", () => {
       expect((await exportResponse.json()).candidates.some((candidate) => candidate.id === candidateId)).toBeTruthy();
     } finally {
       if (jobId) {
-        const cleanup = await request.delete(`${apiBase}/jobs/${jobId}`, { headers: { Authorization: `Bearer ${token}` } });
+        let cleanup;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          cleanup = await request.delete(`${apiBase}/jobs/${jobId}`, { headers: { Authorization: `Bearer ${token}` } });
+          if ([204, 404].includes(cleanup.status()) || attempt === 2) break;
+          await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+        }
         expect([204, 404]).toContain(cleanup.status());
       }
       await auth.auth.signOut();
