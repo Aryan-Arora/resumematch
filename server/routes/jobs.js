@@ -117,6 +117,14 @@ router.get("/jobs", async (req, res) => {
 });
 
 router.patch("/jobs/:id/settings", jobWriteLimiter, async (req, res) => {
+  const { data: ownerRow, error: ownerError } = await supabase
+    .from("jobs")
+    .select("id, organizations!inner(created_by)")
+    .eq("id", req.params.id)
+    .eq("org_id", req.orgId)
+    .single();
+  if (ownerError || !ownerRow) return res.status(404).json({ error: "job not found" });
+  if (ownerRow.organizations?.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can change job settings" });
   const templates = req.body.email_templates && typeof req.body.email_templates === "object" ? req.body.email_templates : null;
   const interviewUrl = typeof req.body.interview_url === "string" ? req.body.interview_url.trim() : undefined;
   if (!templates && interviewUrl === undefined) return res.status(400).json({ error: "job settings are required" });
