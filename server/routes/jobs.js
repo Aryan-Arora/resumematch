@@ -901,10 +901,10 @@ export async function deleteJobCascade(job, { actorId = null, reason = "retentio
     const auditRecorded = await insertAuditWithRetry(
       unstarred.map((candidate) => ({
         org_id: job.org_id,
-        actor_id: null,
+        actor_id: actorId,
         candidate_id: candidate.id,
         event_type: "candidate_deleted",
-        event_data: { reason: "retention_sweep", job_id: job.id },
+        event_data: { reason, job_id: job.id },
       }))
     );
     if (!auditRecorded) {
