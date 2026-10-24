@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import multer from "multer";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -78,6 +79,35 @@ const csvUpload = multer({
   },
 });
 const router = Router();
+
+router.get("/jobs/:id/interview-slots", async (req, res) => {
+  const { data, error } = await supabase
+    .from("interview_slots")
+    .select("id, starts_at, ends_at, location, booking_token, status, created_at, interview_bookings(id, candidate_name, candidate_email, booked_at, cancelled_at)")
+    .eq("job_id", req.params.id)
+    .eq("org_id", req.orgId)
+    .order("starts_at", { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+router.post("/jobs/:id/interview-slots", orgActionLimiter, async (req, res) => {
+  const startsAt = typeof req.body?.starts_at === "string" ? req.body.starts_at : "";
+  const endsAt = typeof req.body?.ends_at === "string" ? req.body.ends_at : "";
+  const location = typeof req.body?.location === "string" ? req.body.location.trim().slice(0, 500) : "";
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) return res.status(400).json({ error: "a valid start and end time are required" });
+  if (start <= new Date()) return res.status(400).json({ error: "interview slots must be in the future" });
+  if (end.getTime() - start.getTime() > 8 * 60 * 60 * 1000) return res.status(400).json({ error: "interview slots cannot exceed 8 hours" });
+  const { data: job } = await supabase.from("jobs").select("id").eq("id", req.params.id).eq("org_id", req.orgId).maybeSingle();
+  if (!job) return res.status(404).json({ error: "job not found" });
+  const { data, error } = await supabase.from("interview_slots").insert({
+    org_id: req.orgId, job_id: job.id, starts_at: start.toISOString(), ends_at: end.toISOString(), location, booking_token: randomUUID(), created_by: req.userId,
+  }).select("id, starts_at, ends_at, location, booking_token, status, created_at").single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
 
 async function insertAuditWithRetry(payload) {
   for (let attempt = 0; attempt < 3; attempt += 1) {

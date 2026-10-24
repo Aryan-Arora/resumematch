@@ -55,6 +55,43 @@ const deletionRequestLimiter = rateLimit({
   message: { error: "Too many deletion requests from this address — please try again later." },
 });
 
+const interviewBookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many booking attempts — please wait a few minutes." },
+});
+
+router.get("/public/interview-slots/:token", interviewBookingLimiter, async (req, res) => {
+  const token = typeof req.params.token === "string" ? req.params.token.trim() : "";
+  const { data: slot, error } = await supabase
+    .from("interview_slots")
+    .select("id, starts_at, ends_at, location, status, jobs(title)")
+    .eq("booking_token", token)
+    .eq("status", "open")
+    .maybeSingle();
+  if (error || !slot || new Date(slot.starts_at) <= new Date()) return res.status(404).json({ error: "interview slot not found or no longer available" });
+  const { data: booking } = await supabase.from("interview_bookings").select("id").eq("slot_id", slot.id).maybeSingle();
+  if (booking) return res.status(409).json({ error: "interview slot has already been booked" });
+  res.json({ id: slot.id, starts_at: slot.starts_at, ends_at: slot.ends_at, location: slot.location, job_title: slot.jobs?.title || "Interview" });
+});
+
+router.post("/public/interview-slots/:token/book", interviewBookingLimiter, async (req, res) => {
+  const token = typeof req.params.token === "string" ? req.params.token.trim() : "";
+  const name = typeof req.body?.candidate_name === "string" ? req.body.candidate_name.trim().slice(0, 200) : "";
+  const email = typeof req.body?.candidate_email === "string" ? req.body.candidate_email.trim().toLowerCase() : "";
+  if (!name || !/^\S+@\S+\.\S+$/.test(email) || email.length > 320) return res.status(400).json({ error: "candidate name and a valid email are required" });
+  const { data: slot } = await supabase.from("interview_slots").select("id, org_id, job_id, starts_at, ends_at, location, status").eq("booking_token", token).eq("status", "open").maybeSingle();
+  if (!slot || new Date(slot.starts_at) <= new Date()) return res.status(404).json({ error: "interview slot not found or no longer available" });
+  const { data: booking, error } = await supabase.from("interview_bookings").insert({ slot_id: slot.id, org_id: slot.org_id, job_id: slot.job_id, candidate_name: name, candidate_email: email }).select("id, booked_at").single();
+  if (error) {
+    if (error.code === "23505") return res.status(409).json({ error: "interview slot has already been booked" });
+    return res.status(500).json({ error: "could not book interview slot" });
+  }
+  res.status(201).json({ booking_id: booking.id, booked_at: booking.booked_at, starts_at: slot.starts_at, ends_at: slot.ends_at, location: slot.location });
+});
+
 // Candidate privacy requests are deliberately generic: the response never
 // reveals whether an email exists in an organization's candidate data.
 router.post("/public/deletion-request", deletionRequestLimiter, async (req, res) => {
