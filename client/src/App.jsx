@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const StarredCandidates = lazy(() => import("./pages/StarredCandidates"));
+const TalentPool = lazy(() => import("./pages/TalentPool"));
 const PrivacyRequests = lazy(() => import("./pages/PrivacyRequests"));
 const Settings = lazy(() => import("./pages/Settings"));
 
@@ -39,6 +40,7 @@ export default function App() {
           {view === "projects" && <Projects onOpenJob={openJob} onNavigate={navigate} />}
           {view === "analytics" && <Analytics />}
           {view === "starred" && <StarredCandidates />}
+          {view === "talent-pool" && <TalentPool />}
           {view === "privacy-requests" && <PrivacyRequests />}
           {view === "settings" && <Settings />}
           {view === "upload-jd" && (
