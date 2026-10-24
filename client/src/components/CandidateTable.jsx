@@ -305,9 +305,12 @@ export default function CandidateTable({ job, onAddMore }) {
   }
 
   async function downloadCalendar(candidate) {
-    const start = window.prompt("Interview start (ISO date/time)");
+    const booking = interviewSlots
+      .map((slot) => ({ slot, booking: slot.interview_bookings?.[0] }))
+      .find(({ booking: item }) => item && candidate.email && item.candidate_email?.toLowerCase() === candidate.email.toLowerCase());
+    const start = booking?.slot.starts_at || window.prompt("Interview start (ISO date/time)");
     if (!start) return;
-    const end = window.prompt("Interview end (ISO date/time)");
+    const end = booking?.slot.ends_at || window.prompt("Interview end (ISO date/time)");
     if (!end) return;
     const googleWindow = window.open("about:blank", "_blank");
     const outlookWindow = window.open("about:blank", "_blank");
