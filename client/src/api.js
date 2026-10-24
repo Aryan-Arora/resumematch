@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4100/api";
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4100/api";
 
 export async function getPublicInterviewSlot(token) {
   const response = await fetch(`${API_BASE}/public/interview-slots/${encodeURIComponent(token)}`);
