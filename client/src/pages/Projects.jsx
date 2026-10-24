@@ -6,12 +6,16 @@ export default function Projects({ onOpenJob, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
+    setError(null);
     getJobs()
       .then(setJobs)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { load(); }, []);
 
   async function handleDelete(e, job) {
     e.stopPropagation();
@@ -23,8 +27,8 @@ export default function Projects({ onOpenJob, onNavigate }) {
     setJobs((prev) => prev.filter((j) => j.id !== job.id));
   }
 
-  if (loading) return <p className="p-10 text-[var(--color-text-muted)]">Loading projects...</p>;
-  if (error) return <p className="p-10 text-[var(--color-danger)]">{error}</p>;
+  if (loading) return <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10" aria-busy="true"><div className="h-8 w-48 rounded-lg bg-[var(--color-surface-high)] animate-pulse" /><div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6"><div className="h-36 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" /><div className="h-36 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" /></div></div>;
+  if (error) return <div className="max-w-xl mx-auto px-4 sm:px-8 py-16"><div className="clay-card p-6 border-[var(--color-danger)]/30" role="alert"><span className="material-symbols-outlined text-[var(--color-danger)]">cloud_off</span><h1 className="font-heading text-lg font-semibold text-[var(--color-text)] mt-3">Couldn’t load projects</h1><p className="text-sm text-[var(--color-text-muted)] mt-1">{error}</p><button onClick={load} className="clay-button mt-5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-xl px-4 py-2.5 text-sm font-medium">Try again</button></div></div>;
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
@@ -56,7 +60,7 @@ export default function Projects({ onOpenJob, onNavigate }) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {jobs.map((job) => (
             <div
               key={job.id}
@@ -68,6 +72,7 @@ export default function Projects({ onOpenJob, onNavigate }) {
             >
               <button
                 onClick={(e) => handleDelete(e, job)}
+                aria-label={`Delete ${job.title}`}
                 className="absolute top-4 right-4 text-[var(--color-text-faint)] hover:text-[var(--color-danger)] transition"
                 title="Delete project"
               >

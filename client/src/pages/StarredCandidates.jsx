@@ -7,12 +7,16 @@ export default function StarredCandidates() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
+    setError(null);
     getStarredCandidates()
       .then(setCandidates)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { load(); }, []);
 
   // A candidate whose job was already deleted has nowhere else to live once
   // unstarred — starring was the only thing keeping them around, so unstarring
@@ -30,8 +34,8 @@ export default function StarredCandidates() {
     setCandidates((prev) => prev.filter((c) => c.id !== candidate.id));
   }
 
-  if (loading) return <p className="p-10 text-[var(--color-text-muted)]">Loading starred CVs...</p>;
-  if (error) return <p className="p-10 text-[var(--color-danger)]">{error}</p>;
+  if (loading) return <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10" aria-busy="true"><div className="h-8 w-48 rounded-lg bg-[var(--color-surface-high)] animate-pulse" /><div className="h-64 mt-6 rounded-2xl bg-[var(--color-surface-high)] animate-pulse" /></div>;
+  if (error) return <div className="max-w-xl mx-auto px-4 sm:px-8 py-16"><div className="clay-card p-6 border-[var(--color-danger)]/30" role="alert"><span className="material-symbols-outlined text-[var(--color-danger)]">cloud_off</span><h1 className="font-heading text-lg font-semibold text-[var(--color-text)] mt-3">Couldn’t load starred CVs</h1><p className="text-sm text-[var(--color-text-muted)] mt-1">{error}</p><button onClick={load} className="clay-button mt-5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-xl px-4 py-2.5 text-sm font-medium">Try again</button></div></div>;
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10">
