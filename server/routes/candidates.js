@@ -339,11 +339,12 @@ router.post("/candidates/:id/email", shortlistLimiter, async (req, res) => {
 router.delete("/candidates/:id", orgActionLimiter, async (req, res) => {
   const { data: candidate, error: fetchError } = await supabase
     .from("candidates")
-    .select("id, file_path, file_name")
+    .select("id, file_path, file_name, organizations!inner(created_by)")
     .eq("id", req.params.id)
     .eq("org_id", req.orgId)
     .single();
   if (fetchError) return res.status(404).json({ error: "candidate not found" });
+  if (candidate.organizations?.created_by !== req.userId) return res.status(403).json({ error: "only the organization owner can delete a candidate" });
 
   const { error: auditError } = await supabase.from("organization_audit_events").insert({
     org_id: req.orgId,
