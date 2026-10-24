@@ -7,6 +7,7 @@
   "scripts": {
     "test": "vitest run",
     "smoke": "playwright test",
+    "smoke:auth": "playwright test e2e/authenticated.spec.js",
     "test:pipeline": "node server/test/pipeline.test.js",
     "dev": "node server/index.js",
     "start": "node server/index.js"
