@@ -49,9 +49,10 @@ export default function SiteHeader() {
           </a>
           <a
             href="/login"
-            className="clay-button px-6 py-2.5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-full font-heading font-medium text-sm transition"
+            className="clay-button whitespace-nowrap px-4 sm:px-6 py-2.5 bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-full font-heading font-medium text-sm transition"
           >
-            Sign In / Sign Up
+            <span className="sm:hidden">Sign in</span>
+            <span className="hidden sm:inline">Sign In / Sign Up</span>
           </a>
         </div>
       </div>
