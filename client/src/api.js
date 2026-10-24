@@ -168,6 +168,14 @@ export async function updateJobSettings(jobId, settings) {
   return fetch(`${API_BASE}/jobs/${jobId}/settings`, { method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(settings) }).then(handle);
 }
 
+export async function getInterviewSlots(jobId) {
+  return fetch(`${API_BASE}/jobs/${jobId}/interview-slots`, { headers: await authHeaders() }).then(handle);
+}
+
+export async function createInterviewSlot(jobId, payload) {
+  return fetch(`${API_BASE}/jobs/${jobId}/interview-slots`, { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify(payload) }).then(handle);
+}
+
 export async function uploadCandidates(jobId, files) {
   const formData = new FormData();
   for (const file of files) formData.append("resumes", file);

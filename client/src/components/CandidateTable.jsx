@@ -21,6 +21,8 @@ import {
   getOrganizationMembers,
   getCandidateActivity,
   updateJobSettings,
+  getInterviewSlots,
+  createInterviewSlot,
 } from "../api";
 import SkillRadar from "./SkillRadar";
 import Avatar from "./Avatar";
@@ -99,6 +101,11 @@ export default function CandidateTable({ job, onAddMore }) {
   const [activityById, setActivityById] = useState({});
   const [activityLoadingId, setActivityLoadingId] = useState(null);
   const [viewLinkCopied, setViewLinkCopied] = useState(false);
+  const [interviewSlots, setInterviewSlots] = useState([]);
+  const [slotStart, setSlotStart] = useState("");
+  const [slotEnd, setSlotEnd] = useState("");
+  const [slotLocation, setSlotLocation] = useState("");
+  const [slotMessage, setSlotMessage] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -152,14 +159,16 @@ export default function CandidateTable({ job, onAddMore }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [candidateData, taxonomyData, memberData] = await Promise.all([
+      const [candidateData, taxonomyData, memberData, slotData] = await Promise.all([
         getCandidates(job.id),
         getSkillTaxonomy(job.jd_domain),
         getOrganizationMembers(),
+        getInterviewSlots(job.id),
       ]);
       setCandidates(candidateData);
       setTaxonomy(taxonomyData);
       setMembers(memberData);
+      setInterviewSlots(slotData);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -167,6 +176,17 @@ export default function CandidateTable({ job, onAddMore }) {
       setLoading(false);
     }
   }, [job.id]);
+
+  async function addInterviewSlot(event) {
+    event.preventDefault();
+    setSlotMessage("");
+    try {
+      const created = await createInterviewSlot(job.id, { starts_at: new Date(slotStart).toISOString(), ends_at: new Date(slotEnd).toISOString(), location: slotLocation });
+      setInterviewSlots((previous) => [...previous, { ...created, interview_bookings: [] }].sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)));
+      setSlotStart(""); setSlotEnd(""); setSlotLocation("");
+      setSlotMessage("Slot created. Copy the booking link to your interview invite.");
+    } catch (err) { setSlotMessage(err.message); }
+  }
 
   useEffect(() => {
     load();
@@ -428,6 +448,22 @@ export default function CandidateTable({ job, onAddMore }) {
           {actionError}
         </p>
       )}
+
+      <details className="clay-card mb-5">
+        <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between text-sm font-heading font-semibold text-[var(--color-text)]">
+          Candidate self-scheduling <span className="text-xs font-normal text-[var(--color-text-muted)]">{interviewSlots.length} slot{interviewSlots.length === 1 ? "" : "s"}</span>
+        </summary>
+        <div className="border-t border-[var(--color-border)]/60 px-4 py-4 space-y-4">
+          <form onSubmit={addInterviewSlot} className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-end">
+            <label className="text-xs text-[var(--color-text-muted)]">Starts<input required type="datetime-local" value={slotStart} onChange={(e) => setSlotStart(e.target.value)} className="mt-1 w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-2 text-sm text-[var(--color-text)]" /></label>
+            <label className="text-xs text-[var(--color-text-muted)]">Ends<input required type="datetime-local" value={slotEnd} onChange={(e) => setSlotEnd(e.target.value)} className="mt-1 w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-2 text-sm text-[var(--color-text)]" /></label>
+            <label className="text-xs text-[var(--color-text-muted)]">Location<input value={slotLocation} onChange={(e) => setSlotLocation(e.target.value)} placeholder="Video link or address" maxLength={500} className="mt-1 w-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-2 text-sm text-[var(--color-text)]" /></label>
+            <button type="submit" className="clay-button bg-[var(--color-cta-bg)] text-[var(--color-cta-text)] rounded-lg px-3 py-2 text-sm">Create slot</button>
+          </form>
+          {slotMessage && <p className="text-xs text-[var(--color-text-muted)]">{slotMessage}</p>}
+          {interviewSlots.length > 0 && <div className="space-y-2">{interviewSlots.map((slot) => { const booking = slot.interview_bookings?.[0]; return <div key={slot.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-[var(--color-border)]/60 px-3 py-2 text-xs"><span className="text-[var(--color-text)]">{new Date(slot.starts_at).toLocaleString()} – {new Date(slot.ends_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{slot.location ? ` · ${slot.location}` : ""}</span><span className={booking ? "text-[var(--color-success)]" : "text-[var(--color-text-muted)]"}>{booking ? `Booked by ${booking.candidate_name}` : <button type="button" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/public/interview-slots/${slot.booking_token}`)} className="text-[var(--color-accent)] hover:underline">Copy booking link</button>}</span></div>; })}</div>}
+        </div>
+      </details>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 w-full">
