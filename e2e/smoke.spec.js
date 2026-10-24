@@ -105,6 +105,7 @@ test("public API contract is available", async ({ request }) => {
   expect(spec.paths["/public/deletion-request"]).toBeTruthy();
   expect(spec.paths["/candidates/{id}/reprocess"]).toBeTruthy();
   expect(spec.paths["/candidates/{id}/email"]).toBeTruthy();
+  expect(spec.paths["/candidates"]).toBeTruthy();
   expect(spec.paths["/jobs/{id}"]).toBeTruthy();
   expect(spec.paths["/public/classify"]).toBeTruthy();
   expect(spec.paths["/public/match"]).toBeTruthy();
@@ -122,10 +123,12 @@ test("readiness exposes non-secret email configuration status", async ({ request
 });
 
 test("protected recruiter endpoints reject unauthenticated requests", async ({ request }) => {
-  const [jobs, candidates] = await Promise.all([
+  const [jobs, candidates, talentPool] = await Promise.all([
     request.get("https://resumematch-api.fly.dev/api/jobs"),
     request.get("https://resumematch-api.fly.dev/api/candidates/starred"),
+    request.get("https://resumematch-api.fly.dev/api/candidates"),
   ]);
   expect(jobs.status()).toBe(401);
   expect(candidates.status()).toBe(401);
+  expect(talentPool.status()).toBe(401);
 });
