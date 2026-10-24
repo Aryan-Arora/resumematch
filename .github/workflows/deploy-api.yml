@@ -23,3 +23,10 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npm run smoke
+      - name: Run authenticated production smoke tests (when configured)
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+        run: npm run smoke:auth
