@@ -10,5 +10,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.SMOKE_BASE_URL || "https://resumematch.co.in",
     trace: "retain-on-failure",
+    // Marker the API uses to keep smoke-test runs out of demo_events.
+    userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36 ResumeMatchSmokeTest",
   },
 });

@@ -5,6 +5,7 @@ import { trackEvent } from "../lib/analytics";
 import Logo from "./Logo";
 import StreamlinedJourney from "./StreamlinedJourney";
 import { FooterProductLinks } from "./SiteFooter";
+import { DOMAIN_PAGES } from "../content/domainPages";
 
 // Fires `data-visible` once when the element enters the viewport — the
 // scroll-reveal recipe never re-animates on scroll-by.
@@ -358,15 +359,16 @@ export default function Home() {
             className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-3"
           >
             {DOMAINS.map((d) => (
-              <span
+              <a
                 key={d.label}
-                className="clay-card inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[var(--color-text)]"
+                href={`/resume-screening/${DOMAIN_PAGES.find((p) => p.label === d.label)?.slug ?? ""}`}
+                className="clay-card inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)] transition"
               >
                 <span className="material-symbols-outlined text-[18px] text-[var(--color-accent)]">
                   {d.icon}
                 </span>
                 {d.label}
-              </span>
+              </a>
             ))}
           </Reveal>
         </section>

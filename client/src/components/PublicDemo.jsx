@@ -3,6 +3,7 @@ import { matchPreview } from "../api";
 import { getTheme, toggleTheme } from "../theme";
 import { useSEO } from "../lib/seo";
 import { trackEvent } from "../lib/analytics";
+import { getDomainPage } from "../content/domainPages";
 import Logo from "./Logo";
 
 const DOMAIN_LABELS = {
@@ -47,7 +48,11 @@ function formatPct(score) {
 
 export default function PublicDemo() {
   const [theme, setThemeState] = useState("light");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const example = new URLSearchParams(window.location.search).get("example");
+    return (example && getDomainPage(example)?.sampleJd) || "";
+  });
   const [files, setFiles] = useState([]);
   const [fileError, setFileError] = useState(null);
   const [loading, setLoading] = useState(false);

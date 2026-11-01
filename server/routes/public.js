@@ -13,6 +13,7 @@ import { ocrResume, shouldUseOcr } from "../services/ocr.js";
 import { findImpliedSkills, KEYPHRASE_MATCH_THRESHOLD, getSharedSkillEmbeddingCache } from "../services/semanticSkillMatch.js";
 import { computeFinalScore } from "../services/scoring.js";
 import { supabase } from "../supabaseClient.js";
+import { isInternalTestTraffic } from "../services/testTraffic.js";
 import { hasExpectedFileSignature } from "../services/fileValidation.js";
 import { createInterviewIcs } from "../services/ics.js";
 
@@ -28,7 +29,8 @@ const router = Router();
 
 // Anonymous usage counter for the public demo: no JD text, resumes or IPs are
 // stored. Fire-and-forget so a missing table or DB blip never fails a demo run.
-function logDemoEvent(event, domain, resumeCount) {
+function logDemoEvent(req, event, domain, resumeCount) {
+  if (isInternalTestTraffic(req.get("user-agent"))) return;
   supabase
     .from("demo_events")
     .insert({ event, domain, resume_count: resumeCount })
@@ -252,7 +254,7 @@ router.post("/public/classify", demoLimiter, async (req, res) => {
 
   try {
     const { domain, skills } = await classifyJobDescription(description, getSharedSkillEmbeddingCache());
-    logDemoEvent("classify", domain, 0);
+    logDemoEvent(req, "classify", domain, 0);
     res.json({ domain, skills, curatedDomains: getDomainList().filter((d) => d !== "general") });
   } catch (err) {
     console.error(err);
@@ -308,7 +310,7 @@ router.post("/public/match", demoLimiter, (req, res, next) => {
       );
     }
 
-    logDemoEvent("match", domain, candidates.length);
+    logDemoEvent(req, "match", domain, candidates.length);
     res.json({
       domain,
       skills,

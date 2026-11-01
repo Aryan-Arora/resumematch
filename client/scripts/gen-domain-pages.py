@@ -1,0 +1,156 @@
+"""Regenerates client/src/content/domainPages.js from the server taxonomy plus the
+hand-written copy below. The client bundle can't import ../server at build time
+(Vercel builds from client/), so skill lists are snapshotted into the content file.
+Run: python3 client/scripts/gen-domain-pages.py  (from the repo root)"""
+import json, os
+
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+tax = json.load(open(os.path.join(root, "server/data/skillTaxonomy.json")))
+
+LABELS = {
+ "languages":"Languages","frameworks":"Frameworks","cloud":"Cloud","databases":"Databases","tools":"Tools",
+ "certifications":"Certifications and licences","processes":"Processes","metrics":"Metrics","skills":"Skills",
+ "safety":"Safety","systems":"Systems","compliance":"Compliance","operations":"Operations","disciplines":"Disciplines",
+ "methods":"Methods","practice_areas":"Practice areas","credentials":"Credentials","roles":"Roles","equipment":"Equipment",
+}
+
+P = [
+ dict(key="tech", slug="tech-and-software-roles", label="Tech", icon="code",
+  title="Resume Screening for Software and IT Hiring",
+  roles=["Software engineer","Backend developer","DevOps engineer","Data engineer"],
+  intro="Tech resumes list the same stack in a dozen different ways. ResumeMatch reads the job description, pulls out the languages, frameworks, cloud platforms and databases it requires, and shows which of them each candidate actually evidences.",
+  why="A developer who wrote \"built the services layer in Django\" has Python experience even if the word never appears on the page. ResumeMatch flags that as an implied skill and quotes the sentence it inferred it from, so you can judge the inference yourself instead of trusting a score.",
+  jd="Backend Engineer to build and maintain REST APIs in Node.js and PostgreSQL. Experience with Docker, AWS and CI pipelines required. Python and Kubernetes are a plus.",
+  faqs=[("Does it work for niche stacks?","It matches against a curated list of common languages, frameworks, cloud services and databases, and falls back to semantic matching for requirements phrased differently. Very new or obscure tools may show as missing even when a candidate has them, so check missing items against the resume."),
+        ("Can it tell seniority?","It compares skills and evidence, not seniority. Years of experience and level still need your own judgement.")]),
+ dict(key="service_delivery", slug="it-service-delivery-roles", label="Service Delivery", icon="support_agent",
+  title="Resume Screening for IT Service Delivery and Operations Roles",
+  roles=["Service delivery manager","Incident manager","Support operations lead","IT operations analyst"],
+  intro="Service delivery hiring turns on process knowledge and tooling: ITIL, SLAs, incident and change management, ServiceNow or Zendesk. ResumeMatch extracts those requirements from your job description and checks each resume for evidence of them.",
+  why="Certifications such as ITIL, PMP or Six Sigma are treated as requirements like any other skill, and metrics such as MTTR or SLA compliance count when a resume describes them in its own words.",
+  jd="Service Delivery Manager responsible for SLA management, incident management and change management across a managed services portfolio. ITIL v4 certification and ServiceNow experience required. KPI reporting to clients.",
+  faqs=[("Does it verify certifications?","No. It reads what the resume says. Confirm certifications such as ITIL or PMP with the issuing body before an offer."),
+        ("Does it understand tool names like ServiceNow?","Yes, common service-management tools are in its skill list, and it flags them as matched when the resume names them.")]),
+ dict(key="sales", slug="sales-roles", label="Sales", icon="trending_up",
+  title="Resume Screening for Sales and Business Development Hiring",
+  roles=["Account executive","Sales development representative","Account manager","Business development manager"],
+  intro="Sales resumes are full of claims about quota and pipeline. ResumeMatch pulls out the processes, CRM tools and metrics your job description asks for and shows where each candidate gives evidence of them.",
+  why="Whether a candidate has handled territory management, contract negotiation or forecasting is usually in a single bullet point. ResumeMatch quotes that line next to the requirement it supports, so you can check the claim rather than the keyword.",
+  jd="Account Executive to own pipeline management, prospecting and contract negotiation for mid-market accounts. Salesforce and Outreach experience required. Track record of quota attainment and forecasting.",
+  faqs=[("Can it check whether quota numbers are real?","No. It surfaces what the resume claims and where. Verifying figures is a reference-check task."),
+        ("Does it handle CRM tools?","Common CRM and sales-engagement tools such as Salesforce, HubSpot and Outreach are in its skill list.")]),
+ dict(key="marketing", slug="marketing-roles", label="Marketing", icon="campaign",
+  title="Resume Screening for Marketing Hiring",
+  roles=["Content marketer","Performance marketer","SEO specialist","Marketing manager"],
+  intro="Marketing roles mix strategy, channels and tools. ResumeMatch extracts campaign, content, SEO and analytics requirements from your job description and shows which candidates evidence each one.",
+  why="A candidate who ran email nurture flows may never write the phrase lead nurturing. ResumeMatch can still surface that as an implied skill, with the sentence it relied on.",
+  jd="Content Marketing Manager to lead content strategy, SEO and email marketing. Experience with Google Analytics, HubSpot and A/B testing required. Copywriting and lead nurturing skills.",
+  faqs=[("Does it judge creative quality?","No. It checks skills and evidence in the text. Portfolio and writing samples still need a human read."),
+        ("Does it cover paid media?","Google Ads, SEM and ROAS are in its skill list, so paid-search requirements are extracted and matched.")]),
+ dict(key="finance_accounting", slug="finance-and-accounting-roles", label="Finance & Accounting", icon="account_balance",
+  title="Resume Screening for Finance and Accounting Hiring",
+  roles=["Accountant","Financial analyst","Accounts payable specialist","Controller"],
+  intro="Finance resumes live and die on credentials, standards and systems: CPA, GAAP or IFRS, reconciliations, SAP or NetSuite. ResumeMatch extracts those from your job description and shows which are evidenced, missing or implied.",
+  why="Credentials such as CPA, CFA, CMA or ACCA are matched as explicit requirements, and process skills like reconciliation or variance analysis are matched from how the resume describes the work.",
+  jd="Senior Accountant responsible for financial reporting, reconciliation and variance analysis under GAAP. CPA preferred. Experience with NetSuite and Excel financial modeling. Month-end close and audit support.",
+  faqs=[("Does it verify a CPA licence?","No. It reads the resume. Licence status should be checked with the relevant board."),
+        ("Does it know accounting software?","QuickBooks, SAP, NetSuite, Xero, Oracle Financials and Excel are in its skill list.")]),
+ dict(key="hr_recruiting", slug="hr-and-recruiting-roles", label="HR & Recruiting", icon="groups",
+  title="Resume Screening for HR and Recruiting Hiring",
+  roles=["HR generalist","Talent acquisition specialist","HR business partner","Recruiter"],
+  intro="HR hiring asks for a mix of employee-relations judgement and system know-how. ResumeMatch extracts the processes and platforms in your job description, such as onboarding, performance management and Workday, and checks each resume against them.",
+  why="You see which HR processes and HRIS tools each candidate evidences, with the supporting sentence, instead of a single fit percentage.",
+  jd="HR Generalist to run onboarding, employee relations and performance management. HRIS administration experience in Workday or BambooHR required. Policy development and conflict resolution.",
+  faqs=[("Can it assess people skills?","No. Judgement, tone and culture fit come from interviews. It checks skills and systems evidenced in the resume."),
+        ("Does it cover ATS tools?","Greenhouse, Lever, Workday, ADP, BambooHR and SuccessFactors are in its skill list.")]),
+ dict(key="skilled_trades", slug="skilled-trades", label="Skilled Trades", icon="construction",
+  title="Resume Screening for Skilled Trades Hiring",
+  roles=["Electrician","Plumber","HVAC technician","Welder"],
+  intro="Trades hiring is about licences, certifications and hands-on skills, and trade resumes are rarely keyword-optimised. ResumeMatch extracts the licences, safety requirements and technical skills from your job description and shows which each candidate evidences.",
+  why="Journeyman and master licences, OSHA 10 and 30, EPA 608 and similar credentials are matched as explicit requirements. Skills such as troubleshooting or blueprint reading can be matched from how the work is described.",
+  jd="Licensed Electrician needed for residential wiring, panel upgrades and code compliance inspections. Journeyman license and OSHA 30 required. Experience with troubleshooting, blueprint reading and lockout tagout.",
+  faqs=[("Does it check that a licence is valid?","No. It reads what the resume says. Always verify licences with the issuing authority before hiring."),
+        ("Will it work on short, plain resumes?","Yes, but a very short resume gives it little to match against, so missing items deserve a second look.")]),
+ dict(key="healthcare_support", slug="healthcare-support-roles", label="Healthcare Support", icon="medical_services",
+  title="Resume Screening for Healthcare Support Hiring",
+  roles=["Certified nursing assistant","Medical assistant","Home health aide","Phlebotomist"],
+  intro="Healthcare support roles depend on certifications and patient-care skills. ResumeMatch extracts CNA, CMA, BLS or CPR style requirements and clinical skills from your job description and shows which each candidate evidences.",
+  why="You can see at a glance who names the certification, who describes the work without naming it, and who has neither, with the resume sentence behind each call.",
+  jd="Certified Nursing Assistant responsible for patient care, vital signs monitoring and mobility assistance in a skilled nursing facility. CNA and CPR certification required. Experience with patient charting and infection control.",
+  faqs=[("Does it replace credential verification?","No. Certification status must be verified with the relevant registry or board. ResumeMatch only reads the resume."),
+        ("Is candidate data sent to an outside AI service?","No. Matching runs on local embedding models on ResumeMatch's own servers.")]),
+ dict(key="hospitality_food_service", slug="hospitality-and-food-service-roles", label="Hospitality & Food Service", icon="restaurant",
+  title="Resume Screening for Hospitality and Food Service Hiring",
+  roles=["Line cook","Server","Restaurant supervisor","Guest services associate"],
+  intro="Hospitality applications arrive in volume and in every format. ResumeMatch extracts the certifications, systems and service skills in your job description, such as ServSafe or a POS system, and shows which candidates evidence them.",
+  why="Food handler and alcohol-service certifications are matched as explicit requirements, and skills like cash handling or shift scheduling are matched from how the resume describes the work.",
+  jd="Restaurant Supervisor to manage shift scheduling, team supervision and cost control. ServSafe certification and Toast POS experience required. Guest relations and health code compliance.",
+  faqs=[("Does it work for high-volume hiring?","You can upload resumes in bulk and get a ranked list, with evidence per candidate, to review quickly."),
+        ("Does it understand POS systems?","Common systems such as Toast POS, OpenTable and generic POS systems are in its skill list.")]),
+ dict(key="logistics_warehouse", slug="logistics-and-warehouse-roles", label="Logistics & Warehouse", icon="local_shipping",
+  title="Resume Screening for Logistics and Warehouse Hiring",
+  roles=["Warehouse associate","Forklift operator","Inventory coordinator","Logistics coordinator"],
+  intro="Warehouse and logistics hiring needs certifications, safety record and systems experience. ResumeMatch extracts forklift, hazmat, WMS and inventory requirements from your job description and shows who evidences them.",
+  why="Forklift and hazmat certifications are explicit requirements, while skills like cycle counting or order fulfilment are matched from how the work is described.",
+  jd="Warehouse Associate for picking and packing, order fulfillment and cycle counting. Forklift certification required. Experience with a warehouse management system and barcode scanning. Warehouse safety.",
+  faqs=[("Does it verify forklift certificates?","No. It reads what the resume says. Certificates should be checked at hiring."),
+        ("Does it handle WMS tools?","WMS, SAP, barcode scanning and inventory tracking software are in its skill list.")]),
+ dict(key="engineering", slug="engineering-roles", label="Engineering", icon="precision_manufacturing",
+  title="Resume Screening for Engineering Hiring",
+  roles=["Mechanical engineer","Civil engineer","Electrical engineer","Industrial engineer"],
+  intro="Engineering resumes mix discipline, tools and credentials. ResumeMatch extracts the CAD and analysis tools, methods and licences in your job description and shows which each candidate evidences.",
+  why="Tools such as SolidWorks, AutoCAD or ANSYS and methods like GD&T or finite element analysis are matched explicitly. A resume that describes the analysis without naming the method can still surface as an implied skill.",
+  jd="Mechanical Engineer to design components in SolidWorks and run finite element analysis in ANSYS. GD&T and failure analysis experience required. EIT certification and root cause analysis preferred.",
+  faqs=[("Does it verify a PE or EIT licence?","No. It reads the resume. Verify licences with the licensing board."),
+        ("Does it cover every engineering discipline?","It covers the common ones: mechanical, civil, electrical, industrial, chemical, structural, environmental and aerospace.")]),
+ dict(key="education", slug="teachers-and-education-roles", label="Education", icon="school",
+  title="Resume Screening for Teaching and Education Hiring",
+  roles=["Classroom teacher","Tutor","Academic advisor","Special education teacher"],
+  intro="School hiring weighs licensure, classroom skills and the platforms a teacher already knows. ResumeMatch extracts those from your job description and shows which candidates evidence each one.",
+  why="Teaching licences, TESOL and special-education credentials are explicit requirements, and skills like differentiated instruction or lesson planning are matched from how the resume describes the work.",
+  jd="Middle school teacher for classroom teaching, lesson planning and student assessment. Teaching license required. Experience with Google Classroom, differentiated instruction and parent communication.",
+  faqs=[("Does it check a teaching licence?","No. It reads the resume only. Licence status must be confirmed with the licensing body."),
+        ("Does it judge teaching quality?","No. Classroom observation and references do that. ResumeMatch checks skills and evidence in the text.")]),
+ dict(key="legal", slug="legal-roles", label="Legal", icon="gavel",
+  title="Resume Screening for Legal Hiring",
+  roles=["Associate attorney","Paralegal","Compliance specialist","Contracts manager"],
+  intro="Legal hiring depends on practice area, credentials and research or case-management tools. ResumeMatch extracts those requirements from your job description and shows which candidates evidence them.",
+  why="Practice areas such as contract law or employment law, tools like Westlaw or Clio, and credentials like bar admission are matched explicitly. Skills such as due diligence or legal writing are matched from how the resume describes the work.",
+  jd="Paralegal to support contract drafting, case management and due diligence. Westlaw or LexisNexis experience required. Paralegal certification preferred. Legal research and regulatory compliance.",
+  faqs=[("Does it verify bar admission?","No. Check admission with the relevant bar. ResumeMatch reads the resume only."),
+        ("Is candidate data kept private?","Matching runs on local models on ResumeMatch's own servers rather than a third-party AI API.")]),
+ dict(key="creative_design", slug="creative-and-design-roles", label="Creative & Design", icon="palette",
+  title="Resume Screening for Creative and Design Hiring",
+  roles=["Graphic designer","UX designer","Video editor","Art director"],
+  intro="Creative hiring is portfolio-first, but the resume still carries the tools and disciplines. ResumeMatch extracts those from your job description and shows which candidates evidence them, so you know whose portfolio to open first.",
+  why="Tools like Figma, Photoshop or After Effects and disciplines like UX design or motion graphics are matched explicitly. It cannot judge the work itself, only what the resume says about it.",
+  jd="UX Designer for wireframing, prototyping and design systems. Figma required. Experience in user research, typography and art direction. Adobe Illustrator is a plus.",
+  faqs=[("Can it assess design quality?","No. Portfolios need human review. ResumeMatch helps decide whose portfolio to open first."),
+        ("Does it recognise design tools?","Figma, Sketch, Adobe Creative tools, Canva and Final Cut Pro are in its skill list.")]),
+ dict(key="manufacturing_production", slug="manufacturing-and-production-roles", label="Manufacturing & Production", icon="factory",
+  title="Resume Screening for Manufacturing and Production Hiring",
+  roles=["Machine operator","Production line worker","Quality control inspector","Process improvement technician"],
+  intro="Manufacturing hiring cares about equipment, methods and safety certifications. ResumeMatch extracts those from your job description, such as CNC, PLC, lean or ISO 9001, and shows which each candidate evidences.",
+  why="Equipment and methods are matched from how the resume names or describes them, and certifications like OSHA 10 or ISO 9001 are explicit requirements.",
+  jd="Production Operator for machine operation, assembly and quality control on CNC machines. Lean manufacturing and 5S experience required. OSHA 10 and forklift certification preferred.",
+  faqs=[("Does it verify certifications?","No. It reads the resume. Confirm certifications at hiring."),
+        ("Does it recognise shop-floor equipment?","CNC machines, PLC systems, injection molding, 3D printing and conveyor systems are in its skill list.")]),
+]
+
+MAX_PER_GROUP = 12
+out = []
+for p in P:
+    groups = []
+    for cat, skills in tax[p["key"]].items():
+        shown = skills[:MAX_PER_GROUP]
+        groups.append(dict(label=LABELS.get(cat, cat.title()), skills=shown, more=len(skills)-len(shown)))
+    out.append(dict(slug=p["slug"], key=p["key"], label=p["label"], icon=p["icon"], title=p["title"], roles=p["roles"],
+                    intro=p["intro"], why=p["why"], sampleJd=p["jd"], groups=groups,
+                    faqs=[dict(q=q, a=a) for q, a in p["faqs"]]))
+
+header = "// GENERATED by client/scripts/gen-domain-pages.py from server/data/skillTaxonomy.json. Edit the script, not this file.\n"
+body = "export const DOMAIN_PAGES = " + json.dumps(out, indent=2, ensure_ascii=False) + ";\n"
+body += "\nexport function getDomainPage(slug) {\n  return DOMAIN_PAGES.find((p) => p.slug === slug);\n}\n"
+dest = os.path.join(root, "client/src/content/domainPages.js")
+open(dest, "w").write(header + body)
+print("wrote", dest, len(out), "pages")

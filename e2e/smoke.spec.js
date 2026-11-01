@@ -132,3 +132,17 @@ test("protected recruiter endpoints reject unauthenticated requests", async ({ r
   expect(candidates.status()).toBe(401);
   expect(talentPool.status()).toBe(401);
 });
+
+test("hiring-area page renders and prefills the demo with its example job description", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("/resume-screening/skilled-trades");
+  await expect(page.locator("h1")).toContainText("Skilled Trades");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "https://resumematch.co.in/resume-screening/skilled-trades"
+  );
+  await page.getByRole("link", { name: /Try it on a skilled trades job description/i }).click();
+  await expect(page).toHaveURL(/\/demo\/?\?example=skilled-trades/);
+  await expect(page.getByPlaceholder("Paste a job description here...")).toHaveValue(/Licensed Electrician/);
+  expect(errors).toEqual([]);
+});

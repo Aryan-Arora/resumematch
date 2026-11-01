@@ -52,6 +52,7 @@ function setMeta(html, attr, key, content, route) {
 const SEO_PAGES = ["/free-resume-screening-software", "/explainable-ai-resume-screening", "/ats-alternative-for-recruiters", "/resumematch-vs-ats"];
 
 const { BLOG_POSTS } = await vite.ssrLoadModule("/src/content/blogPosts.js");
+const { DOMAIN_PAGES } = await vite.ssrLoadModule("/src/content/domainPages.js");
 
 const routes = [
   { path: "/", component: "Home", priority: "1.0", changefreq: "weekly" },
@@ -59,6 +60,13 @@ const routes = [
   { path: "/resume-parser", component: "ResourcePage", props: { type: "parser" }, priority: "0.9", changefreq: "monthly" },
   { path: "/docs", component: "ResourcePage", props: { type: "docs" }, priority: "0.8", changefreq: "monthly" },
   ...SEO_PAGES.map((path) => ({ path, component: "SeoLandingPage", props: { path }, priority: "0.8", changefreq: "monthly" })),
+  ...DOMAIN_PAGES.map((p) => ({
+    path: `/resume-screening/${p.slug}`,
+    component: "DomainPage",
+    props: { slug: p.slug },
+    priority: "0.7",
+    changefreq: "monthly",
+  })),
   { path: "/blog", component: "Blog", priority: "0.8", changefreq: "weekly" },
   ...BLOG_POSTS.map((p) => ({
     path: `/blog/${p.slug}`,
@@ -215,6 +223,10 @@ ResumeMatch (resumematch.co.in) is the explainable AI resume-screening product d
 - [Free resume screening software](${SITE}/free-resume-screening-software)
 - [Explainable AI resume screening](${SITE}/explainable-ai-resume-screening)
 - [ATS alternative for recruiters](${SITE}/ats-alternative-for-recruiters)
+
+## Resume screening by hiring area
+
+${DOMAIN_PAGES.map((p) => `- [${p.title}](${SITE}/resume-screening/${p.slug})`).join("\n")}
 
 ## Blog
 

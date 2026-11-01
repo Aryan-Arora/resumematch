@@ -12,6 +12,7 @@ import LegalPage from './components/LegalPage.jsx'
 import Blog from './components/Blog.jsx'
 import BlogPost from './components/BlogPost.jsx'
 import SeoLandingPage from './components/SeoLandingPage.jsx'
+import DomainPage from './components/DomainPage.jsx'
 import ResourcePage from './components/ResourcePage.jsx'
 import PrivacyRequestPage from './components/PrivacyRequestPage.jsx'
 import SchedulePage from './pages/SchedulePage.jsx'
@@ -25,6 +26,7 @@ import SchedulePage from './pages/SchedulePage.jsx'
 const path = window.location.pathname.replace(/\/+$/, '') || '/'
 const blogSlug = path.startsWith('/blog/') ? path.slice('/blog/'.length) : null
 const seoPaths = new Set(['/free-resume-screening-software', '/explainable-ai-resume-screening', '/ats-alternative-for-recruiters', '/resumematch-vs-ats'])
+const domainSlug = path.startsWith('/resume-screening/') ? path.slice('/resume-screening/'.length) : null
 const scheduleToken = path.startsWith('/schedule/') ? path.slice('/schedule/'.length) : null
 
 createRoot(document.getElementById('root')).render(
@@ -35,6 +37,8 @@ createRoot(document.getElementById('root')).render(
       <ResourcePage type="parser" />
     ) : path === '/docs' ? (
       <ResourcePage type="docs" />
+    ) : domainSlug ? (
+      <DomainPage slug={domainSlug} />
     ) : seoPaths.has(path) ? (
       <SeoLandingPage path={path} />
     ) : path === '/login' ? (
