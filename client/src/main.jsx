@@ -13,6 +13,7 @@ import Blog from './components/Blog.jsx'
 import BlogPost from './components/BlogPost.jsx'
 import SeoLandingPage from './components/SeoLandingPage.jsx'
 import DomainPage from './components/DomainPage.jsx'
+import DomainIndexPage from './components/DomainIndexPage.jsx'
 import ResourcePage from './components/ResourcePage.jsx'
 import PrivacyRequestPage from './components/PrivacyRequestPage.jsx'
 import SchedulePage from './pages/SchedulePage.jsx'
@@ -37,6 +38,8 @@ createRoot(document.getElementById('root')).render(
       <ResourcePage type="parser" />
     ) : path === '/docs' ? (
       <ResourcePage type="docs" />
+    ) : path === '/resume-screening' ? (
+      <DomainIndexPage />
     ) : domainSlug ? (
       <DomainPage slug={domainSlug} />
     ) : seoPaths.has(path) ? (

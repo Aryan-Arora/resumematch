@@ -146,3 +146,41 @@ test("hiring-area page renders and prefills the demo with its example job descri
   await expect(page.getByPlaceholder("Paste a job description here...")).toHaveValue(/Licensed Electrician/);
   expect(errors).toEqual([]);
 });
+
+// The public pages load a small subset of the Material Symbols font. An icon
+// missing from that subset renders as its literal name (e.g. "arrow_forward"),
+// which is much wider than a glyph.
+const ICON_PAGES = [
+  "/", "/demo", "/blog", "/blog/how-resume-parsing-works", "/docs", "/resume-parser",
+  "/free-resume-screening-software", "/resumematch-vs-ats", "/resume-screening", "/resume-screening/skilled-trades",
+  "/resume-screening/tech-and-software-roles", "/privacy", "/terms",
+];
+
+async function brokenIcons(page) {
+  await page.evaluate(() => document.fonts.ready);
+  return page.$$eval(".material-symbols-outlined", (els) =>
+    els
+      .filter((el) => el.offsetParent !== null)
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.height > 0 && r.width > r.height * 1.8;
+      })
+      .map((el) => el.textContent.trim())
+  );
+}
+
+for (const path of ICON_PAGES) {
+  test(`icons render as glyphs on ${path}`, async ({ page }) => {
+    await page.goto(path);
+    expect(await brokenIcons(page)).toEqual([]);
+  });
+}
+
+test("icons render as glyphs after a demo result", async ({ page }) => {
+  await page.goto("/demo");
+  await page.getByPlaceholder("Paste a job description here...").fill(JD);
+  await page.locator('input[type="file"]').setInputFiles(RESUME);
+  await page.getByRole("button", { name: "Score resumes" }).click();
+  await expect(page.getByText(/Matched \(\d+\)/)).toBeVisible({ timeout: 90_000 });
+  expect(await brokenIcons(page)).toEqual([]);
+});

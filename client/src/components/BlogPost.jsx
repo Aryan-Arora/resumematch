@@ -113,6 +113,10 @@ export default function BlogPost({ slug }) {
             <a href="/blog/free-resume-screening-software" className="glass-panel p-4 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]">Try free resume screening →</a>
           </div>
 
+          <p className="mt-8 text-sm text-[var(--color-text-muted)]">
+            Screening for a specific kind of role? See <a href="/resume-screening" className="text-[var(--color-accent)] hover:underline">resume screening by hiring area</a>: tech, skilled trades, healthcare support, sales, legal and more.
+          </p>
+
           <div className="mt-12 pt-8 border-t border-[var(--color-border)]/60">
             <a
               href="/demo"

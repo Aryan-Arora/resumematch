@@ -36,7 +36,8 @@ export default function DomainPage({ slug }) {
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: "https://resumematch.co.in/" },
-            { "@type": "ListItem", position: 2, name: page.title, item: `https://resumematch.co.in${path}` },
+            { "@type": "ListItem", position: 2, name: "Resume screening by hiring area", item: "https://resumematch.co.in/resume-screening" },
+            { "@type": "ListItem", position: 3, name: page.title, item: `https://resumematch.co.in${path}` },
           ],
         }
       : null
@@ -135,7 +136,9 @@ export default function DomainPage({ slug }) {
         </section>
 
         <section className="max-w-3xl mx-auto mt-16">
-          <h2 className="font-heading text-lg font-bold tracking-tight text-[var(--color-text)] mb-3">Other hiring areas</h2>
+          <h2 className="font-heading text-lg font-bold tracking-tight text-[var(--color-text)] mb-3">
+            Other hiring areas <a href="/resume-screening" className="text-sm font-normal text-[var(--color-accent)] hover:underline ml-2">See all</a>
+          </h2>
           <div className="flex flex-wrap gap-2">
             {others.map((p) => (
               <a key={p.slug} href={`/resume-screening/${p.slug}`} className="text-sm px-3 py-1.5 rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition">

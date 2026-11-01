@@ -60,6 +60,7 @@ const routes = [
   { path: "/resume-parser", component: "ResourcePage", props: { type: "parser" }, priority: "0.9", changefreq: "monthly" },
   { path: "/docs", component: "ResourcePage", props: { type: "docs" }, priority: "0.8", changefreq: "monthly" },
   ...SEO_PAGES.map((path) => ({ path, component: "SeoLandingPage", props: { path }, priority: "0.8", changefreq: "monthly" })),
+  { path: "/resume-screening", component: "DomainIndexPage", priority: "0.8", changefreq: "monthly" },
   ...DOMAIN_PAGES.map((p) => ({
     path: `/resume-screening/${p.slug}`,
     component: "DomainPage",
@@ -161,6 +162,8 @@ function writeRoute(routePath, html) {
 
 const failedCritical = [];
 let rendered = 0;
+const pending = [];
+const usedIcons = new Set(["light_mode", "dark_mode"]);
 
 for (const route of routes) {
   const collected = { seo: null, jsonLd: [] };
@@ -174,8 +177,28 @@ for (const route of routes) {
     warn(`${route.path}: render failed (${err.message}) — writing head-only HTML`);
     if (!route.optional) failedCritical.push(route.path);
   }
-  writeRoute(route.path, buildPage(route, bodyHtml, collected));
+  for (const m of bodyHtml.matchAll(/class="material-symbols-outlined[^"]*"[^>]*>([a-z0-9_]+)</g)) usedIcons.add(m[1]);
+  pending.push({ route, html: buildPage(route, bodyHtml, collected) });
 }
+
+// The full Material Symbols font is ~1.1 MB. The public pages only use a
+// handful of icons, so point them at a subset (a few KB). Icons that appear
+// only after interaction must be listed in EXTRA_ICONS or they would render as
+// plain text; e2e/smoke.spec.js checks that no icon renders as text. The
+// authenticated app (served from the unmodified index.html) keeps the full font.
+const EXTRA_ICONS = ["arrow_back", "arrow_forward", "close", "delete", "download", "search", "visibility", "refresh", "add", "menu", "expand_more", "expand_less", "check", "check_circle", "error", "warning", "upload_file", "description"];
+EXTRA_ICONS.forEach((i) => usedIcons.add(i));
+const FULL_ICON_HREF = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap";
+const FULL_ICON_HREF_RAW = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
+const subsetHref = `https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&icon_names=${[...usedIcons].sort().join(",")}&display=swap`;
+for (const { route, html } of pending) {
+  let out = html;
+  if (out.includes(FULL_ICON_HREF_RAW)) out = out.replace(FULL_ICON_HREF_RAW, () => subsetHref);
+  else if (out.includes(FULL_ICON_HREF)) out = out.replace(FULL_ICON_HREF, () => subsetHref.replace(/&/g, "&amp;"));
+  else warn(`${route.path}: Material Symbols link not found in template`);
+  writeRoute(route.path, out);
+}
+console.log(`prerender: icon subset ${usedIcons.size} icons`);
 globalThis.__SEO_COLLECTOR__ = undefined;
 
 // ---- sitemap.xml ----
@@ -217,6 +240,7 @@ ResumeMatch (resumematch.co.in) is the explainable AI resume-screening product d
 ## Core pages
 
 - [Homepage](${SITE}/): product overview and FAQ
+- [Resume screening by hiring area](${SITE}/resume-screening): 15 hiring areas from tech to skilled trades
 - [Free demo](${SITE}/demo): try explainable matching without signing up
 - [Resume parser](${SITE}/resume-parser): PDF/DOCX parsing and skill extraction
 - [Documentation](${SITE}/docs): how scoring and matching work
